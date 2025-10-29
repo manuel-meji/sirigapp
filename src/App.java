@@ -7,7 +7,7 @@ import com.formdev.flatlaf.themes.FlatMacLightLaf;
 import com.mysql.jdbc.log.Log;
 
 import controlador.Controlador;
-import vista.LoginFrame;
+
 
 public class App {
     public static void main(String[] args) throws Exception {

@@ -8,6 +8,8 @@ import controlador.FontLoader;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
@@ -45,7 +47,7 @@ public class AnimalesFrame extends JFrame {
 
         // 2. Panel de Contenido Principal (el área a la derecha del menú)
         JPanel contentPanel = new JPanel();
-        contentPanel.setBackground(COLOR_CONTENIDO_PRINCIPAL);
+        contentPanel.setBackground(Color.WHITE);
         add(contentPanel, BorderLayout.CENTER);
     }
 
@@ -78,11 +80,27 @@ public class AnimalesFrame extends JFrame {
         buttonsPanel.setBackground(COLOR_FONDO_MENU);
         buttonsPanel.setLayout(new GridLayout(0, 1, 0, 2)); // 4 filas, 1 columna, 2px de espacio vertical
 
-        buttonsPanel.add(createMenuButton("Mostrar animales", COLOR_BOTON_NORMAL));
-        buttonsPanel.add(createMenuButton("Registro Sanitario", COLOR_BOTON_NORMAL));
-        buttonsPanel.add(createMenuButton("Produccion Leche", COLOR_BOTON_NORMAL));
-        buttonsPanel.add(createMenuButton("Generación de Informes", COLOR_BOTON_NORMAL));
-        buttonsPanel.add(createMenuButton("Salidas Animales", COLOR_BOTON_NORMAL));
+        JButton btnMostrarAnimales = createMenuButton("Mostrar animales", COLOR_BOTON_NORMAL);
+        btnMostrarAnimales.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                // Aquí iría la lógica para mostrar los animales
+                System.out.println("Mostrar animales");
+            }
+        });
+
+        JButton btnRegistroSanitario = createMenuButton("Registro Sanitario", COLOR_BOTON_NORMAL);
+        JButton btnProduccionLeche = createMenuButton("Produccion Leche", COLOR_BOTON_NORMAL);
+        JButton btnSalidasAnimales = createMenuButton("Salidas Animales", COLOR_BOTON_NORMAL);
+        JButton btnGeneracionInformes = createMenuButton("Generación de Informes", COLOR_BOTON_NORMAL);
+        JButton btnLotes = createMenuButton("Administración de Lotes", COLOR_BOTON_NORMAL);
+
+        buttonsPanel.add(btnMostrarAnimales);   
+        buttonsPanel.add(btnRegistroSanitario);
+        buttonsPanel.add(btnProduccionLeche);
+        buttonsPanel.add(btnSalidasAnimales);
+        buttonsPanel.add(btnGeneracionInformes);
+        buttonsPanel.add(btnLotes);
+        
         
         gbc.gridy = 2;
         gbc.weighty = 0.5; // El panel de botones ocupa la mayor parte del espacio

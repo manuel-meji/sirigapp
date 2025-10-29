@@ -4,8 +4,9 @@ import java.sql.*;
 
 import javax.swing.JOptionPane;
 
-import vista.LoginFrame;
+
 import vista.SiriGAppLogin;
+import vista.animales.AnimalesFrame;
 
 public class Controlador {
     public Connection connection = null;
@@ -47,6 +48,10 @@ public class Controlador {
             ResultSet resultSet = preparedStatement.executeQuery();
             if (resultSet.next()) {
                 JOptionPane.showMessageDialog(null, "Inicio de sesión exitoso");
+                loginFrame.setVisible(false);
+                AnimalesFrame animalesFrame = new AnimalesFrame(this);
+                animalesFrame.setVisible(true);
+                animalesFrame.setLocationRelativeTo(null);
             } else {
                 JOptionPane.showMessageDialog(null, "Usuario o contraseña incorrectos");
             }
