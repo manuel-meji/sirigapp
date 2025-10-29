@@ -1,14 +1,19 @@
-package controlador;
+package vista.animales;
 
 import com.formdev.flatlaf.FlatLightLaf;
+
+import controlador.Controlador;
+import controlador.FontLoader;
+
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
-public class MainMenuFrame extends JFrame {
+public class AnimalesFrame extends JFrame {
 
+    private Controlador controlador;
     // --- Colores ---
     private final Color COLOR_FONDO_MENU = new Color(0, 38, 51);
     private final Color COLOR_BOTON_NORMAL = new Color(121, 255, 194);
@@ -16,11 +21,13 @@ public class MainMenuFrame extends JFrame {
     private final Color COLOR_BOTON_CERRAR_SESION = new Color(255, 102, 102);
     private final Color COLOR_CONTENIDO_PRINCIPAL = new Color(45, 45, 45);
 
+
     // --- Fuentes ---
     private final Font FONT_TITULO_MENU = FontLoader.loadFont("/resources/fonts/Montserrat-Black.ttf", 48f);
     private final Font FONT_BOTON_MENU = FontLoader.loadFont("/resources/fonts/Montserrat-SemiBold.ttf", 18f);
 
-    public MainMenuFrame() {
+    public AnimalesFrame(Controlador controlador) {
+        this.controlador = controlador;
         initUI();
     }
 
@@ -121,17 +128,5 @@ public class MainMenuFrame extends JFrame {
         return button;
     }
 
-    public static void main(String[] args) {
-        // Establecer el Look and Feel de FlatLaf
-        try {
-            UIManager.setLookAndFeel(new FlatLightLaf());
-        } catch (UnsupportedLookAndFeelException e) {
-            System.err.println("Failed to initialize LaF");
-        }
-
-        EventQueue.invokeLater(() -> {
-            MainMenuFrame ex = new MainMenuFrame();
-            ex.setVisible(true);
-        });
-    }
+    
 }
