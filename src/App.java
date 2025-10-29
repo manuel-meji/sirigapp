@@ -1,3 +1,4 @@
+
 import javax.swing.UIManager;
 
 import com.formdev.flatlaf.intellijthemes.FlatDarkFlatIJTheme;
@@ -5,6 +6,7 @@ import com.formdev.flatlaf.themes.FlatMacDarkLaf;
 import com.formdev.flatlaf.themes.FlatMacLightLaf;
 import com.mysql.jdbc.log.Log;
 
+import controlador.Controlador;
 import vista.LoginFrame;
 
 public class App {
@@ -16,8 +18,7 @@ public class App {
         }
        
 
-        LoginFrame loginFrame = new LoginFrame();
-        loginFrame.setVisible(true);
-        loginFrame.setLocationRelativeTo(null); 
+        Controlador  controlador = new Controlador();
+         
     }
 }
