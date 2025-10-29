@@ -1,6 +1,10 @@
 package vista;
 
 import com.formdev.flatlaf.FlatLightLaf;
+
+import controlador.Controlador;
+import controlador.FontLoader;
+
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
@@ -11,12 +15,16 @@ import java.net.URI;
 
 public class SiriGAppLogin extends JFrame {
 
-    // Cargamos las variantes de la fuente Montserrat que vamos a utilizar
-    private final Font montserratBold = FontLoader.loadFont("/fonts/Montserrat-Bold.ttf", 28f);
-    private final Font montserratRegular = FontLoader.loadFont("/fonts/Montserrat-Regular.ttf", 14f);
-    private final Font montserratSemiBold = FontLoader.loadFont("/fonts/Montserrat-SemiBold.ttf", 14f);
+    private Controlador controlador;
 
-    public SiriGAppLogin() {
+    // Cargamos las variantes de la fuente Montserrat que vamos a utilizar
+    private final Font montserratBold = FontLoader.loadFont("/resources/fonts/Montserrat-Black.ttf", 28f);
+    private final Font montserratRegular = FontLoader.loadFont("/resources/fonts/Montserrat-Regular.ttf", 14f);
+    private final Font montserratSemiBold = FontLoader.loadFont("/resources/fonts/Montserrat-SemiBold.ttf", 14f);
+
+    public SiriGAppLogin(Controlador controlador) {
+        this.controlador = controlador;
+
         initUI();
     }
 
@@ -102,6 +110,19 @@ public class SiriGAppLogin extends JFrame {
         gbc.insets = new Insets(10, 50, 10, 50);
         loginPanel.add(loginButton, gbc);
 
+        loginButton.addActionListener(e -> {
+            String username = userTextField.getText();
+            String password = new String(passTextField.getPassword());
+            // Aquí iría la lógica de autenticación
+            System.out.println("Usuario: " + username);
+            System.out.println("Contraseña: " + password);
+
+            controlador.IniciarSesion(username, password);
+
+
+        });
+        
+
         // Enlace "¿Ha olvidado su contraseña?"
         JLabel forgotPasswordLabel = new JLabel("¿Ha olvidado su contraseña?");
         forgotPasswordLabel.setFont(montserratRegular);
@@ -152,17 +173,5 @@ public class SiriGAppLogin extends JFrame {
     }
 
 
-    public static void main(String[] args) {
-        // Establecer el Look and Feel de FlatLaf
-        try {
-            UIManager.setLookAndFeel(new FlatLightLaf());
-        } catch (UnsupportedLookAndFeelException e) {
-            e.printStackTrace();
-        }
-
-        EventQueue.invokeLater(() -> {
-            SiriGAppLogin ex = new SiriGAppLogin();
-            ex.setVisible(true);
-        });
-    }
+    
 }

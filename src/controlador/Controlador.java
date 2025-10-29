@@ -5,13 +5,14 @@ import java.sql.*;
 import javax.swing.JOptionPane;
 
 import vista.LoginFrame;
+import vista.SiriGAppLogin;
 
 public class Controlador {
     public Connection connection = null;
     public Statement statement = null;
     public ResultSet resultSet = null; 
 
-    public LoginFrame loginFrame;
+    public SiriGAppLogin loginFrame;
 
     
     public int idUsuario;
@@ -30,9 +31,30 @@ public class Controlador {
         }
 
        
-        loginFrame = new LoginFrame();
+        loginFrame = new SiriGAppLogin(this);
         loginFrame.setVisible(true);
         loginFrame.setLocationRelativeTo(null);
+
+
+    }
+
+    public void IniciarSesion  (String usuario, String contraseña){
+        String sql = "SELECT * FROM usuarios WHERE id = ? AND contrasena = ?";
+        try {
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setString(1, usuario);
+            preparedStatement.setString(2, contraseña);
+            ResultSet resultSet = preparedStatement.executeQuery();
+            if (resultSet.next()) {
+                JOptionPane.showMessageDialog(null, "Inicio de sesión exitoso");
+            } else {
+                JOptionPane.showMessageDialog(null, "Usuario o contraseña incorrectos");
+            }
+        } catch (Exception e) {
+            System.out.println("Error al iniciar sesión: " + e.getMessage());
+        }
+
+
     }
 
 

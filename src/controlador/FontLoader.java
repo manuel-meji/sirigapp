@@ -1,5 +1,8 @@
 package controlador;
 
+import java.awt.Font;
+import java.awt.FontFormatException;
+import java.awt.GraphicsEnvironment;
 import java.io.IOException;
 import java.io.InputStream;
 
