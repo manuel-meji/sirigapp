@@ -32,7 +32,7 @@ public class LoginFrame extends JFrame {
             }
         }
 
-        setTitle("Login Atractivo y Responsive");
+        setTitle("Iniciar Sesión");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setMinimumSize(new Dimension(600, 500)); // Tamaño mínimo
         
