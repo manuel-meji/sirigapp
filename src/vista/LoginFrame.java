@@ -16,23 +16,9 @@ public class LoginFrame extends JFrame {
     public LoginFrame() {
         // 1. Configuración del Look and Feel (L&F)
         // Intentar usar Nimbus para un diseño más moderno
-        try {
-            for (UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (Exception e) {
-            // Si Nimbus no está disponible, usar el L&F del sistema
-            try {
-                UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-            } catch (Exception ex) {
-                // En caso de fallo total, no hacer nada (usará el L&F por defecto)
-            }
-        }
+     
 
-        setTitle("Login Atractivo y Responsive");
+        setTitle("Iniciar Sesión");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setMinimumSize(new Dimension(600, 500)); // Tamaño mínimo
         
