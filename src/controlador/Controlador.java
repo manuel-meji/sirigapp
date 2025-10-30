@@ -513,6 +513,13 @@ public void modificarUltimoMovimiento(int idMovimiento, String codigoAnimal, int
             connection.setAutoCommit(true);
         } catch (SQLException ex) {
             System.out.println("Error al restaurar auto-commit: " + ex.getMessage());
+<<<<<<< HEAD
+=======
+
+        }
+    }
+}
+>>>>>>> d5b33d01bf881afc79593c6b75e85430551d5bd9
     public void modificarRegistroHistorial(int idMovimiento, String nuevoCodigoAnimal, int nuevoIdLoteDestino,
             java.sql.Date nuevaFecha) {
         String sql = "UPDATE historial_lote SET id_animal = ?, id_lote_posterior = ?, fecha = ? WHERE id = ?";
@@ -535,7 +542,7 @@ public void modificarUltimoMovimiento(int idMovimiento, String codigoAnimal, int
                     "Error de Base de Datos", JOptionPane.ERROR_MESSAGE);
         }
     }
-}
+
 
     /**
      * Busca códigos de animales que coincidan con un texto de búsqueda.
@@ -793,8 +800,6 @@ public void modificarUltimoMovimiento(int idMovimiento, String codigoAnimal, int
         }
     }
 
-    
-
     /**
      * Guarda un nuevo registro de producción de leche en la base de datos.
      */
@@ -811,32 +816,38 @@ public void modificarUltimoMovimiento(int idMovimiento, String codigoAnimal, int
     }
 
     public java.util.List<String> buscarAnimalesHembras(String filtro) {
-    java.util.List<String> resultado = new java.util.ArrayList<>();
-    // Añadimos la condición AND sexo = 'F' a la consulta SQL
-    String sql = "SELECT codigo FROM animal WHERE codigo LIKE ? AND estado = 'ACTIVO' AND sexo = 'F'";
-    try {
-        PreparedStatement ps = connection.prepareStatement(sql);
-        ps.setString(1, "%" + filtro + "%");
-        ResultSet rs = ps.executeQuery();
-        while (rs.next()) {
-            resultado.add(rs.getString("codigo"));
+        java.util.List<String> resultado = new java.util.ArrayList<>();
+        // Añadimos la condición AND sexo = 'F' a la consulta SQL
+        String sql = "SELECT codigo FROM animal WHERE codigo LIKE ? AND estado = 'ACTIVO' AND sexo = 'F'";
+        try {
+            PreparedStatement ps = connection.prepareStatement(sql);
+            ps.setString(1, "%" + filtro + "%");
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                resultado.add(rs.getString("codigo"));
+            }
+        } catch (Exception e) {
+            System.out.println("Error al buscar animales hembras: " + e.getMessage());
         }
-    } catch (Exception e) {
-        System.out.println("Error al buscar animales hembras: " + e.getMessage());
+        return resultado;
     }
+<<<<<<< HEAD
     return resultado;
+=======
+>>>>>>> d5b33d01bf881afc79593c6b75e85430551d5bd9
 
     // --- MÉTODOS A AÑADIR EN TU CONTROLADOR ---
 
     /**
      * Elimina un lote de la base de datos por su ID.
-     * ADVERTENCIA: Esto puede fallar si hay animales asignados a este lote y existen
+     * ADVERTENCIA: Esto puede fallar si hay animales asignados a este lote y
+     * existen
      * restricciones de clave foránea en la base de datos.
      */
     public void eliminarLote(int idLote) {
         // Confirmación antes de una acción destructiva
-        int confirmacion = JOptionPane.showConfirmDialog(null, 
-                "¿Está seguro de que desea eliminar este lote?\nEsta acción no se puede deshacer.", 
+        int confirmacion = JOptionPane.showConfirmDialog(null,
+                "¿Está seguro de que desea eliminar este lote?\nEsta acción no se puede deshacer.",
                 "Confirmar Eliminación", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
 
         if (confirmacion == JOptionPane.YES_OPTION) {
@@ -845,16 +856,21 @@ public void modificarUltimoMovimiento(int idMovimiento, String codigoAnimal, int
                 ps.setInt(1, idLote);
                 int filasAfectadas = ps.executeUpdate();
                 if (filasAfectadas > 0) {
-                    JOptionPane.showMessageDialog(null, "Lote eliminado exitosamente.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
+                    JOptionPane.showMessageDialog(null, "Lote eliminado exitosamente.", "Éxito",
+                            JOptionPane.INFORMATION_MESSAGE);
                 } else {
-                    JOptionPane.showMessageDialog(null, "No se encontró el lote a eliminar.", "Aviso", JOptionPane.WARNING_MESSAGE);
+                    JOptionPane.showMessageDialog(null, "No se encontró el lote a eliminar.", "Aviso",
+                            JOptionPane.WARNING_MESSAGE);
                 }
             } catch (SQLException e) {
                 // Mensaje de error común si hay animales en el lote
                 if (e.getMessage().contains("foreign key constraint fails")) {
-                     JOptionPane.showMessageDialog(null, "No se puede eliminar el lote porque contiene animales.\nPor favor, mueva los animales a otro lote antes de eliminarlo.", "Error de Integridad", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(null,
+                            "No se puede eliminar el lote porque contiene animales.\nPor favor, mueva los animales a otro lote antes de eliminarlo.",
+                            "Error de Integridad", JOptionPane.ERROR_MESSAGE);
                 } else {
-                    JOptionPane.showMessageDialog(null, "Error al eliminar el lote: " + e.getMessage(), "Error de Base de Datos", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(null, "Error al eliminar el lote: " + e.getMessage(),
+                            "Error de Base de Datos", JOptionPane.ERROR_MESSAGE);
                 }
             }
         }
@@ -863,88 +879,99 @@ public void modificarUltimoMovimiento(int idMovimiento, String codigoAnimal, int
     /**
      * Elimina un registro del historial de movimientos.
      * Nota: Esta acción solo elimina el registro histórico, no revierte el estado
-     * actual del animal en la tabla 'animal'. Sirve para corregir errores de registro.
+     * actual del animal en la tabla 'animal'. Sirve para corregir errores de
+     * registro.
      */
-// REEMPLAZA ESTE MÉTODO EN TU CLASE 'Controlador.java'
+    // REEMPLAZA ESTE MÉTODO EN TU CLASE 'Controlador.java'
 
-/**
- * Revierte un movimiento de historial.
- * Elimina el registro del historial y actualiza la ubicación actual del animal
- * a su lote anterior, siempre y cuando sea el último movimiento registrado para ese animal.
- */
-public void revertirMovimientoHistorial(int idMovimiento, String codigoAnimal, Object idLoteAnteriorObj) {
-    int confirmacion = JOptionPane.showConfirmDialog(null, 
-            "¿Está seguro de que desea revertir este movimiento?\nEl animal " + codigoAnimal + " volverá a su lote anterior.", 
-            "Confirmar Reversión", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+    /**
+     * Revierte un movimiento de historial.
+     * Elimina el registro del historial y actualiza la ubicación actual del animal
+     * a su lote anterior, siempre y cuando sea el último movimiento registrado para
+     * ese animal.
+     */
+    public void revertirMovimientoHistorial(int idMovimiento, String codigoAnimal, Object idLoteAnteriorObj) {
+        int confirmacion = JOptionPane.showConfirmDialog(null,
+                "¿Está seguro de que desea revertir este movimiento?\nEl animal " + codigoAnimal
+                        + " volverá a su lote anterior.",
+                "Confirmar Reversión", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
 
-    if (confirmacion != JOptionPane.YES_OPTION) {
-        return; // El usuario canceló la operación
-    }
+        if (confirmacion != JOptionPane.YES_OPTION) {
+            return; // El usuario canceló la operación
+        }
 
-    try {
-        // PASO 1: Iniciar la transacción
-        connection.setAutoCommit(false);
+        try {
+            // PASO 1: Iniciar la transacción
+            connection.setAutoCommit(false);
 
-        // PASO 2: VERIFICACIÓN CRÍTICA. Asegurarnos de que estamos revirtiendo el ÚLTIMO movimiento del animal.
-        String sqlCheckLast = "SELECT id FROM historial_lote WHERE id_animal = ? ORDER BY fecha DESC, id DESC LIMIT 1";
-        try (PreparedStatement psCheck = connection.prepareStatement(sqlCheckLast)) {
-            psCheck.setString(1, codigoAnimal);
-            try (ResultSet rs = psCheck.executeQuery()) {
-                if (rs.next()) {
-                    int ultimoMovimientoId = rs.getInt("id");
-                    if (ultimoMovimientoId != idMovimiento) {
-                        throw new SQLException("No se puede revertir este movimiento. No es el más reciente para este animal.");
+            // PASO 2: VERIFICACIÓN CRÍTICA. Asegurarnos de que estamos revirtiendo el
+            // ÚLTIMO movimiento del animal.
+            String sqlCheckLast = "SELECT id FROM historial_lote WHERE id_animal = ? ORDER BY fecha DESC, id DESC LIMIT 1";
+            try (PreparedStatement psCheck = connection.prepareStatement(sqlCheckLast)) {
+                psCheck.setString(1, codigoAnimal);
+                try (ResultSet rs = psCheck.executeQuery()) {
+                    if (rs.next()) {
+                        int ultimoMovimientoId = rs.getInt("id");
+                        if (ultimoMovimientoId != idMovimiento) {
+                            throw new SQLException(
+                                    "No se puede revertir este movimiento. No es el más reciente para este animal.");
+                        }
+                    } else {
+                        throw new SQLException("No se encontraron movimientos para este animal.");
                     }
-                } else {
-                    throw new SQLException("No se encontraron movimientos para este animal.");
                 }
             }
-        }
 
-        // PASO 3: Actualizar el lote actual del animal en la tabla 'animal'
-        String sqlUpdateAnimal = "UPDATE animal SET id_lote_actual = ? WHERE codigo = ?";
-        try (PreparedStatement psUpdate = connection.prepareStatement(sqlUpdateAnimal)) {
-            // Manejar el caso en que el lote anterior era NULO (primer ingreso del animal)
-            if (idLoteAnteriorObj instanceof Integer) {
-                psUpdate.setInt(1, (Integer) idLoteAnteriorObj);
-            } else {
-                psUpdate.setNull(1, java.sql.Types.INTEGER);
+            // PASO 3: Actualizar el lote actual del animal en la tabla 'animal'
+            String sqlUpdateAnimal = "UPDATE animal SET id_lote_actual = ? WHERE codigo = ?";
+            try (PreparedStatement psUpdate = connection.prepareStatement(sqlUpdateAnimal)) {
+                // Manejar el caso en que el lote anterior era NULO (primer ingreso del animal)
+                if (idLoteAnteriorObj instanceof Integer) {
+                    psUpdate.setInt(1, (Integer) idLoteAnteriorObj);
+                } else {
+                    psUpdate.setNull(1, java.sql.Types.INTEGER);
+                }
+                psUpdate.setString(2, codigoAnimal);
+                psUpdate.executeUpdate();
             }
-            psUpdate.setString(2, codigoAnimal);
-            psUpdate.executeUpdate();
-        }
 
-        // PASO 4: Eliminar el registro del historial
-        String sqlDeleteHistorial = "DELETE FROM historial_lote WHERE id = ?";
-        try (PreparedStatement psDelete = connection.prepareStatement(sqlDeleteHistorial)) {
-            psDelete.setInt(1, idMovimiento);
-            psDelete.executeUpdate();
-        }
+            // PASO 4: Eliminar el registro del historial
+            String sqlDeleteHistorial = "DELETE FROM historial_lote WHERE id = ?";
+            try (PreparedStatement psDelete = connection.prepareStatement(sqlDeleteHistorial)) {
+                psDelete.setInt(1, idMovimiento);
+                psDelete.executeUpdate();
+            }
 
-        // PASO 5: Confirmar la transacción
-        connection.commit();
-        JOptionPane.showMessageDialog(null, "Movimiento revertido exitosamente.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
+            // PASO 5: Confirmar la transacción
+            connection.commit();
+            JOptionPane.showMessageDialog(null, "Movimiento revertido exitosamente.", "Éxito",
+                    JOptionPane.INFORMATION_MESSAGE);
 
-    } catch (SQLException e) {
-        // Si algo falla, revertir todo
-        try {
-            connection.rollback();
-        } catch (SQLException ex) {
-            System.out.println("Error al hacer rollback: " + ex.getMessage());
-        }
-        JOptionPane.showMessageDialog(null, "Error al revertir el movimiento: " + e.getMessage(), "Error de Transacción", JOptionPane.ERROR_MESSAGE);
-    } finally {
-        // Siempre restaurar el modo auto-commit
-        try {
-            connection.setAutoCommit(true);
-        } catch (SQLException ex) {
-            System.out.println("Error al restaurar auto-commit: " + ex.getMessage());
+        } catch (SQLException e) {
+            // Si algo falla, revertir todo
+            try {
+                connection.rollback();
+            } catch (SQLException ex) {
+                System.out.println("Error al hacer rollback: " + ex.getMessage());
+            }
+            JOptionPane.showMessageDialog(null, "Error al revertir el movimiento: " + e.getMessage(),
+                    "Error de Transacción", JOptionPane.ERROR_MESSAGE);
+        } finally {
+            // Siempre restaurar el modo auto-commit
+            try {
+                connection.setAutoCommit(true);
+            } catch (SQLException ex) {
+                System.out.println("Error al restaurar auto-commit: " + ex.getMessage());
+            }
         }
     }
+<<<<<<< HEAD
 }
 
 }
 
+=======
+>>>>>>> d5b33d01bf881afc79593c6b75e85430551d5bd9
 
     /**
      * Obtiene todos los registros de producción de leche de la base de datos.
