@@ -140,5 +140,127 @@ public class Controlador {
         JOptionPane.showMessageDialog(null, "Funcionalidad de edición para el animal con código: " + codigo);
     }
 
+    /**
+     * Busca animales que coincidan con el filtro proporcionado
+     */
+    public java.util.List<String> buscarAnimales(String filtro) {
+        java.util.List<String> resultado = new java.util.ArrayList<>();
+        String sql = "SELECT codigo FROM animal WHERE codigo LIKE ? AND estado = 'ACTIVO'";
+        try {
+            PreparedStatement ps = connection.prepareStatement(sql);
+            ps.setString(1, "%" + filtro + "%");
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                resultado.add(rs.getString("codigo"));
+            }
+        } catch (Exception e) {
+            System.out.println("Error al buscar animales: " + e.getMessage());
+        }
+        return resultado;
+    }
+
+    /**
+     * Guarda un nuevo registro de salida de animal
+     */
+    public void guardarSalida(String animal, String motivo, java.sql.Date fecha) throws SQLException {
+        // Primero actualizamos el estado del animal
+        String updateAnimal = "UPDATE animal SET estado = ? WHERE codigo = ?";
+        PreparedStatement psAnimal = connection.prepareStatement(updateAnimal);
+        psAnimal.setString(1, motivo.equals("MUERTE") ? "MUERTO" : "VENDIDO");
+        psAnimal.setString(2, animal);
+        psAnimal.executeUpdate();
+
+        // Luego registramos la salida
+        String sql = "INSERT INTO salida (fecha, motivo, id_animal) VALUES (?, ?, ?)";
+        PreparedStatement ps = connection.prepareStatement(sql);
+        ps.setDate(1, fecha);
+        ps.setString(2, motivo);
+        ps.setString(3, animal);
+        ps.executeUpdate();
+    }
+
+    /**
+     * Obtiene todas las salidas registradas
+     */
+    public java.util.List<Object[]> obtenerSalidas() {
+        java.util.List<Object[]> lista = new java.util.ArrayList<>();
+        String sql = "SELECT s.id, s.id_animal, s.motivo, s.fecha FROM salida s ORDER BY s.fecha DESC";
+        try {
+            PreparedStatement ps = connection.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                Object[] fila = new Object[4];
+                fila[0] = rs.getInt("id");
+                fila[1] = rs.getString("id_animal");
+                fila[2] = rs.getString("motivo");
+                fila[3] = rs.getDate("fecha");
+                lista.add(fila);
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Error al obtener salidas: " + e.getMessage());
+        }
+        return lista;
+    }
+
+    /**
+     * Elimina un registro de salida
+     */
+    public void eliminarSalida(int id) {
+        try {
+            // Primero obtenemos el id_animal y motivo
+            String sqlSelect = "SELECT id_animal, motivo FROM salida WHERE id = ?";
+            PreparedStatement psSelect = connection.prepareStatement(sqlSelect);
+            psSelect.setInt(1, id);
+            ResultSet rs = psSelect.executeQuery();
+            
+            if (rs.next()) {
+                String idAnimal = rs.getString("id_animal");
+                
+                // Reactivamos el animal
+                String updateAnimal = "UPDATE animal SET estado = 'ACTIVO' WHERE codigo = ?";
+                PreparedStatement psAnimal = connection.prepareStatement(updateAnimal);
+                psAnimal.setString(1, idAnimal);
+                psAnimal.executeUpdate();
+                
+                // Eliminamos la salida
+                String sqlDelete = "DELETE FROM salida WHERE id = ?";
+                PreparedStatement psDelete = connection.prepareStatement(sqlDelete);
+                psDelete.setInt(1, id);
+                psDelete.executeUpdate();
+                
+                JOptionPane.showMessageDialog(null, "Salida eliminada correctamente");
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Error al eliminar salida: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Edita un registro de salida
+     */
+    public void editarSalida(int id) {
+        try {
+            String sql = "SELECT id_animal, motivo, fecha FROM salida WHERE id = ?";
+            PreparedStatement ps = connection.prepareStatement(sql);
+            ps.setInt(1, id);
+            ResultSet rs = ps.executeQuery();
+            
+            if (rs.next()) {
+                String idAnimal = rs.getString("id_animal");
+                String motivo = rs.getString("motivo");
+                java.sql.Date fecha = rs.getDate("fecha");
+                
+                // Aquí podrías abrir un diálogo de edición con estos datos
+                JOptionPane.showMessageDialog(null, 
+                    "Salida ID: " + id + "\n" +
+                    "Animal: " + idAnimal + "\n" +
+                    "Motivo: " + motivo + "\n" +
+                    "Fecha: " + fecha
+                );
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Error al editar salida: " + e.getMessage());
+        }
+    }
 }
 
