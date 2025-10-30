@@ -449,7 +449,6 @@ public class Controlador {
      * actual
      * del animal. Debe usarse para corregir errores de digitación.
      */
-<<<<<<< HEAD
 // REEMPLAZA ESTE MÉTODO EN TU CLASE 'Controlador.java'
 
 /**
@@ -514,7 +513,10 @@ public void modificarUltimoMovimiento(int idMovimiento, String codigoAnimal, int
             connection.setAutoCommit(true);
         } catch (SQLException ex) {
             System.out.println("Error al restaurar auto-commit: " + ex.getMessage());
-=======
+
+        }
+    }
+}
     public void modificarRegistroHistorial(int idMovimiento, String nuevoCodigoAnimal, int nuevoIdLoteDestino,
             java.sql.Date nuevaFecha) {
         String sql = "UPDATE historial_lote SET id_animal = ?, id_lote_posterior = ?, fecha = ? WHERE id = ?";
@@ -535,10 +537,9 @@ public void modificarUltimoMovimiento(int idMovimiento, String codigoAnimal, int
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(null, "Error al modificar el historial: " + e.getMessage(),
                     "Error de Base de Datos", JOptionPane.ERROR_MESSAGE);
->>>>>>> fea5527b75e8046b06218e1417ea842002559c14
         }
     }
-}
+
 
     /**
      * Busca códigos de animales que coincidan con un texto de búsqueda.
