@@ -294,7 +294,6 @@ public class Controlador {
         return rs;
     }
 
-<<<<<<< HEAD
     public void modificarLote(int idLote, String nombre, String etapa, String descripcion) {
         PreparedStatement ps = null;
         try {
@@ -477,7 +476,6 @@ public class Controlador {
         return rs;
     }
 
-=======
     /* ------------------ Productos ------------------ */
 
     public void guardarProducto(String nombre, String tipo) throws SQLException {
@@ -641,6 +639,5 @@ public class Controlador {
         }
     }
 
->>>>>>> ac214e9ea2b1e6212c55897dec7c473966df2f32
 }
 
