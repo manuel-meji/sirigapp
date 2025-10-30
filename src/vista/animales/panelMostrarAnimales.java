@@ -4,10 +4,10 @@ import controlador.Controlador;
 import controlador.FontLoader;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 public class panelMostrarAnimales {
 
@@ -28,7 +28,25 @@ public class panelMostrarAnimales {
 		title.setFont(FONT_TITULO_MENU.deriveFont(Font.BOLD, 26f));
 		title.setBorder(new EmptyBorder(24, 32, 8, 32));
 		title.setHorizontalAlignment(SwingConstants.LEFT);
-		contentPanel.add(title, BorderLayout.NORTH);
+        
+	// Barra de búsqueda
+	JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 4));
+		searchPanel.setOpaque(false);
+		searchPanel.setBorder(new EmptyBorder(0, 32, 0, 32));
+		JLabel lblSearch = new JLabel("Buscar:");
+		lblSearch.setFont(FONT_BOTON_MENU);
+		JTextField txtBuscar = new JTextField();
+		txtBuscar.setFont(FONT_BOTON_MENU);
+		txtBuscar.setColumns(24);
+		searchPanel.add(lblSearch);
+		searchPanel.add(txtBuscar);
+        
+	// Top panel que contiene el título y la búsqueda (título arriba, búsqueda debajo)
+	JPanel topPanel = new JPanel(new BorderLayout());
+	topPanel.setOpaque(false);
+	topPanel.add(title, BorderLayout.NORTH);
+	topPanel.add(searchPanel, BorderLayout.SOUTH);
+	contentPanel.add(topPanel, BorderLayout.NORTH);
 
 		// Panel central con la tabla
 		JPanel centerPanel = new JPanel(new BorderLayout());
@@ -36,16 +54,41 @@ public class panelMostrarAnimales {
 		centerPanel.setBorder(new EmptyBorder(16, 32, 32, 32));
 
 		// Modelo de la tabla
-		String[] columnas = {"Código", "Fecha Nac.", "Sexo", "Raza", "Peso Nac.", "Peso", "Madre", "Padre", "Estado"};
+		String[] columnas = {"Código", "Edad", "Sexo", "Raza", "Peso Nac.", "Peso", "Madre", "Padre", "Lote","Estado"};
 		DefaultTableModel model = new DefaultTableModel(columnas, 0) {
 			public boolean isCellEditable(int row, int column) { return false; }
 		};
 
-		// Obtener datos de animales del controlador
+		// Obtener datos de animales del controlador (inicial)
 		java.util.List<Object[]> animales = controlador.obtenerAnimales(); // Debe retornar List<Object[]>
 		for (Object[] animal : animales) {
 			model.addRow(animal);
 		}
+
+		// Listener para búsqueda dinámica
+		txtBuscar.getDocument().addDocumentListener(new DocumentListener() {
+			private void refresh() {
+				String filtro = txtBuscar.getText().trim();
+				java.util.List<Object[]> nuevos;
+				if (filtro.isEmpty()) {
+					nuevos = controlador.obtenerAnimales();
+				} else {
+					nuevos = controlador.buscarAnimalesCompletos(filtro);
+				}
+				// limpiar tabla
+				model.setRowCount(0);
+				for (Object[] a : nuevos) model.addRow(a);
+			}
+
+			@Override
+			public void insertUpdate(DocumentEvent e) { refresh(); }
+
+			@Override
+			public void removeUpdate(DocumentEvent e) { refresh(); }
+
+			@Override
+			public void changedUpdate(DocumentEvent e) { refresh(); }
+		});
 
 		JTable table = new JTable(model);
 		table.setFont(FONT_BOTON_MENU);
@@ -89,11 +132,13 @@ public class panelMostrarAnimales {
 
 		// Acción para agregar animal
 		btnAgregar.addActionListener(e -> {
+			e.getSource();
 			if (onAgregar != null) onAgregar.run();
 		});
 
 		// Acción para editar animal seleccionado
 		btnEditar.addActionListener(e -> {
+			e.getSource();
 			int row = table.getSelectedRow();
 			if (row == -1) {
 				JOptionPane.showMessageDialog(contentPanel, "Seleccione un animal para editar.");
@@ -106,6 +151,7 @@ public class panelMostrarAnimales {
 
 		// Acción para eliminar animal seleccionado
 		btnEliminar.addActionListener(e -> {
+			e.getSource();
 			int row = table.getSelectedRow();
 			if (row == -1) {
 				JOptionPane.showMessageDialog(contentPanel, "Seleccione un animal para eliminar.");

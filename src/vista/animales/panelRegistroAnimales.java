@@ -176,7 +176,7 @@ public class panelRegistroAnimales  extends JPanel{
         try {
             controlador.guardarAnimal(
                 codigo,
-                new java.sql.Timestamp(fecha.getTime()),
+                new java.sql.Date(fecha.getTime()),
                 sexo,
                 raza,
                 pesoNacimiento,
