@@ -2,6 +2,9 @@ package vista.lotes;
 
 import controlador.Controlador;
 import java.awt.*;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 
@@ -103,19 +106,19 @@ public class panelRegistroLotes extends JPanel {
     }
     
     // Aquí irían los métodos para interactuar con el controlador y la base de datos
-    /*
+    
     private void registrarLote() {
         String nombre = txtNombre.getText();
         String etapa = cmbEtapa.getSelectedItem().toString();
         String descripcion = areaDescripcion.getText();
         
-        // Validaciones...
+        
         
         // Llamar al controlador para que guarde los datos
         // controlador.registrarNuevoLote(nombre, etapa, descripcion);
         
         // Actualizar la tabla
-        // cargarLotesEnTabla();
+        cargarLotesEnTabla();
     }
     
     public void cargarLotesEnTabla() {
@@ -123,20 +126,20 @@ public class panelRegistroLotes extends JPanel {
         modeloTablaLotes.setRowCount(0);
         
         // Pedir datos al controlador
-        // ResultSet rs = controlador.obtenerTodosLosLotes();
-        // try {
-        //     while(rs.next()) {
-        //         Object[] fila = {
-        //             rs.getInt("id_lote"),
-        //             rs.getString("nombre"),
-        //             rs.getString("etapa"),
-        //             rs.getString("descripcion")
-        //         };
-        //         modeloTablaLotes.addRow(fila);
-        //     }
-        // } catch (SQLException e) {
-        //     // Manejar error
-        // }
+         ResultSet rs = controlador.obtenerTodosLosLotes();
+        try {
+            while(rs.next()) {
+                Object[] fila = {
+                   rs.getInt("id"),
+                   rs.getString("nombre"),
+                  rs.getString("etapa"),
+                   rs.getString("descripcion")
+                };
+            modeloTablaLotes.addRow(fila);
+            }
+         } catch (SQLException e) {
+             // Manejar error
+         }
     }
-    */
+    
 }

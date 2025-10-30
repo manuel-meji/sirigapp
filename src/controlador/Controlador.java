@@ -1,10 +1,7 @@
 package controlador;
 
 import java.sql.*;
-
 import javax.swing.JOptionPane;
-
-
 import vista.SiriGAppLogin;
 import vista.animales.AnimalesFrame;
 
@@ -21,7 +18,7 @@ public class Controlador {
     public Controlador (){
         try {
             Class.forName("com.mysql.jdbc.Driver");
-            connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/sirigapp?verifyServerCertificate=false&useSSL=true", "root", "Manuel2004");
+            connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/sirigapp?verifyServerCertificate=false&useSSL=true", "root", "1234");
             statement = connection.createStatement();
             connection.setAutoCommit(true);
             JOptionPane.showMessageDialog(null, "Conexión exitosa a la base de datos");
@@ -140,6 +137,7 @@ public class Controlador {
         JOptionPane.showMessageDialog(null, "Funcionalidad de edición para el animal con código: " + codigo);
     }
 
+<<<<<<< HEAD
     /**
      * Busca animales que coincidan con el filtro proporcionado
      */
@@ -262,5 +260,42 @@ public class Controlador {
             JOptionPane.showMessageDialog(null, "Error al editar salida: " + e.getMessage());
         }
     }
+=======
+
+    public void registrarNuevoLote(String nombre, String etapa, String descripcion) {
+        
+        PreparedStatement ps = null;
+        try {
+            String sql = "INSERT INTO lotes (nombre, etapa, descripcion) VALUES (?, ?, ?)";
+            ps = connection.prepareStatement(sql);
+            ps.setString(1, nombre);
+            ps.setString(2, etapa);
+            ps.setString(3, descripcion);
+            ps.executeUpdate();
+            JOptionPane.showMessageDialog(null, "Lote registrado exitosamente.");
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null, "Error al registrar lote: " + e.getMessage());
+        } finally {
+            try {
+                if (ps != null) ps.close();
+            } catch (SQLException e) {
+                System.out.println("Error al cerrar PreparedStatement: " + e.getMessage());
+            }
+        }
+    }
+
+    public ResultSet obtenerTodosLosLotes() {
+        ResultSet rs = null;
+        try {
+            String sql = "SELECT * FROM lotes";
+            PreparedStatement ps = connection.prepareStatement(sql);
+            rs = ps.executeQuery();
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null, "Error al obtener lotes: " + e.getMessage());
+        }
+        return rs;
+    }
+
+>>>>>>> 9bae48e8da9b820480d1cd7f972906af0f69edba
 }
 
