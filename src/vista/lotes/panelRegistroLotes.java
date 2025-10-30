@@ -9,13 +9,13 @@ import javax.swing.table.DefaultTableModel;
 
 public class panelRegistroLotes extends JPanel {
 
-    // ... (variables de clase sin cambios) ...
     private Controlador controlador;
     private JLabel lblTitulo, lblNombre, lblEtapa, lblDescripcion;
     private JTextField txtNombre;
     private JComboBox<String> cmbEtapa;
     private JTextArea areaDescripcion;
-    private JButton btnRegistrar, btnModificar, btnLimpiar;
+    // Se añade btnEliminar a la declaración
+    private JButton btnRegistrar, btnModificar, btnLimpiar, btnEliminar;
     private JTable tablaLotes;
     private DefaultTableModel modeloTablaLotes;
     private JScrollPane scrollPaneTabla, scrollPaneDescripcion;
@@ -23,47 +23,20 @@ public class panelRegistroLotes extends JPanel {
     private int idLoteSeleccionado = -1;
 
     public panelRegistroLotes(Controlador controlador) {
-        System.out.println("3. [DEBUG] ==> Entrando al constructor de panelRegistroLotes...");
         this.controlador = controlador;
         initComponents();
         cargarLotesEnTabla();
-        System.out.println("3.1 [DEBUG] <== Fin del constructor de panelRegistroLotes.");
     }
 
-    // ... (initComponents y otros métodos sin cambios) ...
-    public void cargarLotesEnTabla() {
-        System.out.println("    [DEBUG] -> Cargando tabla de lotes...");
-        modeloTablaLotes.setRowCount(0);
-        ResultSet rs = controlador.obtenerTodosLosLotes();
-        try {
-            if (rs != null) {
-                while (rs.next()) {
-                    Object[] fila = {
-                        rs.getInt("id"),
-                        rs.getString("nombre"),
-                        rs.getString("etapa"),
-                        rs.getString("descripcion")
-                    };
-                    modeloTablaLotes.addRow(fila);
-                }
-            } else {
-                System.out.println("    [DEBUG] -> ResultSet de lotes es NULO.");
-            }
-        } catch (SQLException e) {
-            JOptionPane.showMessageDialog(null, "Error al cargar los datos de los lotes: " + e.getMessage(), "Error de Base de Datos", JOptionPane.ERROR_MESSAGE);
-        }
-        System.out.println("    [DEBUG] -> Tabla de lotes cargada.");
-    }
-
-    // Pega aquí el resto de tus métodos de panelRegistroLotes (initComponents, entrarModoEdicion, etc.)
-    // ...
     private void initComponents() {
         setLayout(null);
         setBackground(Color.WHITE);
+
         lblTitulo = new JLabel("Registro y Administración de Lotes de Ganado");
         lblTitulo.setFont(new Font("Arial", Font.BOLD, 24));
         lblTitulo.setBounds(50, 20, 600, 30);
         add(lblTitulo);
+
         lblNombre = new JLabel("Nombre del Lote:");
         lblNombre.setFont(new Font("Arial", Font.PLAIN, 16));
         lblNombre.setBounds(50, 80, 150, 25);
@@ -71,6 +44,7 @@ public class panelRegistroLotes extends JPanel {
         txtNombre = new JTextField();
         txtNombre.setBounds(200, 80, 250, 25);
         add(txtNombre);
+
         lblEtapa = new JLabel("Etapa del Lote:");
         lblEtapa.setFont(new Font("Arial", Font.PLAIN, 16));
         lblEtapa.setBounds(50, 120, 150, 25);
@@ -79,6 +53,7 @@ public class panelRegistroLotes extends JPanel {
         cmbEtapa = new JComboBox<>(etapas);
         cmbEtapa.setBounds(200, 120, 250, 25);
         add(cmbEtapa);
+
         lblDescripcion = new JLabel("Descripción:");
         lblDescripcion.setFont(new Font("Arial", Font.PLAIN, 16));
         lblDescripcion.setBounds(50, 160, 150, 25);
@@ -87,19 +62,30 @@ public class panelRegistroLotes extends JPanel {
         scrollPaneDescripcion = new JScrollPane(areaDescripcion);
         scrollPaneDescripcion.setBounds(200, 160, 250, 80);
         add(scrollPaneDescripcion);
+
         btnRegistrar = new JButton("Registrar Lote");
         btnRegistrar.setBounds(500, 80, 150, 30);
         btnRegistrar.setBackground(new Color(0x2BA76B));
         btnRegistrar.setForeground(Color.WHITE);
         add(btnRegistrar);
+
         btnModificar = new JButton("Modificar Lote");
         btnModificar.setBounds(500, 120, 150, 30);
         btnModificar.setBackground(new Color(0xFF054FBE));
         btnModificar.setForeground(Color.WHITE);
         add(btnModificar);
+
         btnLimpiar = new JButton("Limpiar Campos");
         btnLimpiar.setBounds(500, 160, 150, 30);
         add(btnLimpiar);
+
+        // --- NUEVO BOTÓN ELIMINAR ---
+        btnEliminar = new JButton("Eliminar Lote");
+        btnEliminar.setBounds(500, 200, 150, 30); // Posicionado debajo de Limpiar
+        btnEliminar.setBackground(new Color(220, 53, 69)); // Color rojo de peligro
+        btnEliminar.setForeground(Color.WHITE);
+        add(btnEliminar);
+
         String[] columnas = {"ID Lote", "Nombre", "Etapa", "Descripción"};
         modeloTablaLotes = new DefaultTableModel(columnas, 0) {
             @Override
@@ -111,13 +97,10 @@ public class panelRegistroLotes extends JPanel {
         scrollPaneTabla = new JScrollPane(tablaLotes);
         scrollPaneTabla.setBounds(50, 280, 966, 350);
         add(scrollPaneTabla);
+
         btnRegistrar.addActionListener(e -> {
-            if (cmbEtapa.getSelectedIndex() == 0) {
-                JOptionPane.showMessageDialog(this, "Debe seleccionar una etapa para el lote.", "Error de validación", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
-            if (txtNombre.getText().trim().isEmpty()) {
-                JOptionPane.showMessageDialog(this, "El nombre del lote no puede estar vacío.", "Error de validación", JOptionPane.ERROR_MESSAGE);
+            if (cmbEtapa.getSelectedIndex() == 0 || txtNombre.getText().trim().isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Debe seleccionar una etapa y un nombre para el lote.", "Error de validación", JOptionPane.ERROR_MESSAGE);
                 return;
             }
             if (modoEdicion) {
@@ -126,14 +109,16 @@ public class panelRegistroLotes extends JPanel {
                 registrarLote();
             }
         });
+
         btnModificar.addActionListener(e -> {
             int filaSeleccionada = tablaLotes.getSelectedRow();
             if (filaSeleccionada != -1) {
-                entrarModoEdicion(filaSeleccionada);
-            } else {
+                entrarModoEdicion(filaSeleccionada); 
+            }else {
                 JOptionPane.showMessageDialog(this, "Por favor, seleccione un lote de la tabla para modificar.", "Aviso", JOptionPane.WARNING_MESSAGE);
             }
         });
+
         btnLimpiar.addActionListener(e -> {
             if (modoEdicion) {
                 salirModoEdicion();
@@ -141,6 +126,34 @@ public class panelRegistroLotes extends JPanel {
                 limpiarCampos();
             }
         });
+
+        // --- ACTION LISTENER PARA EL NUEVO BOTÓN ---
+        btnEliminar.addActionListener(e -> {
+            int filaSeleccionada = tablaLotes.getSelectedRow();
+            if (filaSeleccionada != -1) {
+                int idLote = (int) modeloTablaLotes.getValueAt(filaSeleccionada, 0);
+                controlador.eliminarLote(idLote);
+                cargarLotesEnTabla();
+                VistaLotes.panelHistorial.cargarLotesEnCombo(); // Actualiza el otro panel
+            } else {
+                JOptionPane.showMessageDialog(this, "Por favor, seleccione un lote de la tabla para eliminar.", "Aviso", JOptionPane.WARNING_MESSAGE);
+            }
+        });
+    }
+
+    public void cargarLotesEnTabla() {
+        modeloTablaLotes.setRowCount(0);
+        ResultSet rs = controlador.obtenerTodosLosLotes();
+        try {
+            if (rs != null) {
+                while (rs.next()) {
+                    Object[] fila = {rs.getInt("id"), rs.getString("nombre"), rs.getString("etapa"), rs.getString("descripcion")};
+                    modeloTablaLotes.addRow(fila);
+                }
+            }
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null, "Error al cargar los datos de los lotes: " + e.getMessage(), "Error de Base de Datos", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     private void entrarModoEdicion(int fila) {
@@ -169,16 +182,9 @@ public class panelRegistroLotes extends JPanel {
         String nombre = txtNombre.getText().trim();
         String etapa = cmbEtapa.getSelectedItem().toString();
         String descripcion = areaDescripcion.getText().trim();
-        if (nombre.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "El nombre del lote no puede estar vacío.", "Error de validación", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-        if (cmbEtapa.getSelectedIndex() == 0) {
-            JOptionPane.showMessageDialog(this, "Debe seleccionar una etapa para el lote.", "Error de validación", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
         controlador.registrarNuevoLote(nombre, etapa, descripcion);
         cargarLotesEnTabla();
+        VistaLotes.panelHistorial.cargarLotesEnCombo();
         limpiarCampos();
     }
 
@@ -186,12 +192,9 @@ public class panelRegistroLotes extends JPanel {
         String nombre = txtNombre.getText().trim();
         String etapa = cmbEtapa.getSelectedItem().toString();
         String descripcion = areaDescripcion.getText().trim();
-        if (nombre.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "El nombre del lote no puede estar vacío.", "Error de validación", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
         controlador.modificarLote(idLoteSeleccionado, nombre, etapa, descripcion);
         cargarLotesEnTabla();
+        VistaLotes.panelHistorial.cargarLotesEnCombo(); // Actualiza el otro panel también al modificar
         salirModoEdicion();
     }
 
