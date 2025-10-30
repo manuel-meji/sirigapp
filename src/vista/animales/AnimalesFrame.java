@@ -2,6 +2,7 @@ package vista.animales;
 
 import controlador.Controlador;
 import vista.lotes.VistaLotes;
+import vista.salud.vistaSalud;
 import vista.ui.DesignSystem;
 
 import javax.swing.*;
@@ -21,6 +22,7 @@ public class AnimalesFrame extends JFrame {
     panelMostrarAnimales pMostrar;
     panelSalidaAnimales pSalida;
     VistaLotes pLotes;
+    vistaSalud pSalud;
     
 
     private Controlador controlador;
@@ -55,6 +57,7 @@ public class AnimalesFrame extends JFrame {
         pMostrar = new panelMostrarAnimales();
         pLotes = new VistaLotes(controlador);
         pSalida = new panelSalidaAnimales(controlador);
+        pSalud = new vistaSalud(controlador);
 
         // 1. Panel del Menú Lateral
         JPanel menuPanel = createMenuPanel();
@@ -125,6 +128,13 @@ public class AnimalesFrame extends JFrame {
         });
 
         JButton btnRegistroSanitario = createMenuButton("Registro Sanitario", COLOR_BOTON_NORMAL);
+        btnRegistroSanitario.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                // Aquí iría la lógica para mostrar el registro sanitario
+                cambiarPanelContenido(pSalud.createContentPanel());
+                System.out.println("Registro Sanitario");
+            }
+        });
         JButton btnProduccionLeche = createMenuButton("Produccion Leche", COLOR_BOTON_NORMAL);
         JButton btnSalidasAnimales = createMenuButton("Salidas Animales", COLOR_BOTON_NORMAL);
         btnSalidasAnimales.addActionListener(new ActionListener() {

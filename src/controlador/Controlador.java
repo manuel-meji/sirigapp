@@ -18,7 +18,7 @@ public class Controlador {
     public Controlador (){
         try {
             Class.forName("com.mysql.jdbc.Driver");
-            connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/sirigapp?verifyServerCertificate=false&useSSL=true", "root", "Manuel2004");
+            connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/sirigapp?verifyServerCertificate=false&useSSL=true", "root", "1234");
             statement = connection.createStatement();
             connection.setAutoCommit(true);
             JOptionPane.showMessageDialog(null, "Conexión exitosa a la base de datos");
@@ -292,6 +292,169 @@ public class Controlador {
             JOptionPane.showMessageDialog(null, "Error al obtener lotes: " + e.getMessage());
         }
         return rs;
+    }
+
+    /* ------------------ Productos ------------------ */
+
+    public void guardarProducto(String nombre, String tipo) throws SQLException {
+        String sql = "INSERT INTO productos (producto, tipo) VALUES (?, ?)";
+        PreparedStatement ps = connection.prepareStatement(sql);
+        ps.setString(1, nombre);
+        ps.setString(2, tipo);
+        ps.executeUpdate();
+    }
+
+    public void editarProducto(int id, String nombre, String tipo) throws SQLException {
+        String sql = "UPDATE productos SET producto = ?, tipo = ? WHERE id = ?";
+        PreparedStatement ps = connection.prepareStatement(sql);
+        ps.setString(1, nombre);
+        ps.setString(2, tipo);
+        ps.setInt(3, id);
+        ps.executeUpdate();
+    }
+
+    public void eliminarProducto(int id) throws SQLException {
+        String sql = "DELETE FROM productos WHERE id = ?";
+        PreparedStatement ps = connection.prepareStatement(sql);
+        ps.setInt(1, id);
+        ps.executeUpdate();
+    }
+
+    public java.util.List<Object[]> obtenerProductos() {
+        java.util.List<Object[]> lista = new java.util.ArrayList<>();
+        String sql = "SELECT id, producto, tipo FROM productos ORDER BY id";
+        try {
+            PreparedStatement ps = connection.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                Object[] fila = new Object[3];
+                fila[0] = rs.getInt("id");
+                fila[1] = rs.getString("producto");
+                fila[2] = rs.getString("tipo");
+                lista.add(fila);
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Error al obtener productos: " + e.getMessage());
+        }
+        return lista;
+    }
+
+    public java.util.List<Object[]> obtenerProductosPorTipo(String tipo) {
+        java.util.List<Object[]> lista = new java.util.ArrayList<>();
+        String sql = "SELECT id, producto, tipo FROM productos WHERE tipo = ? ORDER BY producto";
+        try {
+            PreparedStatement ps = connection.prepareStatement(sql);
+            ps.setString(1, tipo);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                Object[] fila = new Object[3];
+                fila[0] = rs.getInt("id");
+                fila[1] = rs.getString("producto");
+                fila[2] = rs.getString("tipo");
+                lista.add(fila);
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Error al obtener productos por tipo: " + e.getMessage());
+        }
+        return lista;
+    }
+
+    /* ------------------ Eventos sanitarios ------------------ */
+
+    public void guardarEventoSanitario(java.sql.Timestamp fecha, Integer idProducto, Float dosis, String motivo, String diagnostico, String idAnimal, String tipo) throws SQLException {
+        String sql = "INSERT INTO eventos_sanitarios (fecha, id_producto, dosis, motivo, diagnostico, id_animal, tipo) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        PreparedStatement ps = connection.prepareStatement(sql);
+        ps.setTimestamp(1, fecha);
+        if (idProducto != null) ps.setInt(2, idProducto); else ps.setNull(2, java.sql.Types.INTEGER);
+        if (dosis != null) ps.setFloat(3, dosis); else ps.setNull(3, java.sql.Types.FLOAT);
+        ps.setString(4, motivo);
+        ps.setString(5, diagnostico);
+        ps.setString(6, idAnimal);
+        ps.setString(7, tipo);
+        ps.executeUpdate();
+    }
+
+    public java.util.List<Object[]> obtenerEventosSanitarios() {
+        java.util.List<Object[]> lista = new java.util.ArrayList<>();
+        String sql = "SELECT id, fecha, tipo, id_animal, id_producto, dosis, motivo, diagnostico FROM eventos_sanitarios ORDER BY fecha DESC";
+        try {
+            PreparedStatement ps = connection.prepareStatement(sql);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                Object[] fila = new Object[8];
+                fila[0] = rs.getInt("id");
+                fila[1] = rs.getTimestamp("fecha");
+                fila[2] = rs.getString("tipo");
+                fila[3] = rs.getString("id_animal");
+                fila[4] = rs.getObject("id_producto");
+                fila[5] = rs.getObject("dosis");
+                fila[6] = rs.getString("motivo");
+                fila[7] = rs.getString("diagnostico");
+                lista.add(fila);
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Error al obtener eventos sanitarios: " + e.getMessage());
+        }
+        return lista;
+    }
+
+    public java.util.List<Object[]> obtenerEventosSanitariosPorTipo(String tipo) {
+        java.util.List<Object[]> lista = new java.util.ArrayList<>();
+        String sql = "SELECT id, fecha, tipo, id_animal, id_producto, dosis, motivo, diagnostico FROM eventos_sanitarios WHERE tipo = ? ORDER BY fecha DESC";
+        try {
+            PreparedStatement ps = connection.prepareStatement(sql);
+            ps.setString(1, tipo);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                Object[] fila = new Object[7];
+                fila[0] = rs.getInt("id");
+                fila[1] = rs.getTimestamp("fecha");
+                fila[2] = rs.getString("id_animal");
+                fila[3] = rs.getObject("id_producto");
+                fila[4] = rs.getObject("dosis");
+                fila[5] = rs.getString("motivo");
+                fila[6] = rs.getString("diagnostico");
+                lista.add(fila);
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Error al obtener eventos por tipo: " + e.getMessage());
+        }
+        return lista;
+    }
+
+    public void eliminarEvento(int id) {
+        try {
+            String sql = "DELETE FROM eventos_sanitarios WHERE id = ?";
+            PreparedStatement ps = connection.prepareStatement(sql);
+            ps.setInt(1, id);
+            ps.executeUpdate();
+            JOptionPane.showMessageDialog(null, "Evento eliminado correctamente");
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Error al eliminar evento: " + e.getMessage());
+        }
+    }
+
+    public void editarEvento(int id) {
+        try {
+            String sql = "SELECT id, fecha, id_producto, dosis, motivo, diagnostico, id_animal, tipo FROM eventos_sanitarios WHERE id = ?";
+            PreparedStatement ps = connection.prepareStatement(sql);
+            ps.setInt(1, id);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                StringBuilder sb = new StringBuilder();
+                sb.append("ID: ").append(rs.getInt("id")).append("\n");
+                sb.append("Fecha: ").append(rs.getTimestamp("fecha")).append("\n");
+                sb.append("Animal: ").append(rs.getString("id_animal")).append("\n");
+                sb.append("Tipo: ").append(rs.getString("tipo")).append("\n");
+                sb.append("Producto: ").append(rs.getObject("id_producto")).append("\n");
+                sb.append("Dosis: ").append(rs.getObject("dosis")).append("\n");
+                sb.append("Motivo: ").append(rs.getString("motivo")).append("\n");
+                sb.append("Diagnóstico: ").append(rs.getString("diagnostico")).append("\n");
+                JOptionPane.showMessageDialog(null, sb.toString());
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Error al obtener evento: " + e.getMessage());
+        }
     }
 
 }
