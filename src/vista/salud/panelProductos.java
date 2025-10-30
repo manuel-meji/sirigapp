@@ -1,179 +1,206 @@
 package vista.salud;
 
+import controlador.Controlador;
+import controlador.FontLoader;
+
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import controlador.Controlador;
+import java.util.List;
+
 public class panelProductos extends JPanel {
-    private static final Font DEFAULT_FONT = new Font("Montserrat", Font.PLAIN, 12);
-    private static final Font BOLD_FONT = new Font("Montserrat", Font.BOLD, 12);
-    private Controlador controlador;
-    private JTextField txtProducto;
-    private JComboBox<String> cbTipo;
-    private JTable tablaProductos;
-    private DefaultTableModel modeloTabla;
-    private JButton btnGuardar;
-    private JButton btnEditar;
-    private JButton btnEliminar;
-    private Integer editandoId = null;
+	private Controlador controlador;
+	private JTextField txtProducto;
+	private JComboBox<String> cbTipo;
+	private JTable tablaProductos;
+	private DefaultTableModel modeloTabla;
+	private JButton btnGuardar;
+	private Integer editandoId = null;
 
-    public panelProductos(Controlador controlador) {
-        this.controlador = controlador;
-        setLayout(new BorderLayout(10, 10));
-        setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+	// --- Fuentes para una interfaz moderna y coherente ---
+	private final Font FONT_SUBTITULO = FontLoader.loadFont("/resources/fonts/Montserrat-Bold.ttf", 24f);
+	private final Font FONT_LABEL = FontLoader.loadFont("/resources/fonts/Montserrat-SemiBold.ttf", 16f);
+	private final Font FONT_INPUT = FontLoader.loadFont("/resources/fonts/Montserrat-Light.ttf", 16f);
+	private final Font FONT_BOTON = FontLoader.loadFont("/resources/fonts/Montserrat-SemiBold.ttf", 14f);
 
-        // Panel de formulario
-        JPanel formPanel = new JPanel(new GridBagLayout());
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.insets = new Insets(5, 5, 5, 5);
+	public panelProductos(Controlador controlador) {
+		this.controlador = controlador;
+		setLayout(new BorderLayout());
+		// El createContentPanel se encargará de construir la UI
+	}
 
-        // Nombre del Producto
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        JLabel lblProducto = new JLabel("Producto:");
-        lblProducto.setFont(DEFAULT_FONT);
-        formPanel.add(lblProducto, gbc);
+	public JPanel createContentPanel() {
+		JPanel content = new JPanel(new BorderLayout());
+		content.setBackground(new Color(245, 246, 248));
 
-        gbc.gridx = 1;
-        gbc.gridy = 0;
-        txtProducto = new JTextField(20);
-        txtProducto.setFont(DEFAULT_FONT);
-        formPanel.add(txtProducto, gbc);
+		JLabel title = new JLabel("Gestión de Productos");
+		title.setFont(FONT_SUBTITULO);
+		title.setBorder(new EmptyBorder(20, 24, 8, 24));
+		content.add(title, BorderLayout.NORTH);
 
-        // Tipo de Producto
-        gbc.gridx = 0;
-        gbc.gridy = 1;
-        JLabel lblTipo = new JLabel("Tipo:");
-        lblTipo.setFont(DEFAULT_FONT);
-        formPanel.add(lblTipo, gbc);
+		JPanel card = new JPanel(new BorderLayout());
+		card.setBackground(Color.WHITE);
+		card.setBorder(BorderFactory.createCompoundBorder(
+				BorderFactory.createLineBorder(new Color(220, 223, 230), 1),
+				new EmptyBorder(16, 16, 16, 16)
+		));
 
-        gbc.gridx = 1;
-        gbc.gridy = 1;
-        cbTipo = new JComboBox<>(new String[]{"Medicamento", "Suplemento", "Vacuna"});
-        cbTipo.setFont(DEFAULT_FONT);
-        formPanel.add(cbTipo, gbc);
+		// --- Panel de formulario con Layout Absoluto ---
+		JPanel formPanel = new JPanel(null); // Layout absoluto
+		formPanel.setOpaque(false);
+		formPanel.setPreferredSize(new Dimension(0, 120)); // Altura para el formulario
 
-        // Panel de botones
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        btnGuardar = new JButton("Guardar");
-        btnEditar = new JButton("Editar");
-        btnEliminar = new JButton("Eliminar");
+		// --- Fila 1: Nombre del Producto y Tipo ---
+		JLabel lblProducto = new JLabel("Producto:");
+		lblProducto.setFont(FONT_LABEL);
+		lblProducto.setBounds(10, 10, 150, 30);
+		formPanel.add(lblProducto);
 
-        btnGuardar.setFont(DEFAULT_FONT);
-        btnEditar.setFont(DEFAULT_FONT);
-        btnEliminar.setFont(DEFAULT_FONT);
+		txtProducto = new JTextField();
+		txtProducto.setFont(FONT_INPUT);
+		txtProducto.setBounds(170, 10, 250, 30);
+		formPanel.add(txtProducto);
 
-        buttonPanel.add(btnGuardar);
-        buttonPanel.add(btnEditar);
-        buttonPanel.add(btnEliminar);
+		JLabel lblTipo = new JLabel("Tipo:");
+		lblTipo.setFont(FONT_LABEL);
+		lblTipo.setBounds(450, 10, 100, 30);
+		formPanel.add(lblTipo);
 
-        gbc.gridx = 0;
-        gbc.gridy = 3;
-        gbc.gridwidth = 2;
-        formPanel.add(buttonPanel, gbc);
+		cbTipo = new JComboBox<>(new String[]{"Medicamento", "Desparasitante", "Vacuna", "Otro"});
+		cbTipo.setFont(FONT_INPUT);
+		cbTipo.setBounds(560, 10, 250, 30);
+		formPanel.add(cbTipo);
 
-        // Tabla de productos
-        String[] columnas = {"ID", "Producto", "Tipo"};
-        modeloTabla = new DefaultTableModel(columnas, 0) {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            }
-        };
-        tablaProductos = new JTable(modeloTabla);
-        tablaProductos.setFont(DEFAULT_FONT);
-        tablaProductos.getTableHeader().setFont(BOLD_FONT);
-        JScrollPane scrollPane = new JScrollPane(tablaProductos);
+		// --- Botón Guardar / Actualizar ---
+		btnGuardar = new JButton("Guardar");
+		btnGuardar.setFont(FONT_BOTON);
+		btnGuardar.setBackground(new Color(67, 160, 71));
+		btnGuardar.setForeground(Color.WHITE);
+		btnGuardar.setBounds(560, 60, 250, 40);
+		formPanel.add(btnGuardar);
 
-        // Agregar componentes al panel principal
-        add(formPanel, BorderLayout.NORTH);
-        add(scrollPane, BorderLayout.CENTER);
+		card.add(formPanel, BorderLayout.NORTH);
 
-        // Configurar listeners
-        btnGuardar.addActionListener(_ -> {
-            try {
-                String producto = txtProducto.getText().trim();
-                String tipo = (String) cbTipo.getSelectedItem();
+		// --- Tabla de productos ---
+		String[] columnas = {"ID", "Producto", "Tipo"};
+		modeloTabla = new DefaultTableModel(columnas, 0) {
+			@Override
+			public boolean isCellEditable(int row, int column) {
+				return false;
+			}
+		};
+		tablaProductos = new JTable(modeloTabla);
+		tablaProductos.setRowHeight(28);
+		tablaProductos.setFont(FONT_INPUT.deriveFont(14f));
+		tablaProductos.getTableHeader().setFont(FONT_LABEL.deriveFont(14f));
+		JScrollPane scrollPane = new JScrollPane(tablaProductos);
+		scrollPane.setBorder(new EmptyBorder(8, 0, 0, 0));
+		card.add(scrollPane, BorderLayout.CENTER);
+		
+		// --- Panel de botones de la tabla (Editar/Eliminar) ---
+		JPanel tableButtonsPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+		tableButtonsPanel.setOpaque(false);
+		JButton btnEditar = new JButton("Editar");
+		JButton btnEliminar = new JButton("Eliminar");
 
-                if (producto.isEmpty()) {
-                    JOptionPane.showMessageDialog(this, "El nombre del producto es requerido", "Error", JOptionPane.ERROR_MESSAGE);
-                    return;
-                }
+		btnEditar.setFont(FONT_BOTON);
+		btnEditar.setBackground(new Color(100, 181, 246));
+		btnEditar.setForeground(Color.WHITE);
+		
+		btnEliminar.setFont(FONT_BOTON);
+		btnEliminar.setBackground(new Color(229, 57, 53));
+		btnEliminar.setForeground(Color.WHITE);
 
-                if (editandoId == null) {
-                    controlador.guardarProducto(producto, tipo);
-                } else {
-                    controlador.editarProducto(editandoId, producto, tipo);
-                    editandoId = null;
-                    btnGuardar.setText("Guardar");
-                }
+		tableButtonsPanel.add(btnEditar);
+		tableButtonsPanel.add(btnEliminar);
+		card.add(tableButtonsPanel, BorderLayout.SOUTH);
 
-                limpiarCampos();
-                actualizarTabla();
-                JOptionPane.showMessageDialog(this, "Producto guardado exitosamente", "Éxito", JOptionPane.INFORMATION_MESSAGE);
-            } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "Error al guardar el producto: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-            }
-        });
+		content.add(card, BorderLayout.CENTER);
 
-        btnEditar.addActionListener(_ -> {
-            int filaSeleccionada = tablaProductos.getSelectedRow();
-            if (filaSeleccionada == -1) {
-                JOptionPane.showMessageDialog(this, "Por favor, seleccione un producto para editar", "Error", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
+		// --- Listeners (lógica sin cambios) ---
+		btnGuardar.addActionListener(_ -> {
+			try {
+				String producto = txtProducto.getText().trim();
+				String tipo = (String) cbTipo.getSelectedItem();
 
-            editandoId = (Integer) modeloTabla.getValueAt(filaSeleccionada, 0);
-            txtProducto.setText((String) modeloTabla.getValueAt(filaSeleccionada, 1));
-            cbTipo.setSelectedItem((String) modeloTabla.getValueAt(filaSeleccionada, 2));
-            btnGuardar.setText("Actualizar");
-        });
+				if (producto.isEmpty()) {
+					JOptionPane.showMessageDialog(this, "El nombre del producto es requerido.", "Error de Validación", JOptionPane.WARNING_MESSAGE);
+					return;
+				}
 
-        btnEliminar.addActionListener(_ -> {
-            int filaSeleccionada = tablaProductos.getSelectedRow();
-            if (filaSeleccionada == -1) {
-                JOptionPane.showMessageDialog(this, "Por favor, seleccione un producto para eliminar", "Error", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
+				if (editandoId == null) {
+					controlador.guardarProducto(producto, tipo);
+				} else {
+					controlador.editarProducto(editandoId, producto, tipo);
+				}
 
-            int confirmacion = JOptionPane.showConfirmDialog(this, 
-                "¿Está seguro de que desea eliminar este producto?", 
-                "Confirmar eliminación",
-                JOptionPane.YES_NO_OPTION);
+				limpiarCampos();
+				actualizarTabla();
+				JOptionPane.showMessageDialog(this, "Producto guardado exitosamente.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
+			} catch (Exception ex) {
+				JOptionPane.showMessageDialog(this, "Error al guardar el producto: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+			}
+		});
 
-            if (confirmacion == JOptionPane.YES_OPTION) {
-                try {
-                    Integer idProducto = (Integer) modeloTabla.getValueAt(filaSeleccionada, 0);
-                    controlador.eliminarProducto(idProducto);
-                    actualizarTabla();
-                    JOptionPane.showMessageDialog(this, "Producto eliminado exitosamente", "Éxito", JOptionPane.INFORMATION_MESSAGE);
-                } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(this, "Error al eliminar el producto: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-                }
-            }
-        });
+		btnEditar.addActionListener(_ -> {
+			int filaSeleccionada = tablaProductos.getSelectedRow();
+			if (filaSeleccionada == -1) {
+				JOptionPane.showMessageDialog(this, "Por favor, seleccione un producto para editar.", "Aviso", JOptionPane.WARNING_MESSAGE);
+				return;
+			}
 
-        // Cargar datos iniciales
-        actualizarTabla();
-    }
+			editandoId = (Integer) modeloTabla.getValueAt(filaSeleccionada, 0);
+			txtProducto.setText((String) modeloTabla.getValueAt(filaSeleccionada, 1));
+			cbTipo.setSelectedItem(modeloTabla.getValueAt(filaSeleccionada, 2).toString());
+			btnGuardar.setText("Actualizar");
+			txtProducto.requestFocus();
+		});
 
-    private void limpiarCampos() {
-        txtProducto.setText("");
-        cbTipo.setSelectedIndex(0);
-        editandoId = null;
-        btnGuardar.setText("Guardar");
-    }
+		btnEliminar.addActionListener(_ -> {
+			int filaSeleccionada = tablaProductos.getSelectedRow();
+			if (filaSeleccionada == -1) {
+				JOptionPane.showMessageDialog(this, "Por favor, seleccione un producto para eliminar.", "Aviso", JOptionPane.WARNING_MESSAGE);
+				return;
+			}
 
-    private void actualizarTabla() {
-        modeloTabla.setRowCount(0);
-        java.util.List<Object[]> productos = controlador.obtenerProductos();
-        for (Object[] producto : productos) {
-            modeloTabla.addRow(producto);
-        }
-    }
+			int confirmacion = JOptionPane.showConfirmDialog(this,
+					"¿Está seguro de que desea eliminar este producto?",
+					"Confirmar eliminación",
+					JOptionPane.YES_NO_OPTION);
 
-    public JPanel createContentPanel() {
-        return this;
-    }
+			if (confirmacion == JOptionPane.YES_OPTION) {
+				try {
+					Integer idProducto = (Integer) modeloTabla.getValueAt(filaSeleccionada, 0);
+					controlador.eliminarProducto(idProducto);
+					actualizarTabla();
+					limpiarCampos(); // Limpiar por si estaba en modo edición
+					JOptionPane.showMessageDialog(this, "Producto eliminado exitosamente.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
+				} catch (Exception ex) {
+					JOptionPane.showMessageDialog(this, "Error al eliminar el producto: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+				}
+			}
+		});
+
+		// Cargar datos iniciales
+		actualizarTabla();
+		
+		return content;
+	}
+
+	private void limpiarCampos() {
+		txtProducto.setText("");
+		cbTipo.setSelectedIndex(0);
+		editandoId = null;
+		btnGuardar.setText("Guardar");
+		tablaProductos.clearSelection();
+	}
+
+	private void actualizarTabla() {
+		modeloTabla.setRowCount(0);
+		List<Object[]> productos = controlador.obtenerProductos();
+		for (Object[] producto : productos) {
+			modeloTabla.addRow(producto);
+		}
+	}
 }

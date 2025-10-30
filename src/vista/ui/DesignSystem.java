@@ -17,6 +17,7 @@ public final class DesignSystem {
 
     // Fuentes base (cargadas una sola vez)
     public static final Font FONT_TITULO_MENU = FontLoader.loadFont("/resources/fonts/Montserrat-Black.ttf", 48f);
+    //public static final Font FONT_SUBTITULO = FontLoader.loadFont("/resources/fonts/Montserrat-B.ttf", 18f);
     public static final Font FONT_BOTON_MENU = FontLoader.loadFont("/resources/fonts/Montserrat-SemiBold.ttf", 18f);
 
     private DesignSystem() {}

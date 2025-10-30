@@ -55,7 +55,7 @@ public class AnimalesFrame extends JFrame {
 
         //Inicialización de los paneles
         pMostrar = new panelMostrarAnimales();
-        pLotes = new VistaLotes(controlador);
+        //pLotes = new VistaLotes(controlador);
         pSalida = new panelSalidaAnimales(controlador);
         pSalud = new vistaSalud(controlador);
 
