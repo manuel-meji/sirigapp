@@ -77,7 +77,7 @@ public class panelMostrarAnimales {
 		btnEliminar.setBackground(new Color(229, 57, 53));
 		btnEliminar.setForeground(Color.WHITE);
 		btnAgregar.setBackground(new Color(0xFF6AFFC1));
-		btnAgregar.setForeground(Color.WHITE);
+		btnAgregar.setForeground(Color.black);
 
 		btnEditar.setFocusPainted(false);
 		btnEliminar.setFocusPainted(false);

@@ -2,6 +2,7 @@ package vista.animales;
 
 import controlador.Controlador;
 import vista.lotes.VistaLotes;
+import vista.salud.vistaSalud;
 import vista.ui.DesignSystem;
 
 import javax.swing.*;
@@ -19,7 +20,9 @@ public class AnimalesFrame extends JFrame {
     //Paneles de contenido
     panelRegistroAnimales pRegistro;
     panelMostrarAnimales pMostrar;
+    panelSalidaAnimales pSalida;
     VistaLotes pLotes;
+    vistaSalud pSalud;
     
 
     private Controlador controlador;
@@ -53,6 +56,8 @@ public class AnimalesFrame extends JFrame {
         //Inicialización de los paneles
         pMostrar = new panelMostrarAnimales();
         pLotes = new VistaLotes(controlador);
+        pSalida = new panelSalidaAnimales(controlador);
+        pSalud = new vistaSalud(controlador);
 
         // 1. Panel del Menú Lateral
         JPanel menuPanel = createMenuPanel();
@@ -76,108 +81,7 @@ public class AnimalesFrame extends JFrame {
 
     }
 
-    // private void createContentPanel() {
-    //     contentPanel.removeAll();
-    //     contentPanel.setLayout(new BorderLayout());
-    //     contentPanel.setBackground(DesignSystem.COLOR_FONDO_APP);
 
-    //     JLabel title = new JLabel("Registro de Animales");
-    //     title.setHorizontalAlignment(SwingConstants.LEFT);
-    //     title.setBorder(new EmptyBorder(24, 32, 8, 32));
-    //     title.setFont(FONT_BOTON_MENU.deriveFont(Font.BOLD, 26f));
-    //     contentPanel.add(title, BorderLayout.NORTH);
-
-    //     JPanel wrapper = new JPanel(null);
-    //     wrapper.setOpaque(false);
-    //     contentPanel.add(wrapper, BorderLayout.CENTER);
-
-    //     JPanel card = new JPanel(null);
-    //     card.setBackground(Color.WHITE);
-    //     card.setBorder(BorderFactory.createCompoundBorder(
-    //         BorderFactory.createLineBorder(DesignSystem.COLOR_CARD_BORDER, 1),
-    //         new EmptyBorder(20, 24, 24, 24)
-    //     ));
-    //     wrapper.add(card);
-
-    //     wrapper.addComponentListener(new java.awt.event.ComponentAdapter() {
-    //         public void componentResized(java.awt.event.ComponentEvent e) {
-    //             int w = wrapper.getWidth();
-    //             int x = Math.max(32, (w - 980) / 2);
-    //             card.setBounds(x, 20, 980, 500);
-    //         }
-    //     });
-
-    //     Font labelFont = FONT_BOTON_MENU.deriveFont(Font.PLAIN, 16f);
-    //     int col1X = 30;  int col1W = 380;
-    //     int col2X = 500; int col2W = 380;
-    //     int labelW = 200; int fieldH = 34; int rowY = 20; int rowGap = 46;
-
-    //     JLabel lCodigo = new JLabel("Código:"); lCodigo.setFont(labelFont);
-    //     lCodigo.setBounds(col1X, rowY, labelW, 24); card.add(lCodigo);
-    //     txtCodigo = new JTextField(); txtCodigo.setBounds(col1X + labelW, rowY, col1W - labelW, fieldH); card.add(txtCodigo);
-
-    //     JLabel lFecha = new JLabel("Fecha de nacimiento:"); lFecha.setFont(labelFont);
-    //     lFecha.setBounds(col2X, rowY, labelW, 24); card.add(lFecha);
-    //     dcFechaNacimiento = new JDateChooser(); dcFechaNacimiento.setDateFormatString("yyyy-MM-dd");
-    //     dcFechaNacimiento.setBounds(col2X + labelW, rowY, col2W - labelW, fieldH); card.add(dcFechaNacimiento);
-
-    //     rowY += rowGap;
-    //     JLabel lSexo = new JLabel("Sexo:"); lSexo.setFont(labelFont);
-    //     lSexo.setBounds(col1X, rowY, labelW, 24); card.add(lSexo);
-    //     cbSexo = new JComboBox<>(new String[] {"M", "F"}); cbSexo.setBounds(col1X + labelW, rowY, col1W - labelW, fieldH); card.add(cbSexo);
-
-    //     JLabel lRaza = new JLabel("Raza:"); lRaza.setFont(labelFont);
-    //     lRaza.setBounds(col2X, rowY, labelW, 24); card.add(lRaza);
-    //     txtRaza = new JTextField(); txtRaza.setBounds(col2X + labelW, rowY, col2W - labelW, fieldH); card.add(txtRaza);
-
-    //     rowY += rowGap;
-    //     JLabel lPesoNac = new JLabel("Peso nacimiento (kg):"); lPesoNac.setFont(labelFont);
-    //     lPesoNac.setBounds(col1X, rowY, labelW, 24); card.add(lPesoNac);
-    //     txtPesoNacimiento = new JTextField(); txtPesoNacimiento.setBounds(col1X + labelW, rowY, col1W - labelW, fieldH); card.add(txtPesoNacimiento);
-
-    //     JLabel lPeso = new JLabel("Peso actual (kg):"); lPeso.setFont(labelFont);
-    //     lPeso.setBounds(col2X, rowY, labelW, 24); card.add(lPeso);
-    //     txtPeso = new JTextField(); txtPeso.setBounds(col2X + labelW, rowY, col2W - labelW, fieldH); card.add(txtPeso);
-
-    //     rowY += rowGap;
-    //     JLabel lMadre = new JLabel("ID madre:"); lMadre.setFont(labelFont);
-    //     lMadre.setBounds(col1X, rowY, labelW, 24); card.add(lMadre);
-    //     txtIdMadre = new JTextField(); txtIdMadre.setBounds(col1X + labelW, rowY, col1W - labelW, fieldH); card.add(txtIdMadre);
-
-    //     JLabel lPadre = new JLabel("ID padre:"); lPadre.setFont(labelFont);
-    //     lPadre.setBounds(col2X, rowY, labelW, 24); card.add(lPadre);
-    //     txtIdPadre = new JTextField(); txtIdPadre.setBounds(col2X + labelW, rowY, col2W - labelW, fieldH); card.add(txtIdPadre);
-
-    //     rowY += rowGap;
-    //     JLabel lEstado = new JLabel("Estado:"); lEstado.setFont(labelFont);
-    //     lEstado.setBounds(col1X, rowY, labelW, 24); card.add(lEstado);
-    //     cbEstado = new JComboBox<>(new String[] {"ACTIVO", "VENDIDO", "MUERTO"});
-    //     cbEstado.setBounds(col1X + labelW, rowY, col1W - labelW, fieldH); card.add(cbEstado);
-
-    //     JButton btnGuardar = new JButton("Guardar");
-    //     JButton btnLimpiar = new JButton("Limpiar");
-    //     int btnW = 120; int btnH = 36; int btnGap = 12;
-    //     final int baseY = rowY + rowGap + 10;
-    //     card.add(btnLimpiar); card.add(btnGuardar);
-
-    //     card.addComponentListener(new java.awt.event.ComponentAdapter() {
-    //         public void componentResized(java.awt.event.ComponentEvent e) {
-    //             int cw = card.getWidth();
-    //             btnGuardar.setBounds(cw - 24 - btnW, baseY, btnW, btnH);
-    //             btnLimpiar.setBounds(cw - 24 - btnW - btnGap - btnW, baseY, btnW, btnH);
-    //         }
-    //     });
-
-    //     // btnGuardar.addActionListener(e -> guardarAnimal());
-    //     // btnLimpiar.addActionListener(e -> limpiarFormulario());
-
-    //     contentPanel.revalidate();
-    //     contentPanel.repaint();
-    // }
-
-    
-
-    
 
     private JPanel createMenuPanel() {
         JPanel panel = new JPanel();
@@ -224,8 +128,23 @@ public class AnimalesFrame extends JFrame {
         });
 
         JButton btnRegistroSanitario = createMenuButton("Registro Sanitario", COLOR_BOTON_NORMAL);
+        btnRegistroSanitario.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                // Aquí iría la lógica para mostrar el registro sanitario
+                cambiarPanelContenido(pSalud.createContentPanel());
+                System.out.println("Registro Sanitario");
+            }
+        });
         JButton btnProduccionLeche = createMenuButton("Produccion Leche", COLOR_BOTON_NORMAL);
         JButton btnSalidasAnimales = createMenuButton("Salidas Animales", COLOR_BOTON_NORMAL);
+        btnSalidasAnimales.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                // Aquí iría la lógica para mostrar las salidas de animales
+                cambiarPanelContenido(pSalida.createContentPanel());
+                System.out.println("Salidas Animales");
+            }
+        });
+
         JButton btnGeneracionInformes = createMenuButton("Generación de Informes", COLOR_BOTON_NORMAL);
         JButton btnLotes = createMenuButton("Administración de Lotes", COLOR_BOTON_NORMAL);
         btnLotes.addActionListener(new ActionListener() {
