@@ -18,7 +18,7 @@ public class Controlador {
     public Controlador (){
         try {
             Class.forName("com.mysql.jdbc.Driver");
-            connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/sirigapp?verifyServerCertificate=false&useSSL=true", "root", "1234");
+            connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/sirigapp?verifyServerCertificate=false&useSSL=true", "root", "Manuel2004");
             statement = connection.createStatement();
             connection.setAutoCommit(true);
             JOptionPane.showMessageDialog(null, "Conexión exitosa a la base de datos");
@@ -137,7 +137,6 @@ public class Controlador {
         JOptionPane.showMessageDialog(null, "Funcionalidad de edición para el animal con código: " + codigo);
     }
 
-<<<<<<< HEAD
     /**
      * Busca animales que coincidan con el filtro proporcionado
      */
@@ -260,7 +259,6 @@ public class Controlador {
             JOptionPane.showMessageDialog(null, "Error al editar salida: " + e.getMessage());
         }
     }
-=======
 
     public void registrarNuevoLote(String nombre, String etapa, String descripcion) {
         
@@ -296,6 +294,5 @@ public class Controlador {
         return rs;
     }
 
->>>>>>> 9bae48e8da9b820480d1cd7f972906af0f69edba
 }
 
