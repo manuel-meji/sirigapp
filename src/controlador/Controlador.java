@@ -63,5 +63,29 @@ public class Controlador {
     }
 
 
+    public void guardarAnimal(
+        String codigo,
+        java.sql.Timestamp fechaNacimiento,
+        String sexo,
+        String raza,
+        String pesoNacimiento,
+        String peso,
+        String idMadre,
+        String idPadre,
+        String estado
+    ) throws SQLException {
+        String sql = "INSERT INTO animal (codigo, fecha_nacimiento, sexo, raza, peso_nacimiento, peso, id_madre, id_padre, estado) VALUES (?,?,?,?,?,?,?,?,?)";
+        PreparedStatement ps = connection.prepareStatement(sql);
+        ps.setString(1, codigo);
+        ps.setTimestamp(2, fechaNacimiento);
+        ps.setString(3, sexo);
+        ps.setString(4, raza);
+        ps.setString(5, pesoNacimiento);
+        ps.setString(6, peso);
+        ps.setString(7, idMadre);
+        ps.setString(8, idPadre);
+        ps.setString(9, estado);
+        ps.executeUpdate();
+    }
 
 }
