@@ -1,10 +1,10 @@
 package vista.lotes;
 
 import controlador.Controlador;
-import javax.swing.*;
 import java.awt.*;
+import javax.swing.*;
 
-public class VistaLotes extends JPanel { // <-- CAMBIADO DE JFRAME A JPANEL
+public class VistaLotes extends JPanel {
 
     private Controlador controlador;
     private JTabbedPane tabbedPane;
@@ -12,26 +12,26 @@ public class VistaLotes extends JPanel { // <-- CAMBIADO DE JFRAME A JPANEL
     private panelHistorialLotes panelHistorial;
 
     public VistaLotes(Controlador controlador) {
+        System.out.println("1. [DEBUG] Entrando al constructor de VistaLotes...");
         this.controlador = controlador;
         initComponents();
+        System.out.println("7. [DEBUG] Fin del constructor de VistaLotes. Panel creado con éxito.");
     }
 
     private void initComponents() {
-        // Establecemos el layout para este panel contenedor
         setLayout(new BorderLayout());
         
-        // Inicializamos los paneles de las pestañas
+        System.out.println("2. [DEBUG] Creando panelRegistroLotes...");
         panelRegistro = new panelRegistroLotes(controlador);
+        System.out.println("4. [DEBUG] panelRegistroLotes CREADO. Creando panelHistorialLotes...");
         panelHistorial = new panelHistorialLotes(controlador);
+        System.out.println("6. [DEBUG] panelHistorialLotes CREADO. Añadiendo pestañas...");
 
-        // Creamos el JTabbedPane
         tabbedPane = new JTabbedPane();
         
-        // Añadimos los paneles como pestañas
         tabbedPane.addTab("Registro de Lotes", panelRegistro);
         tabbedPane.addTab("Historial de Lotes", panelHistorial);
         
-        // Añadimos el JTabbedPane al panel principal (VistaLotes)
         add(tabbedPane, BorderLayout.CENTER);
     }
 }
