@@ -2,6 +2,8 @@ package controlador;
 
 import java.sql.*;
 import java.util.List;
+import java.time.LocalDate;
+import java.time.Period;
 
 import javax.swing.JOptionPane;
 import vista.SiriGAppLogin;
@@ -63,7 +65,7 @@ public class Controlador {
 
     public void guardarAnimal(
             String codigo,
-            java.sql.Timestamp fechaNacimiento,
+            java.sql.Date fechaNacimiento,
             String sexo,
             String raza,
             String pesoNacimiento,
@@ -74,7 +76,7 @@ public class Controlador {
         String sql = "INSERT INTO animal (codigo, fecha_nacimiento, sexo, raza, peso_nacimiento, peso, id_madre, id_padre, estado) VALUES (?,?,?,?,?,?,?,?,?)";
         PreparedStatement ps = connection.prepareStatement(sql);
         ps.setString(1, codigo);
-        ps.setTimestamp(2, fechaNacimiento);
+        ps.setDate(2, fechaNacimiento);
         ps.setString(3, sexo);
         ps.setString(4, raza);
         ps.setString(5, pesoNacimiento);
@@ -92,27 +94,123 @@ public class Controlador {
      */
     public java.util.List<Object[]> obtenerAnimales() {
         java.util.List<Object[]> lista = new java.util.ArrayList<>();
-        String sql = "SELECT codigo, fecha_nacimiento, sexo, raza, peso_nacimiento, peso, id_madre, id_padre, estado FROM animal";
-        try {
-            PreparedStatement ps = connection.prepareStatement(sql);
-            ResultSet rs = ps.executeQuery();
+        // Traemos también el nombre del lote (puede ser NULL si no tiene lote asignado)
+        String sql = "SELECT a.codigo, a.fecha_nacimiento, a.sexo, a.raza, a.peso_nacimiento, a.peso, a.id_madre, a.id_padre, a.estado, l.nombre AS lote_nombre "
+                + "FROM animal a LEFT JOIN lotes l ON a.id_lote_actual = l.id ORDER BY a.codigo";
+        try (PreparedStatement ps = connection.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
-                Object[] fila = new Object[9];
+                Object[] fila = new Object[10];
+                // 0: Código
                 fila[0] = rs.getString("codigo");
-                fila[1] = rs.getTimestamp("fecha_nacimiento");
+
+                // 1: Edad (calculada a partir de fecha_nacimiento)
+                java.sql.Timestamp ts = rs.getTimestamp("fecha_nacimiento");
+                if (ts != null) {
+                    java.sql.Date sqlDate = new java.sql.Date(ts.getTime());
+                    fila[1] = calcularEdad(sqlDate);
+                } else {
+                    fila[1] = "";
+                }
+
+                // 2..7: otros atributos
                 fila[2] = rs.getString("sexo");
                 fila[3] = rs.getString("raza");
                 fila[4] = rs.getString("peso_nacimiento");
                 fila[5] = rs.getString("peso");
                 fila[6] = rs.getString("id_madre");
                 fila[7] = rs.getString("id_padre");
-                fila[8] = rs.getString("estado");
+
+                // 8: Nombre del lote (puede ser NULL)
+                String loteNombre = rs.getString("lote_nombre");
+                fila[8] = loteNombre != null ? loteNombre : "--";
+
+                // 9: Estado
+                fila[9] = rs.getString("estado");
+
                 lista.add(fila);
             }
         } catch (Exception e) {
             JOptionPane.showMessageDialog(null, "Error al obtener animales: " + e.getMessage());
         }
         return lista;
+    }
+
+    /**
+     * Busca animales (filas completas) que coincidan con el filtro en el código,
+     * raza o nombre del lote. Devuelve la misma estructura que obtenerAnimales()
+     * (10 columnas).
+     *
+     * @param filtro texto a buscar (se usa LIKE %filtro%).
+     * @return lista de filas con 10 columnas: Codigo, Edad, Sexo, Raza, Peso Nac., Peso, Madre, Padre, Lote, Estado
+     */
+    public java.util.List<Object[]> buscarAnimalesCompletos(String filtro) {
+        java.util.List<Object[]> lista = new java.util.ArrayList<>();
+        String sql = "SELECT a.codigo, a.fecha_nacimiento, a.sexo, a.raza, a.peso_nacimiento, a.peso, a.id_madre, a.id_padre, a.estado, l.nombre AS lote_nombre "
+                + "FROM animal a LEFT JOIN lotes l ON a.id_lote_actual = l.id "
+                + "WHERE a.codigo LIKE ? OR a.raza LIKE ? OR l.nombre LIKE ? ORDER BY a.codigo";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            String like = "%" + filtro + "%";
+            ps.setString(1, like);
+            ps.setString(2, like);
+            ps.setString(3, like);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Object[] fila = new Object[10];
+                    fila[0] = rs.getString("codigo");
+
+                    java.sql.Timestamp ts = rs.getTimestamp("fecha_nacimiento");
+                    if (ts != null) {
+                        java.sql.Date sqlDate = new java.sql.Date(ts.getTime());
+                        fila[1] = calcularEdad(sqlDate);
+                    } else {
+                        fila[1] = "";
+                    }
+
+                    fila[2] = rs.getString("sexo");
+                    fila[3] = rs.getString("raza");
+                    fila[4] = rs.getString("peso_nacimiento");
+                    fila[5] = rs.getString("peso");
+                    fila[6] = rs.getString("id_madre");
+                    fila[7] = rs.getString("id_padre");
+                    String loteNombre = rs.getString("lote_nombre");
+                    fila[8] = loteNombre != null ? loteNombre : "--";
+                    fila[9] = rs.getString("estado");
+                    lista.add(fila);
+                }
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Error al buscar animales: " + e.getMessage());
+        }
+        return lista;
+    }
+
+    /**
+     * Calcula la edad (años/meses/días) a partir de una fecha de nacimiento.
+     *
+     * @param fechaNacimiento java.sql.Date o null
+     * @return String con la edad formateada, por ejemplo "2 años 3 meses" o "5 meses" o "10 días".
+     */
+    private String calcularEdad(java.sql.Date fechaNacimiento) {
+        if (fechaNacimiento == null)
+            return "";
+        try {
+            LocalDate nacimiento = fechaNacimiento.toLocalDate();
+            LocalDate hoy = LocalDate.now();
+            if (nacimiento.isAfter(hoy)) {
+                return "0 días";
+            }
+            Period p = Period.between(nacimiento, hoy);
+            if (p.getYears() > 0) {
+                return p.getYears() + " años " + p.getMonths() + " meses";
+            } else if (p.getMonths() > 0) {
+                return p.getMonths() + " meses";
+            } else {
+                return p.getDays() + " días";
+            }
+        } catch (Exception e) {
+            return "";
+        }
     }
 
     /**
@@ -1013,6 +1111,7 @@ public void modificarUltimoMovimiento(int idMovimiento, String codigoAnimal, int
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(null, "Error al eliminar el registro: " + e.getMessage());
         }
+        
     }
 
 }
