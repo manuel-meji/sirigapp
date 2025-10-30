@@ -611,10 +611,13 @@ public void modificarUltimoMovimiento(int idMovimiento, String codigoAnimal, int
             connection.setAutoCommit(true);
         } catch (SQLException ex) {
             System.out.println("Error al restaurar auto-commit: " + ex.getMessage());
+<<<<<<< HEAD
+=======
 
         }
     }
 }
+>>>>>>> d5b33d01bf881afc79593c6b75e85430551d5bd9
     public void modificarRegistroHistorial(int idMovimiento, String nuevoCodigoAnimal, int nuevoIdLoteDestino,
             java.sql.Date nuevaFecha) {
         String sql = "UPDATE historial_lote SET id_animal = ?, id_lote_posterior = ?, fecha = ? WHERE id = ?";
@@ -926,6 +929,10 @@ public void modificarUltimoMovimiento(int idMovimiento, String codigoAnimal, int
         }
         return resultado;
     }
+<<<<<<< HEAD
+    return resultado;
+=======
+>>>>>>> d5b33d01bf881afc79593c6b75e85430551d5bd9
 
     // --- MÉTODOS A AÑADIR EN TU CONTROLADOR ---
 
@@ -1056,6 +1063,13 @@ public void modificarUltimoMovimiento(int idMovimiento, String codigoAnimal, int
             }
         }
     }
+<<<<<<< HEAD
+}
+
+}
+
+=======
+>>>>>>> d5b33d01bf881afc79593c6b75e85430551d5bd9
 
     /**
      * Obtiene todos los registros de producción de leche de la base de datos.
