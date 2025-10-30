@@ -138,6 +138,8 @@ public class panelProductos extends JPanel {
 				limpiarCampos();
 				actualizarTabla();
 				JOptionPane.showMessageDialog(this, "Producto guardado exitosamente.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
+				controlador.animalesFrame.cambiarPanelContenido(controlador.animalesFrame.pSalud.createContentPanel());
+				
 			} catch (Exception ex) {
 				JOptionPane.showMessageDialog(this, "Error al guardar el producto: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
 			}

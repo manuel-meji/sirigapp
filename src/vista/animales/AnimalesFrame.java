@@ -2,6 +2,7 @@ package vista.animales;
 
 import controlador.Controlador;
 import vista.lotes.VistaLotes;
+import vista.produccion.panelProduccionLeche;
 import vista.salud.vistaSalud;
 import vista.ui.DesignSystem;
 
@@ -18,11 +19,12 @@ import java.awt.event.MouseEvent;
 public class AnimalesFrame extends JFrame {
 
     //Paneles de contenido
-    panelRegistroAnimales pRegistro;
-    panelMostrarAnimales pMostrar;
-    panelSalidaAnimales pSalida;
-    VistaLotes pLotes;
-    vistaSalud pSalud;
+    public panelRegistroAnimales pRegistro;
+    public panelMostrarAnimales pMostrar;
+    public panelSalidaAnimales pSalida;
+    public VistaLotes pLotes;
+    public vistaSalud pSalud;
+    public panelProduccionLeche pProduccionLeche;
     
 
     private Controlador controlador;
@@ -55,9 +57,10 @@ public class AnimalesFrame extends JFrame {
 
         //Inicialización de los paneles
         pMostrar = new panelMostrarAnimales();
-        //pLotes = new VistaLotes(controlador);
+        pLotes = new VistaLotes(controlador);
         pSalida = new panelSalidaAnimales(controlador);
         pSalud = new vistaSalud(controlador);
+        pProduccionLeche = new panelProduccionLeche(controlador);
 
         // 1. Panel del Menú Lateral
         JPanel menuPanel = createMenuPanel();
@@ -97,7 +100,7 @@ public class AnimalesFrame extends JFrame {
         panel.add(new JLabel(), gbc);
 
         // Título "Menú"
-        JLabel menuTitle = new JLabel("Menú");
+        JLabel menuTitle = new JLabel("SiriGApp");
         menuTitle.setFont(FONT_TITULO_MENU);
         menuTitle.setForeground(Color.WHITE);
         menuTitle.setHorizontalAlignment(SwingConstants.CENTER);
@@ -136,6 +139,13 @@ public class AnimalesFrame extends JFrame {
             }
         });
         JButton btnProduccionLeche = createMenuButton("Produccion Leche", COLOR_BOTON_NORMAL);
+        btnProduccionLeche.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                // Aquí iría la lógica para mostrar la producción de leche
+                cambiarPanelContenido(pProduccionLeche.createContentPanel());
+                System.out.println("Produccion Leche");
+            }
+        });
         JButton btnSalidasAnimales = createMenuButton("Salidas Animales", COLOR_BOTON_NORMAL);
         btnSalidasAnimales.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -214,7 +224,7 @@ public class AnimalesFrame extends JFrame {
     }
 
     // --- MÉTODO NUEVO PARA CAMBIAR EL CONTENIDO ---
-    private void cambiarPanelContenido(JPanel nuevoPanel) {
+    public void cambiarPanelContenido(JPanel nuevoPanel) {
         contentPanel.removeAll(); // Limpiamos el panel de contenido
         contentPanel.add(nuevoPanel, BorderLayout.CENTER); // Añadimos el nuevo panel
         contentPanel.revalidate(); // Revalidamos la UI

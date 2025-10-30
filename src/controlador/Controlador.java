@@ -1,24 +1,29 @@
 package controlador;
 
 import java.sql.*;
+import java.util.List;
+
 import javax.swing.JOptionPane;
 import vista.SiriGAppLogin;
 import vista.animales.AnimalesFrame;
 
 public class Controlador {
+
     public Connection connection = null;
     public Statement statement = null;
-    public ResultSet resultSet = null; 
+    public ResultSet resultSet = null;
+
+    public AnimalesFrame animalesFrame;
 
     public SiriGAppLogin loginFrame;
 
-    
     public int idUsuario;
 
-    public Controlador (){
+    public Controlador() {
         try {
             Class.forName("com.mysql.jdbc.Driver");
-            connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/sirigapp?verifyServerCertificate=false&useSSL=true", "root", "1234");
+            connection = DriverManager.getConnection(
+                    "jdbc:mysql://localhost:3306/sirigapp?verifyServerCertificate=false&useSSL=true", "root", "1234");
             statement = connection.createStatement();
             connection.setAutoCommit(true);
             JOptionPane.showMessageDialog(null, "Conexión exitosa a la base de datos");
@@ -28,15 +33,13 @@ public class Controlador {
 
         }
 
-       
         loginFrame = new SiriGAppLogin(this);
         loginFrame.setVisible(true);
         loginFrame.setLocationRelativeTo(null);
 
-
     }
 
-    public void IniciarSesion  (String usuario, String contraseña){
+    public void IniciarSesion(String usuario, String contraseña) {
         String sql = "SELECT * FROM usuarios WHERE id = ? AND contrasena = ?";
         try {
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
@@ -46,7 +49,7 @@ public class Controlador {
             if (resultSet.next()) {
                 JOptionPane.showMessageDialog(null, "Inicio de sesión exitoso");
                 loginFrame.setVisible(false);
-                AnimalesFrame animalesFrame = new AnimalesFrame(this);
+                animalesFrame = new AnimalesFrame(this);
                 animalesFrame.setVisible(true);
                 animalesFrame.setLocationRelativeTo(null);
             } else {
@@ -56,21 +59,18 @@ public class Controlador {
             System.out.println("Error al iniciar sesión: " + e.getMessage());
         }
 
-
     }
 
-
     public void guardarAnimal(
-        String codigo,
-        java.sql.Timestamp fechaNacimiento,
-        String sexo,
-        String raza,
-        String pesoNacimiento,
-        String peso,
-        String idMadre,
-        String idPadre,
-        String estado
-    ) throws SQLException {
+            String codigo,
+            java.sql.Timestamp fechaNacimiento,
+            String sexo,
+            String raza,
+            String pesoNacimiento,
+            String peso,
+            String idMadre,
+            String idPadre,
+            String estado) throws SQLException {
         String sql = "INSERT INTO animal (codigo, fecha_nacimiento, sexo, raza, peso_nacimiento, peso, id_madre, id_padre, estado) VALUES (?,?,?,?,?,?,?,?,?)";
         PreparedStatement ps = connection.prepareStatement(sql);
         ps.setString(1, codigo);
@@ -87,6 +87,7 @@ public class Controlador {
 
     /**
      * Obtiene todos los animales de la base de datos.
+     * 
      * @return Lista de Object[] con los datos de cada animal.
      */
     public java.util.List<Object[]> obtenerAnimales() {
@@ -130,10 +131,12 @@ public class Controlador {
     }
 
     /**
-     * Edita los datos de un animal. Aquí solo muestra un mensaje, pero puedes abrir un panel de edición.
+     * Edita los datos de un animal. Aquí solo muestra un mensaje, pero puedes abrir
+     * un panel de edición.
      */
     public void editarAnimal(Object codigo) {
-        // Aquí deberías abrir un panel de edición o retornar los datos del animal para editar.
+        // Aquí deberías abrir un panel de edición o retornar los datos del animal para
+        // editar.
         JOptionPane.showMessageDialog(null, "Funcionalidad de edición para el animal con código: " + codigo);
     }
 
@@ -209,22 +212,22 @@ public class Controlador {
             PreparedStatement psSelect = connection.prepareStatement(sqlSelect);
             psSelect.setInt(1, id);
             ResultSet rs = psSelect.executeQuery();
-            
+
             if (rs.next()) {
                 String idAnimal = rs.getString("id_animal");
-                
+
                 // Reactivamos el animal
                 String updateAnimal = "UPDATE animal SET estado = 'ACTIVO' WHERE codigo = ?";
                 PreparedStatement psAnimal = connection.prepareStatement(updateAnimal);
                 psAnimal.setString(1, idAnimal);
                 psAnimal.executeUpdate();
-                
+
                 // Eliminamos la salida
                 String sqlDelete = "DELETE FROM salida WHERE id = ?";
                 PreparedStatement psDelete = connection.prepareStatement(sqlDelete);
                 psDelete.setInt(1, id);
                 psDelete.executeUpdate();
-                
+
                 JOptionPane.showMessageDialog(null, "Salida eliminada correctamente");
             }
         } catch (Exception e) {
@@ -241,19 +244,18 @@ public class Controlador {
             PreparedStatement ps = connection.prepareStatement(sql);
             ps.setInt(1, id);
             ResultSet rs = ps.executeQuery();
-            
+
             if (rs.next()) {
                 String idAnimal = rs.getString("id_animal");
                 String motivo = rs.getString("motivo");
                 java.sql.Date fecha = rs.getDate("fecha");
-                
+
                 // Aquí podrías abrir un diálogo de edición con estos datos
-                JOptionPane.showMessageDialog(null, 
-                    "Salida ID: " + id + "\n" +
-                    "Animal: " + idAnimal + "\n" +
-                    "Motivo: " + motivo + "\n" +
-                    "Fecha: " + fecha
-                );
+                JOptionPane.showMessageDialog(null,
+                        "Salida ID: " + id + "\n" +
+                                "Animal: " + idAnimal + "\n" +
+                                "Motivo: " + motivo + "\n" +
+                                "Fecha: " + fecha);
             }
         } catch (Exception e) {
             JOptionPane.showMessageDialog(null, "Error al editar salida: " + e.getMessage());
@@ -261,7 +263,7 @@ public class Controlador {
     }
 
     public void registrarNuevoLote(String nombre, String etapa, String descripcion) {
-        
+
         PreparedStatement ps = null;
         try {
             String sql = "INSERT INTO lotes (nombre, etapa, descripcion) VALUES (?, ?, ?)";
@@ -275,7 +277,8 @@ public class Controlador {
             JOptionPane.showMessageDialog(null, "Error al registrar lote: " + e.getMessage());
         } finally {
             try {
-                if (ps != null) ps.close();
+                if (ps != null)
+                    ps.close();
             } catch (SQLException e) {
                 System.out.println("Error al cerrar PreparedStatement: " + e.getMessage());
             }
@@ -309,14 +312,15 @@ public class Controlador {
             JOptionPane.showMessageDialog(null, "Error al modificar lote: " + e.getMessage());
         } finally {
             try {
-                if (ps != null) ps.close();
+                if (ps != null)
+                    ps.close();
             } catch (SQLException e) {
                 System.out.println("Error al cerrar PreparedStatement: " + e.getMessage());
             }
         }
     }
 
-/**
+    /**
      * Obtiene solo los codigos de todos los animales para llenar el JComboBox.
      * He cambiado el nombre del método para que sea más claro.
      */
@@ -327,7 +331,8 @@ public class Controlador {
             PreparedStatement ps = connection.prepareStatement(sql);
             rs = ps.executeQuery();
         } catch (SQLException e) {
-            JOptionPane.showMessageDialog(null, "Error al obtener códigos de animales: " + e.getMessage(), "Error de Base de Datos", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null, "Error al obtener códigos de animales: " + e.getMessage(),
+                    "Error de Base de Datos", JOptionPane.ERROR_MESSAGE);
         }
         return rs;
     }
@@ -342,7 +347,8 @@ public class Controlador {
             PreparedStatement ps = connection.prepareStatement(sql);
             rs = ps.executeQuery();
         } catch (SQLException e) {
-            JOptionPane.showMessageDialog(null, "Error al obtener el historial de movimientos: " + e.getMessage(), "Error de Base de Datos", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null, "Error al obtener el historial de movimientos: " + e.getMessage(),
+                    "Error de Base de Datos", JOptionPane.ERROR_MESSAGE);
         }
         return rs;
     }
@@ -352,14 +358,14 @@ public class Controlador {
      * Esto incluye insertar en el historial y actualizar la tabla de animales.
      * Se usa una transacción para garantizar la integridad de los datos.
      */
-/**
+    /**
      * Realiza la lógica de negocio para registrar un nuevo movimiento de animal.
      * Esto incluye insertar en el historial y actualizar la tabla de animales.
      * Se usa una transacción para garantizar la integridad de los datos.
      */
     public void registrarMovimientoAnimal(String codigoAnimal, int idLoteDestino, java.sql.Date fecha) {
-        Integer idLoteAnterior = null; 
-        
+        Integer idLoteAnterior = null;
+
         try {
             // PASO 1: Iniciar la transacción
             connection.setAutoCommit(false);
@@ -379,7 +385,8 @@ public class Controlador {
 
             // Validación: No mover un animal al lote en el que ya está.
             if (idLoteAnterior != null && idLoteAnterior == idLoteDestino) {
-                JOptionPane.showMessageDialog(null, "El animal ya se encuentra en el lote de destino.", "Movimiento Inválido", JOptionPane.WARNING_MESSAGE);
+                JOptionPane.showMessageDialog(null, "El animal ya se encuentra en el lote de destino.",
+                        "Movimiento Inválido", JOptionPane.WARNING_MESSAGE);
                 connection.rollback(); // Cancelamos la transacción
                 return;
             }
@@ -408,7 +415,8 @@ public class Controlador {
 
             // PASO 5: Si todo fue exitoso, confirmar la transacción
             connection.commit();
-            JOptionPane.showMessageDialog(null, "Movimiento registrado exitosamente.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(null, "Movimiento registrado exitosamente.", "Éxito",
+                    JOptionPane.INFORMATION_MESSAGE);
 
         } catch (SQLException e) {
             // Si ocurre cualquier error, revertimos todos los cambios
@@ -417,7 +425,8 @@ public class Controlador {
             } catch (SQLException ex) {
                 System.out.println("Error al hacer rollback: " + ex.getMessage());
             }
-            JOptionPane.showMessageDialog(null, "Error al registrar el movimiento: " + e.getMessage(), "Error de Transacción", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null, "Error al registrar el movimiento: " + e.getMessage(),
+                    "Error de Transacción", JOptionPane.ERROR_MESSAGE);
         } finally {
             // Siempre restauramos el modo auto-commit
             try {
@@ -430,48 +439,57 @@ public class Controlador {
 
     /**
      * Modifica un registro existente en el historial.
-     * ADVERTENCIA: Esta función modifica datos históricos y no ajusta la ubicación actual
+     * ADVERTENCIA: Esta función modifica datos históricos y no ajusta la ubicación
+     * actual
      * del animal. Debe usarse para corregir errores de digitación.
      */
-/**
+    /**
      * Modifica un registro existente en el historial.
-     * ADVERTENCIA: Esta función modifica datos históricos y no ajusta la ubicación actual
+     * ADVERTENCIA: Esta función modifica datos históricos y no ajusta la ubicación
+     * actual
      * del animal. Debe usarse para corregir errores de digitación.
      */
-    public void modificarRegistroHistorial(int idMovimiento, String nuevoCodigoAnimal, int nuevoIdLoteDestino, java.sql.Date nuevaFecha) {
+    public void modificarRegistroHistorial(int idMovimiento, String nuevoCodigoAnimal, int nuevoIdLoteDestino,
+            java.sql.Date nuevaFecha) {
         String sql = "UPDATE historial_lote SET id_animal = ?, id_lote_posterior = ?, fecha = ? WHERE id = ?";
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, nuevoCodigoAnimal);
             ps.setInt(2, nuevoIdLoteDestino);
             ps.setDate(3, nuevaFecha); // Se usa setDate
             ps.setInt(4, idMovimiento);
-            
+
             int filasAfectadas = ps.executeUpdate();
             if (filasAfectadas > 0) {
-                JOptionPane.showMessageDialog(null, "Registro de historial modificado exitosamente.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane.showMessageDialog(null, "Registro de historial modificado exitosamente.", "Éxito",
+                        JOptionPane.INFORMATION_MESSAGE);
             } else {
-                JOptionPane.showMessageDialog(null, "No se encontró el registro de historial a modificar.", "Aviso", JOptionPane.WARNING_MESSAGE);
+                JOptionPane.showMessageDialog(null, "No se encontró el registro de historial a modificar.", "Aviso",
+                        JOptionPane.WARNING_MESSAGE);
             }
         } catch (SQLException e) {
-            JOptionPane.showMessageDialog(null, "Error al modificar el historial: " + e.getMessage(), "Error de Base de Datos", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null, "Error al modificar el historial: " + e.getMessage(),
+                    "Error de Base de Datos", JOptionPane.ERROR_MESSAGE);
         }
     }
 
     /**
      * Busca códigos de animales que coincidan con un texto de búsqueda.
+     * 
      * @param busqueda El texto que el usuario está escribiendo.
      * @return Un ResultSet con los códigos que empiezan con el texto de búsqueda.
      */
     public ResultSet buscarCodigosAnimales(String busqueda) {
         ResultSet rs = null;
-        // Usamos LIKE con el comodín '%' para buscar códigos que COMIENCEN con el texto.
+        // Usamos LIKE con el comodín '%' para buscar códigos que COMIENCEN con el
+        // texto.
         String sql = "SELECT codigo FROM animal WHERE codigo LIKE ? ORDER BY codigo";
         try {
             PreparedStatement ps = connection.prepareStatement(sql);
             ps.setString(1, busqueda + "%"); // Añade el comodín aquí
             rs = ps.executeQuery();
         } catch (SQLException e) {
-            JOptionPane.showMessageDialog(null, "Error al buscar animales: " + e.getMessage(), "Error de Base de Datos", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null, "Error al buscar animales: " + e.getMessage(), "Error de Base de Datos",
+                    JOptionPane.ERROR_MESSAGE);
         }
         return rs;
     }
@@ -543,12 +561,19 @@ public class Controlador {
 
     /* ------------------ Eventos sanitarios ------------------ */
 
-    public void guardarEventoSanitario(java.sql.Timestamp fecha, Integer idProducto, Float dosis, String motivo, String diagnostico, String idAnimal, String tipo) throws SQLException {
+    public void guardarEventoSanitario(java.sql.Timestamp fecha, Integer idProducto, Float dosis, String motivo,
+            String diagnostico, String idAnimal, String tipo) throws SQLException {
         String sql = "INSERT INTO eventos_sanitarios (fecha, id_producto, dosis, motivo, diagnostico, id_animal, tipo) VALUES (?, ?, ?, ?, ?, ?, ?)";
         PreparedStatement ps = connection.prepareStatement(sql);
         ps.setTimestamp(1, fecha);
-        if (idProducto != null) ps.setInt(2, idProducto); else ps.setNull(2, java.sql.Types.INTEGER);
-        if (dosis != null) ps.setFloat(3, dosis); else ps.setNull(3, java.sql.Types.FLOAT);
+        if (idProducto != null)
+            ps.setInt(2, idProducto);
+        else
+            ps.setNull(2, java.sql.Types.INTEGER);
+        if (dosis != null)
+            ps.setFloat(3, dosis);
+        else
+            ps.setNull(3, java.sql.Types.FLOAT);
         ps.setString(4, motivo);
         ps.setString(5, diagnostico);
         ps.setString(6, idAnimal);
@@ -639,5 +664,159 @@ public class Controlador {
         }
     }
 
+    public void actualizarSalida(int idSalida, String nuevoMotivo, java.sql.Date nuevaFecha) {
+        String idAnimal = null;
+
+        try {
+            // --- PASO 1: Obtener el código del animal antes de iniciar la transacción ---
+            String sqlSelect = "SELECT id_animal FROM salida WHERE id = ?";
+            try (PreparedStatement psSelect = connection.prepareStatement(sqlSelect)) {
+                psSelect.setInt(1, idSalida);
+                ResultSet rs = psSelect.executeQuery();
+                if (rs.next()) {
+                    idAnimal = rs.getString("id_animal");
+                } else {
+                    // Si no se encuentra la salida, no podemos continuar.
+                    throw new SQLException("No se encontró el registro de salida con ID: " + idSalida);
+                }
+            }
+
+            // --- PASO 2: Iniciar la transacción ---
+            connection.setAutoCommit(false);
+
+            // --- PASO 3: Actualizar el registro en la tabla 'salida' ---
+            String sqlUpdateSalida = "UPDATE salida SET motivo = ?, fecha = ? WHERE id = ?";
+            try (PreparedStatement psSalida = connection.prepareStatement(sqlUpdateSalida)) {
+                psSalida.setString(1, nuevoMotivo);
+                psSalida.setDate(2, nuevaFecha);
+                psSalida.setInt(3, idSalida);
+                psSalida.executeUpdate();
+            }
+
+            // --- PASO 4: Actualizar el estado correspondiente en la tabla 'animal' ---
+            String nuevoEstado = nuevoMotivo.equals("MUERTE") ? "MUERTO" : "VENDIDO";
+            String sqlUpdateAnimal = "UPDATE animal SET estado = ? WHERE codigo = ?";
+            try (PreparedStatement psAnimal = connection.prepareStatement(sqlUpdateAnimal)) {
+                psAnimal.setString(1, nuevoEstado);
+                psAnimal.setString(2, idAnimal);
+                psAnimal.executeUpdate();
+            }
+
+            // --- PASO 5: Si todo fue exitoso, confirmar la transacción ---
+            connection.commit();
+            // JOptionPane.showMessageDialog(null, "Salida actualizada correctamente."); //
+            // El panel ya muestra este mensaje
+
+        } catch (SQLException e) {
+            // --- ERROR: Si algo falló, revertir todos los cambios ---
+            try {
+                connection.rollback();
+            } catch (SQLException ex) {
+                System.out.println("Error al intentar hacer rollback: " + ex.getMessage());
+            }
+            // Lanzamos una nueva excepción para que el panel la capture y muestre el
+            // mensaje de error.
+            throw new RuntimeException("Error al actualizar la salida: " + e.getMessage());
+
+        } finally {
+            // --- SIEMPRE: Restaurar el modo auto-commit ---
+            try {
+                connection.setAutoCommit(true);
+            } catch (SQLException ex) {
+                System.out.println("Error al restaurar auto-commit: " + ex.getMessage());
+            }
+        }
+    }
+
+    
+
+    /**
+     * Guarda un nuevo registro de producción de leche en la base de datos.
+     */
+    public void guardarProduccionLeche(Timestamp fecha, int litrosMatutinos, int litrosVispertinos, String idAnimal)
+            throws SQLException {
+        String sql = "INSERT INTO produccion_leche (fecha, litros_matutinos, litros_vispertinos, id_animal) VALUES (?, ?, ?, ?)";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setTimestamp(1, fecha);
+            ps.setInt(2, litrosMatutinos);
+            ps.setInt(3, litrosVispertinos);
+            ps.setString(4, idAnimal);
+            ps.executeUpdate();
+        }
+    }
+
+    public java.util.List<String> buscarAnimalesHembras(String filtro) {
+    java.util.List<String> resultado = new java.util.ArrayList<>();
+    // Añadimos la condición AND sexo = 'F' a la consulta SQL
+    String sql = "SELECT codigo FROM animal WHERE codigo LIKE ? AND estado = 'ACTIVO' AND sexo = 'F'";
+    try {
+        PreparedStatement ps = connection.prepareStatement(sql);
+        ps.setString(1, "%" + filtro + "%");
+        ResultSet rs = ps.executeQuery();
+        while (rs.next()) {
+            resultado.add(rs.getString("codigo"));
+        }
+    } catch (Exception e) {
+        System.out.println("Error al buscar animales hembras: " + e.getMessage());
+    }
+    return resultado;
 }
 
+
+    /**
+     * Obtiene todos los registros de producción de leche de la base de datos.
+     * 
+     * @return Una lista de arrays de objetos, donde cada array representa una fila.
+     */
+    public List<Object[]> obtenerProduccionLeche() {
+        List<Object[]> lista = new java.util.ArrayList<>();
+        String sql = "SELECT id, fecha, id_animal, litros_matutinos, litros_vispertinos FROM produccion_leche ORDER BY fecha DESC, id DESC";
+        try (PreparedStatement ps = connection.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                Object[] fila = new Object[5];
+                fila[0] = rs.getInt("id");
+                fila[1] = rs.getTimestamp("fecha");
+                fila[2] = rs.getString("id_animal");
+                fila[3] = rs.getInt("litros_matutinos");
+                fila[4] = rs.getInt("litros_vispertinos");
+                lista.add(fila);
+            }
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null, "Error al obtener registros de producción: " + e.getMessage());
+        }
+        return lista;
+    }
+
+    /**
+     * Actualiza un registro de producción de leche existente.
+     */
+    public void actualizarProduccionLeche(int id, Timestamp fecha, int litrosMatutinos, int litrosVispertinos,
+            String idAnimal) throws SQLException {
+        String sql = "UPDATE produccion_leche SET fecha = ?, litros_matutinos = ?, litros_vispertinos = ?, id_animal = ? WHERE id = ?";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setTimestamp(1, fecha);
+            ps.setInt(2, litrosMatutinos);
+            ps.setInt(3, litrosVispertinos);
+            ps.setString(4, idAnimal);
+            ps.setInt(5, id);
+            ps.executeUpdate();
+        }
+    }
+
+    /**
+     * Elimina un registro de producción de leche de la base de datos.
+     */
+    public void eliminarProduccionLeche(int id) {
+        String sql = "DELETE FROM produccion_leche WHERE id = ?";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, id);
+            ps.executeUpdate();
+            JOptionPane.showMessageDialog(null, "Registro eliminado exitosamente.", "Éxito",
+                    JOptionPane.INFORMATION_MESSAGE);
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null, "Error al eliminar el registro: " + e.getMessage());
+        }
+    }
+
+}
