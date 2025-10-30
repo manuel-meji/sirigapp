@@ -7,26 +7,32 @@ import com.toedter.calendar.JDateChooser;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.event.DocumentListener;
-import javax.swing.event.DocumentEvent;
+import javax.swing.table.TableRowSorter;
 import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.Date;
-import java.util.Vector;
+import java.util.List;
 
-public class panelSalidaAnimales extends javax.swing.JPanel {
+public class panelSalidaAnimales extends JPanel {
     private Controlador controlador;
     private JComboBox<String> cbAnimal;
-    private JTextField txtBusquedaAnimal;
     private JComboBox<String> cbMotivo;
     private JDateChooser dcFecha;
     private JTable tablaSalidas;
     private DefaultTableModel modeloTabla;
-    
-    // --- Fuentes ---
-    private final Font FONT_TITULO = FontLoader.loadFont("/resources/fonts/Montserrat-Black.ttf", 48f);
-    private final Font FONT_NORMAL = FontLoader.loadFont("/resources/fonts/Montserrat-SemiBold.ttf", 18f);
+    private JTextField txtBusquedaTabla;
+    private TableRowSorter<DefaultTableModel> sorter;
+    private JButton btnGuardar; // Hecho miembro de la clase para cambiar su texto
+
+    // Variable para gestionar el estado de edición
+    private Integer idSalidaEditando = null;
+
+    // --- Fuentes estandarizadas ---
+    private final Font FONT_SUBTITULO = FontLoader.loadFont("/resources/fonts/Montserrat-Bold.ttf", 24f);
+    private final Font FONT_LABEL = FontLoader.loadFont("/resources/fonts/Montserrat-SemiBold.ttf", 16f);
+    private final Font FONT_INPUT = FontLoader.loadFont("/resources/fonts/Montserrat-Light.ttf", 16f);
+    private final Font FONT_BOTON = FontLoader.loadFont("/resources/fonts/Montserrat-SemiBold.ttf", 14f);
 
     public panelSalidaAnimales(Controlador controlador) {
         this.controlador = controlador;
@@ -34,236 +40,301 @@ public class panelSalidaAnimales extends javax.swing.JPanel {
     }
 
     public JPanel createContentPanel() {
-        JPanel contentPanel = new JPanel();
-        contentPanel.setLayout(new BorderLayout());
-        contentPanel.setBackground(new Color(245, 246, 248));
+        // --- Estructura Principal (sin cambios) ---
+        JPanel content = new JPanel(new BorderLayout());
+        content.setBackground(new Color(245, 246, 248));
 
-        // Título
-        JLabel title = new JLabel("Registro de Salidas");
-        title.setFont(FONT_TITULO.deriveFont(Font.BOLD, 26f));
-        title.setBorder(new EmptyBorder(24, 32, 8, 32));
-        title.setHorizontalAlignment(SwingConstants.LEFT);
-        contentPanel.add(title, BorderLayout.NORTH);
+        JLabel title = new JLabel("Registro de Salidas de Animales");
+        title.setFont(FONT_SUBTITULO);
+        title.setBorder(new EmptyBorder(20, 24, 8, 24));
+        content.add(title, BorderLayout.NORTH);
 
-        // Panel principal
-        JPanel mainPanel = new JPanel(new BorderLayout());
-        mainPanel.setOpaque(false);
-        mainPanel.setBorder(new EmptyBorder(16, 32, 32, 32));
-
-        // Panel del formulario
-        JPanel formPanel = createFormPanel();
-        mainPanel.add(formPanel, BorderLayout.NORTH);
-
-        // Panel de la tabla
-        JPanel tablePanel = createTablePanel();
-        mainPanel.add(tablePanel, BorderLayout.CENTER);
-
-        contentPanel.add(mainPanel, BorderLayout.CENTER);
-        return contentPanel;
-    }
-
-    private JPanel createFormPanel() {
-        JPanel card = new JPanel(new GridBagLayout());
+        JPanel card = new JPanel(new BorderLayout());
         card.setBackground(Color.WHITE);
         card.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(new Color(220, 223, 230), 1),
-            new EmptyBorder(20, 24, 24, 24)
+                BorderFactory.createLineBorder(new Color(220, 223, 230), 1),
+                new EmptyBorder(16, 16, 16, 16)
         ));
 
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(5, 5, 5, 5);
-        gbc.fill = GridBagConstraints.HORIZONTAL;
+        // --- Panel de formulario ---
+        JPanel formPanel = new JPanel(null);
+        formPanel.setOpaque(false);
+        formPanel.setPreferredSize(new Dimension(0, 120));
 
-        // ID Animal con búsqueda
-        JLabel lblAnimal = new JLabel("ID Animal:");
-        lblAnimal.setFont(FONT_NORMAL.deriveFont(Font.PLAIN, 16f));
-        gbc.gridx = 0; gbc.gridy = 0;
-        card.add(lblAnimal, gbc);
+        JLabel lblAnimal = new JLabel("Buscar Animal (ID):");
+        lblAnimal.setFont(FONT_LABEL);
+        lblAnimal.setBounds(10, 10, 160, 30);
+        formPanel.add(lblAnimal);
 
-        JPanel searchPanel = new JPanel(new BorderLayout(5, 0));
-        searchPanel.setOpaque(false);
-        
-        txtBusquedaAnimal = new JTextField();
-        txtBusquedaAnimal.setFont(FONT_NORMAL.deriveFont(Font.PLAIN, 14f));
         cbAnimal = new JComboBox<>();
-        cbAnimal.setFont(FONT_NORMAL.deriveFont(Font.PLAIN, 14f));
-        
-        searchPanel.add(txtBusquedaAnimal, BorderLayout.CENTER);
-        searchPanel.add(cbAnimal, BorderLayout.EAST);
-        
-        gbc.gridx = 1; gbc.gridy = 0; gbc.weightx = 1.0;
-        card.add(searchPanel, gbc);
+        cbAnimal.setFont(FONT_INPUT);
+        cbAnimal.setEditable(true);
+        cbAnimal.setBounds(190, 10, 250, 30);
+        formPanel.add(cbAnimal);
 
-        // Configurar búsqueda dinámica
-        txtBusquedaAnimal.getDocument().addDocumentListener(new DocumentListener() {
-            public void insertUpdate(DocumentEvent e) { actualizarBusqueda(); }
-            public void removeUpdate(DocumentEvent e) { actualizarBusqueda(); }
-            public void changedUpdate(DocumentEvent e) { actualizarBusqueda(); }
-            
-            private void actualizarBusqueda() {
-                String texto = txtBusquedaAnimal.getText();
-                actualizarComboAnimales(texto);
+        JTextField editor = (JTextField) cbAnimal.getEditor().getEditorComponent();
+        editor.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent e) {
+                if (cbAnimal.isEnabled()) {
+                    String texto = editor.getText();
+                    SwingUtilities.invokeLater(() -> actualizarBusquedaAnimal(texto));
+                }
             }
         });
 
-        // Motivo
         JLabel lblMotivo = new JLabel("Motivo:");
-        lblMotivo.setFont(FONT_NORMAL.deriveFont(Font.PLAIN, 16f));
-        gbc.gridx = 2; gbc.gridy = 0; gbc.weightx = 0.0;
-        card.add(lblMotivo, gbc);
+        lblMotivo.setFont(FONT_LABEL);
+        lblMotivo.setBounds(460, 10, 100, 30);
+        formPanel.add(lblMotivo);
 
         cbMotivo = new JComboBox<>(new String[]{"VENTA", "MUERTE"});
-        cbMotivo.setFont(FONT_NORMAL.deriveFont(Font.PLAIN, 14f));
-        gbc.gridx = 3; gbc.gridy = 0; gbc.weightx = 1.0;
-        card.add(cbMotivo, gbc);
+        cbMotivo.setFont(FONT_INPUT);
+        cbMotivo.setBounds(570, 10, 250, 30);
+        formPanel.add(cbMotivo);
 
-        // Fecha
         JLabel lblFecha = new JLabel("Fecha:");
-        lblFecha.setFont(FONT_NORMAL.deriveFont(Font.PLAIN, 16f));
-        gbc.gridx = 0; gbc.gridy = 1; gbc.weightx = 0.0;
-        card.add(lblFecha, gbc);
+        lblFecha.setFont(FONT_LABEL);
+        lblFecha.setBounds(10, 60, 150, 30);
+        formPanel.add(lblFecha);
 
         dcFecha = new JDateChooser();
         dcFecha.setDate(new Date());
         dcFecha.setDateFormatString("yyyy-MM-dd");
-        dcFecha.setFont(FONT_NORMAL.deriveFont(Font.PLAIN, 14f));
-        gbc.gridx = 1; gbc.gridy = 1; gbc.weightx = 1.0;
-        card.add(dcFecha, gbc);
+        dcFecha.setFont(FONT_INPUT);
+        dcFecha.setBounds(190, 60, 250, 30);
+        formPanel.add(dcFecha);
 
-        // Botón Guardar
-        JButton btnGuardar = new JButton("Registrar Salida");
-        btnGuardar.setFont(FONT_NORMAL.deriveFont(Font.PLAIN, 14f));
+        btnGuardar = new JButton("Registrar Salida"); // Asignado a la variable de clase
+        btnGuardar.setFont(FONT_BOTON);
         btnGuardar.setBackground(new Color(67, 160, 71));
         btnGuardar.setForeground(Color.WHITE);
-        btnGuardar.setFocusPainted(false);
-        gbc.gridx = 3; gbc.gridy = 1; 
-        card.add(btnGuardar, gbc);
+        btnGuardar.setBounds(570, 60, 250, 40);
+        formPanel.add(btnGuardar);
 
-        btnGuardar.addActionListener(e -> guardarSalida());
+        card.add(formPanel, BorderLayout.NORTH);
 
-        return card;
-    }
+        // --- Panel de la tabla y búsqueda (sin cambios) ---
+        JPanel tableContainer = new JPanel(new BorderLayout(0, 8));
+        tableContainer.setOpaque(false);
 
-    private JPanel createTablePanel() {
-        JPanel panel = new JPanel(new BorderLayout());
-        panel.setOpaque(false);
-        panel.setBorder(new EmptyBorder(20, 0, 0, 0));
+        JPanel searchBarPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
+        searchBarPanel.setOpaque(false);
+        JLabel lblBuscarTabla = new JLabel("Buscar en la tabla:");
+        lblBuscarTabla.setFont(FONT_LABEL.deriveFont(14f));
+        txtBusquedaTabla = new JTextField(25);
+        txtBusquedaTabla.setFont(FONT_INPUT.deriveFont(14f));
+        searchBarPanel.add(lblBuscarTabla);
+        searchBarPanel.add(Box.createHorizontalStrut(10));
+        searchBarPanel.add(txtBusquedaTabla);
+        tableContainer.add(searchBarPanel, BorderLayout.NORTH);
 
-        // Crear modelo de tabla
         String[] columnas = {"ID", "Animal", "Motivo", "Fecha"};
         modeloTabla = new DefaultTableModel(columnas, 0) {
             @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            }
+            public boolean isCellEditable(int row, int column) { return false; }
         };
-
         tablaSalidas = new JTable(modeloTabla);
-        tablaSalidas.setFont(FONT_NORMAL.deriveFont(Font.PLAIN, 14f));
-        tablaSalidas.setRowHeight(30);
-        tablaSalidas.getTableHeader().setFont(FONT_NORMAL.deriveFont(Font.BOLD, 14f));
-        tablaSalidas.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        sorter = new TableRowSorter<>(modeloTabla);
+        tablaSalidas.setRowSorter(sorter);
 
+        tablaSalidas.setRowHeight(28);
+        tablaSalidas.setFont(FONT_INPUT.deriveFont(14f));
+        tablaSalidas.getTableHeader().setFont(FONT_LABEL.deriveFont(14f));
         JScrollPane scrollPane = new JScrollPane(tablaSalidas);
-        panel.add(scrollPane, BorderLayout.CENTER);
+        scrollPane.setBorder(BorderFactory.createEmptyBorder());
+        tableContainer.add(scrollPane, BorderLayout.CENTER);
 
-        // Panel de botones
-        JPanel buttonsPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        buttonsPanel.setOpaque(false);
+        card.add(tableContainer, BorderLayout.CENTER);
 
+        // --- Botones de acción de la tabla ---
+        JPanel tableButtonsPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        tableButtonsPanel.setOpaque(false);
         JButton btnEditar = new JButton("Editar");
         JButton btnEliminar = new JButton("Eliminar");
 
-        btnEditar.setFont(FONT_NORMAL.deriveFont(Font.PLAIN, 14f));
-        btnEliminar.setFont(FONT_NORMAL.deriveFont(Font.PLAIN, 14f));
-
+        btnEditar.setFont(FONT_BOTON);
         btnEditar.setBackground(new Color(100, 181, 246));
-        btnEliminar.setBackground(new Color(229, 57, 53));
         btnEditar.setForeground(Color.WHITE);
+
+        btnEliminar.setFont(FONT_BOTON);
+        btnEliminar.setBackground(new Color(229, 57, 53));
         btnEliminar.setForeground(Color.WHITE);
 
-        btnEditar.addActionListener(e -> editarSalida());
+        tableButtonsPanel.add(btnEditar);
+        tableButtonsPanel.add(btnEliminar);
+        card.add(tableButtonsPanel, BorderLayout.SOUTH);
+
+        content.add(card, BorderLayout.CENTER);
+
+        // --- Listeners ---
+        btnGuardar.addActionListener(e -> guardarOActualizarSalida()); // El botón ahora tiene doble propósito
+        btnEditar.addActionListener(e -> prepararEdicion()); // Nuevo método para la lógica de edición
         btnEliminar.addActionListener(e -> eliminarSalida());
+        
+        txtBusquedaTabla.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent e) {
+                filtrarTabla();
+            }
+        });
 
-        buttonsPanel.add(btnEditar);
-        buttonsPanel.add(btnEliminar);
-
-        panel.add(buttonsPanel, BorderLayout.SOUTH);
-
-        // Cargar datos iniciales
+        // --- Carga Inicial ---
         cargarSalidas();
+        cargarAnimalesIniciales();
 
-        return panel;
+        return content;
     }
 
-    private void actualizarComboAnimales(String filtro) {
-        cbAnimal.removeAllItems();
-        // Obtener los animales que coincidan con el filtro
-        java.util.List<String> animales = controlador.buscarAnimales(filtro);
-        for (String animal : animales) {
-            cbAnimal.addItem(animal);
-        }
-        cbAnimal.setPopupVisible(!filtro.isEmpty());
-    }
-
-    private void guardarSalida() {
-        try {
-            String animal = cbAnimal.getSelectedItem().toString();
-            String motivo = cbMotivo.getSelectedItem().toString();
-            java.sql.Date fecha = new java.sql.Date(dcFecha.getDate().getTime());
-            
-            controlador.guardarSalida(animal, motivo, fecha);
-            cargarSalidas();
-            limpiarFormulario();
-            JOptionPane.showMessageDialog(this, "Salida registrada correctamente");
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Error al guardar: " + ex.getMessage());
+    private void filtrarTabla() {
+        String texto = txtBusquedaTabla.getText();
+        if (texto.trim().length() == 0) {
+            sorter.setRowFilter(null);
+        } else {
+            sorter.setRowFilter(RowFilter.regexFilter("(?i)" + texto));
         }
     }
 
-    private void editarSalida() {
-        int fila = tablaSalidas.getSelectedRow();
-        if (fila == -1) {
-            JOptionPane.showMessageDialog(this, "Seleccione una salida para editar");
+    private void actualizarBusquedaAnimal(String filtro) {
+        List<String> animales = controlador.buscarAnimales(filtro);
+        DefaultComboBoxModel<String> model = (DefaultComboBoxModel<String>) cbAnimal.getModel();
+        model.removeAllElements();
+        animales.forEach(model::addElement);
+        
+        JTextField editor = (JTextField) cbAnimal.getEditor().getEditorComponent();
+        editor.setText(filtro);
+        
+        if (!animales.isEmpty() && !filtro.isEmpty()) {
+            cbAnimal.showPopup();
+        } else {
+            cbAnimal.hidePopup();
+        }
+    }
+
+    /**
+     * Este método ahora decide si crear un nuevo registro o actualizar uno existente.
+     */
+    private void guardarOActualizarSalida() {
+        if (idSalidaEditando == null) {
+            // --- MODO REGISTRO ---
+            try {
+                Object selectedItem = cbAnimal.getSelectedItem();
+                if (selectedItem == null || selectedItem.toString().trim().isEmpty()) {
+                    JOptionPane.showMessageDialog(this, "Debe seleccionar un animal válido.", "Error de Validación", JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+
+                String animal = selectedItem.toString();
+                String motivo = cbMotivo.getSelectedItem().toString();
+                java.sql.Date fecha = new java.sql.Date(dcFecha.getDate().getTime());
+
+                controlador.guardarSalida(animal, motivo, fecha);
+                cargarSalidas();
+                limpiarFormulario();
+                JOptionPane.showMessageDialog(this, "Salida registrada exitosamente.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Error al registrar la salida: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        } else {
+            // --- MODO ACTUALIZACIÓN ---
+            try {
+                String motivo = cbMotivo.getSelectedItem().toString();
+                java.sql.Date fecha = new java.sql.Date(dcFecha.getDate().getTime());
+
+                // TODO: Debes crear este método en tu clase `Controlador`
+                // Ejemplo de firma: public void actualizarSalida(int id, String nuevoMotivo, java.sql.Date nuevaFecha)
+                controlador.actualizarSalida(idSalidaEditando, motivo, fecha);
+                
+                cargarSalidas();
+                limpiarFormulario(); // Esto también saldrá del modo edición
+                JOptionPane.showMessageDialog(this, "Salida actualizada exitosamente.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Error al actualizar la salida: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
+
+    /**
+     * Prepara el formulario para editar un registro seleccionado.
+     */
+    private void prepararEdicion() {
+        int filaSeleccionadaEnVista = tablaSalidas.getSelectedRow();
+        if (filaSeleccionadaEnVista == -1) {
+            JOptionPane.showMessageDialog(this, "Seleccione una salida de la tabla para editar.", "Aviso", JOptionPane.WARNING_MESSAGE);
             return;
         }
         
-        int id = (int) tablaSalidas.getValueAt(fila, 0);
-        controlador.editarSalida(id);
-        cargarSalidas();
+        int filaEnModelo = tablaSalidas.convertRowIndexToModel(filaSeleccionadaEnVista);
+        
+        // Obtener datos de la fila
+        Integer id = (Integer) modeloTabla.getValueAt(filaEnModelo, 0);
+        String animal = (String) modeloTabla.getValueAt(filaEnModelo, 1);
+        String motivo = (String) modeloTabla.getValueAt(filaEnModelo, 2);
+        Date fecha = (Date) modeloTabla.getValueAt(filaEnModelo, 3);
+
+        // Entrar en modo edición
+        this.idSalidaEditando = id;
+
+        // Cargar datos en el formulario
+        ((JTextField) cbAnimal.getEditor().getEditorComponent()).setText(animal);
+        cbMotivo.setSelectedItem(motivo);
+        dcFecha.setDate(fecha);
+
+        // Actualizar UI para el modo edición
+        btnGuardar.setText("Actualizar Salida");
+        cbAnimal.setEnabled(false); // No se puede cambiar el animal de un registro
     }
 
     private void eliminarSalida() {
-        int fila = tablaSalidas.getSelectedRow();
-        if (fila == -1) {
-            JOptionPane.showMessageDialog(this, "Seleccione una salida para eliminar");
+        int filaSeleccionadaEnVista = tablaSalidas.getSelectedRow();
+        if (filaSeleccionadaEnVista == -1) {
+            JOptionPane.showMessageDialog(this, "Seleccione una salida para eliminar.", "Aviso", JOptionPane.WARNING_MESSAGE);
             return;
         }
 
-        int confirmar = JOptionPane.showConfirmDialog(this, 
-            "¿Está seguro de eliminar esta salida?", 
-            "Confirmar eliminación", 
-            JOptionPane.YES_NO_OPTION);
-            
+        int confirmar = JOptionPane.showConfirmDialog(this,
+                "¿Está seguro de que desea eliminar este registro?", "Confirmar eliminación",
+                JOptionPane.YES_NO_OPTION);
+
         if (confirmar == JOptionPane.YES_OPTION) {
-            int id = (int) tablaSalidas.getValueAt(fila, 0);
+            int filaEnModelo = tablaSalidas.convertRowIndexToModel(filaSeleccionadaEnVista);
+            int id = (int) modeloTabla.getValueAt(filaEnModelo, 0);
             controlador.eliminarSalida(id);
             cargarSalidas();
+            cargarAnimalesIniciales();
+            limpiarFormulario(); // Limpiar por si se estaba editando el registro eliminado
         }
     }
 
     private void cargarSalidas() {
         modeloTabla.setRowCount(0);
-        java.util.List<Object[]> salidas = controlador.obtenerSalidas();
+        List<Object[]> salidas = controlador.obtenerSalidas();
         for (Object[] salida : salidas) {
             modeloTabla.addRow(salida);
         }
     }
 
+    private void cargarAnimalesIniciales() {
+        actualizarBusquedaAnimal("");
+    }
+    
+    /**
+     * Limpia el formulario y sale del modo de edición.
+     */
     private void limpiarFormulario() {
-        txtBusquedaAnimal.setText("");
+        // Salir del modo edición
+        idSalidaEditando = null;
+
+        // Limpiar campos
+        ((JTextField) cbAnimal.getEditor().getEditorComponent()).setText("");
         cbAnimal.setSelectedIndex(-1);
         cbMotivo.setSelectedIndex(0);
         dcFecha.setDate(new Date());
+        txtBusquedaTabla.setText("");
+        
+        // Restaurar UI al modo registro
+        btnGuardar.setText("Registrar Salida");
+        cbAnimal.setEnabled(true);
+        tablaSalidas.clearSelection();
     }
 }

@@ -27,7 +27,7 @@ public class vistaSalud extends JPanel {
 		main.setBackground(new Color(245,246,248));
 
 		JLabel title = new JLabel("Gestión de Salud");
-		title.setFont(FONT_TITULO.deriveFont(Font.BOLD, 24f));
+		title.setFont(FONT_TITULO.deriveFont(Font.BOLD, 26f));
 		title.setBorder(BorderFactory.createEmptyBorder(20, 24, 8, 24));
 		main.add(title, BorderLayout.NORTH);
 
