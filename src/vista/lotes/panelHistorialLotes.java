@@ -284,19 +284,28 @@ public class panelHistorialLotes extends JPanel {
         }
     }
 
-    private void guardarCambiosMovimiento() {
-        String codigoAnimal = ((JTextField) cmbAnimalesId.getEditor().getEditorComponent()).getText();
-        if (codigoAnimal.trim().isEmpty() || codigoAnimal.equals(PLACEHOLDER_ANIMAL) || cmbLotesDestinoId.getSelectedIndex() <= 0) {
-            JOptionPane.showMessageDialog(this, "Debe seleccionar un ID de animal y un ID de lote válidos.", "Error de validación", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-        int idLoteDestino = Integer.parseInt(cmbLotesDestinoId.getSelectedItem().toString());
-        Date fechaUtil = dateChooser.getDate();
-        java.sql.Date fechaSql = new java.sql.Date(fechaUtil.getTime());
-        controlador.modificarRegistroHistorial(idMovimientoSeleccionado, codigoAnimal, idLoteDestino, fechaSql);
-        cargarHistorialEnTabla();
-        salirModoEdicion();
+// REEMPLAZA ESTE MÉTODO EN TU CLASE 'panelHistorialLotes.java'
+
+private void guardarCambiosMovimiento() {
+    // La obtención de datos es la misma
+    String codigoAnimal = ((JTextField) cmbAnimalesId.getEditor().getEditorComponent()).getText();
+    if (codigoAnimal.trim().isEmpty() || codigoAnimal.equals(PLACEHOLDER_ANIMAL) || cmbLotesDestinoId.getSelectedIndex() <= 0) {
+        JOptionPane.showMessageDialog(this, "Debe seleccionar un ID de animal y un ID de lote válidos.", "Error de validación", JOptionPane.ERROR_MESSAGE);
+        return;
     }
+    int idLoteDestino = Integer.parseInt(cmbLotesDestinoId.getSelectedItem().toString());
+    Date fechaUtil = dateChooser.getDate();
+    java.sql.Date fechaSql = new java.sql.Date(fechaUtil.getTime());
+
+    // --- CAMBIO CLAVE: Se llama al nuevo método del controlador ---
+    // Nota: Estamos asumiendo que el código del animal no se puede cambiar en el modo de edición.
+    // El 'idAnimal' original se obtiene de la tabla cuando se entra en modo edición.
+    String idAnimalOriginal = (String) modeloTablaHistorial.getValueAt(tablaHistorial.getSelectedRow(), 1);
+    controlador.modificarUltimoMovimiento(idMovimientoSeleccionado, idAnimalOriginal, idLoteDestino, fechaSql);
+
+    cargarHistorialEnTabla();
+    salirModoEdicion();
+}
 
     private void entrarModoEdicion(int fila) {
         modoEdicion = true;
