@@ -1,7 +1,7 @@
 package vista.animales;
 
 import controlador.Controlador;
- 
+import vista.lotes.VistaLotes;
 import vista.ui.DesignSystem;
 
 import javax.swing.*;
@@ -15,6 +15,12 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 public class AnimalesFrame extends JFrame {
+
+    //Paneles de contenido
+    panelRegistroAnimales pRegistro;
+    panelMostrarAnimales pMostrar;
+    VistaLotes pLotes;
+    
 
     private Controlador controlador;
     JPanel contentPanel;
@@ -44,20 +50,28 @@ public class AnimalesFrame extends JFrame {
         setResizable(false);
         setLayout(new BorderLayout());
 
+        //Inicialización de los paneles
+        pMostrar = new panelMostrarAnimales();
+        pLotes = new VistaLotes(controlador);
+
         // 1. Panel del Menú Lateral
         JPanel menuPanel = createMenuPanel();
         add(menuPanel, BorderLayout.WEST);
 
         // 2. Panel de Contenido Principal (el área a la derecha del menú)
-         contentPanel = new JPanel();
-         contentPanel.setLayout(new BorderLayout());
-         contentPanel.setBackground(Color.WHITE);
-         add(contentPanel, BorderLayout.CENTER);
-         panelRegistroAnimales pRegistro = new panelRegistroAnimales(controlador);
-         JPanel contentPanel = pRegistro.createContentPanel();
-         contentPanel.add(contentPanel, BorderLayout.CENTER);
-         contentPanel.revalidate();
-         contentPanel.repaint();
+        contentPanel = new JPanel();
+        contentPanel.setLayout(new BorderLayout());
+        contentPanel.setBackground(Color.WHITE);
+        add(contentPanel, BorderLayout.CENTER);
+        
+        pRegistro = new panelRegistroAnimales(controlador);
+        cambiarPanelContenido(pRegistro.createContentPanel());
+
+        //  contentPanel.add(contentPanel, BorderLayout.CENTER);
+        //  contentPanel.revalidate();
+        //  contentPanel.repaint();
+
+
         //createContentPanel();
 
     }
@@ -195,11 +209,16 @@ public class AnimalesFrame extends JFrame {
         buttonsPanel.setLayout(new GridLayout(0, 1, 0, 2)); // 4 filas, 1 columna, 2px de espacio vertical
 
         JButton btnRegistroAnimales = createMenuButton("Registrar Animales", COLOR_BOTON_NORMAL);
+        btnRegistroAnimales.addActionListener(e -> {
+            panelRegistroAnimales pRegistro = new panelRegistroAnimales(controlador);
+            cambiarPanelContenido(pRegistro.createContentPanel());
+        });
         
         JButton btnMostrarAnimales = createMenuButton("Mostrar animales", COLOR_BOTON_NORMAL);
         btnMostrarAnimales.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 // Aquí iría la lógica para mostrar los animales
+                cambiarPanelContenido(pMostrar.createContentPanel(controlador, null));
                 System.out.println("Mostrar animales");
             }
         });
@@ -209,6 +228,13 @@ public class AnimalesFrame extends JFrame {
         JButton btnSalidasAnimales = createMenuButton("Salidas Animales", COLOR_BOTON_NORMAL);
         JButton btnGeneracionInformes = createMenuButton("Generación de Informes", COLOR_BOTON_NORMAL);
         JButton btnLotes = createMenuButton("Administración de Lotes", COLOR_BOTON_NORMAL);
+        btnLotes.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                // Aquí iría la lógica para mostrar los lotes
+                cambiarPanelContenido(pLotes);
+                System.out.println("Administración de Lotes");
+            }
+        });
 
         
         buttonsPanel.add(btnRegistroAnimales);

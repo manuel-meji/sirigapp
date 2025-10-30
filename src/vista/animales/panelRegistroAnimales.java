@@ -53,7 +53,7 @@ public class panelRegistroAnimales  extends JPanel{
         JLabel title = new JLabel("Registro de Animales");
         title.setHorizontalAlignment(SwingConstants.LEFT);
         title.setBorder(new EmptyBorder(24, 32, 8, 32));
-        title.setFont(FONT_BOTON_MENU.deriveFont(Font.BOLD, 26f));
+        title.setFont(FONT_TITULO_MENU.deriveFont(Font.BOLD, 26f));
         contentPanel.add(title, BorderLayout.NORTH);
 
         JPanel wrapper = new JPanel(null);
