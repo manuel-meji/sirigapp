@@ -9,7 +9,7 @@ public class VistaLotes extends JPanel {
     private Controlador controlador;
     private JTabbedPane tabbedPane;
     private panelRegistroLotes panelRegistro;
-    private panelHistorialLotes panelHistorial;
+    public static  panelHistorialLotes panelHistorial;
 
     public VistaLotes(Controlador controlador) {
         System.out.println("1. [DEBUG] Entrando al constructor de VistaLotes...");
@@ -33,5 +33,8 @@ public class VistaLotes extends JPanel {
         tabbedPane.addTab("Historial de Lotes", panelHistorial);
         
         add(tabbedPane, BorderLayout.CENTER);
+
+    
+
     }
 }
