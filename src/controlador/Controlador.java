@@ -664,7 +664,6 @@ public class Controlador {
         }
     }
 
-<<<<<<< HEAD
     public void actualizarSalida(int idSalida, String nuevoMotivo, java.sql.Date nuevaFecha) {
         String idAnimal = null;
 
@@ -728,8 +727,6 @@ public class Controlador {
             }
         }
     }
-
-    
 
     /**
      * Guarda un nuevo registro de producción de leche en la base de datos.
