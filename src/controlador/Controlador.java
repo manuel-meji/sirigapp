@@ -1184,4 +1184,19 @@ public java.util.List<String> obtenerLotesParaComboBox() {
     }
 }
 
+
+public boolean existeProduccionLechePorAnimalYFecha(String idAnimal, java.sql.Date fecha) {
+        String sql = "SELECT id FROM produccion_leche WHERE id_animal = ? AND fecha = ?";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, idAnimal);
+            ps.setDate(2, fecha);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next(); // Si hay al menos un registro, retorna true
+            }
+        } catch (SQLException e) {
+            System.out.println("Error al verificar producción de leche: " + e.getMessage());
+            return false; // En caso de error, asumimos que no existe
+        }
+
+}
 }
