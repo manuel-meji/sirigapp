@@ -142,7 +142,8 @@ public class Controlador {
      * (10 columnas).
      *
      * @param filtro texto a buscar (se usa LIKE %filtro%).
-     * @return lista de filas con 10 columnas: Codigo, Edad, Sexo, Raza, Peso Nac., Peso, Madre, Padre, Lote, Estado
+     * @return lista de filas con 10 columnas: Codigo, Edad, Sexo, Raza, Peso Nac.,
+     *         Peso, Madre, Padre, Lote, Estado
      */
     public java.util.List<Object[]> buscarAnimalesCompletos(String filtro) {
         java.util.List<Object[]> lista = new java.util.ArrayList<>();
@@ -189,7 +190,8 @@ public class Controlador {
      * Calcula la edad (años/meses/días) a partir de una fecha de nacimiento.
      *
      * @param fechaNacimiento java.sql.Date o null
-     * @return String con la edad formateada, por ejemplo "2 años 3 meses" o "5 meses" o "10 días".
+     * @return String con la edad formateada, por ejemplo "2 años 3 meses" o "5
+     *         meses" o "10 días".
      */
     private String calcularEdad(java.sql.Date fechaNacimiento) {
         if (fechaNacimiento == null)
@@ -383,17 +385,51 @@ public class Controlador {
         }
     }
 
-    public ResultSet obtenerTodosLosLotes() {
-        ResultSet rs = null;
-        try {
-            String sql = "SELECT * FROM lotes";
-            PreparedStatement ps = connection.prepareStatement(sql);
-            rs = ps.executeQuery();
-        } catch (SQLException e) {
-            JOptionPane.showMessageDialog(null, "Error al obtener lotes: " + e.getMessage());
+   public java.util.List<Object[]> obtenerDetallesTodosLotes() {
+    java.util.List<Object[]> lista = new java.util.ArrayList<>();
+    String sql = "SELECT id, nombre, etapa, descripcion FROM lotes";
+    
+    try (PreparedStatement ps = connection.prepareStatement(sql);
+         ResultSet rs = ps.executeQuery()) {
+        
+        while (rs.next()) {
+            Object[] fila = {
+                rs.getInt("id"),
+                rs.getString("nombre"),
+                rs.getString("etapa"),
+                rs.getString("descripcion")
+            };
+            lista.add(fila);
         }
-        return rs;
+    } catch (SQLException e) {
+        System.err.println("Error al obtener detalles de lotes: " + e.getMessage());
+        e.printStackTrace();
     }
+    return lista;
+}
+
+public java.util.List<String> obtenerLotesParaComboBox() {
+    java.util.List<String> lotesFormateados = new java.util.ArrayList<>();
+    String sql = "SELECT id, nombre FROM lotes ORDER BY nombre";
+    
+    try (PreparedStatement ps = connection.prepareStatement(sql);
+         ResultSet rs = ps.executeQuery()) {
+        
+        while (rs.next()) {
+            String item = rs.getInt("id") + " - " + rs.getString("nombre");
+            lotesFormateados.add(item);
+        }
+    } catch (SQLException e) {
+        // ANTES:
+        // JOptionPane.showMessageDialog(null, "Error al obtener lotes para ComboBox: " + e.getMessage());
+        
+        // AHORA:
+        System.err.println("Error al obtener lotes para ComboBox: " + e.getMessage());
+        e.printStackTrace();
+    }
+    return lotesFormateados;
+}
+
 
     public void modificarLote(int idLote, String nombre, String etapa, String descripcion) {
         PreparedStatement ps = null;
@@ -547,77 +583,80 @@ public class Controlador {
      * actual
      * del animal. Debe usarse para corregir errores de digitación.
      */
-// REEMPLAZA ESTE MÉTODO EN TU CLASE 'Controlador.java'
+    // REEMPLAZA ESTE MÉTODO EN TU CLASE 'Controlador.java'
 
-/**
- * Modifica el último movimiento de un animal de forma segura.
- * Verifica que sea el último movimiento, actualiza el historial y la ubicación
- * actual del animal dentro de una transacción.
- */
-public void modificarUltimoMovimiento(int idMovimiento, String codigoAnimal, int nuevoIdLoteDestino, java.sql.Date nuevaFecha) {
-    try {
-        // PASO 1: Iniciar la transacción
-        connection.setAutoCommit(false);
+    /**
+     * Modifica el último movimiento de un animal de forma segura.
+     * Verifica que sea el último movimiento, actualiza el historial y la ubicación
+     * actual del animal dentro de una transacción.
+     */
+    public void modificarUltimoMovimiento(int idMovimiento, String codigoAnimal, int nuevoIdLoteDestino,
+            java.sql.Date nuevaFecha) {
+        try {
+            // PASO 1: Iniciar la transacción
+            connection.setAutoCommit(false);
 
-        // PASO 2: VERIFICACIÓN CRÍTICA. Asegurarnos de que estamos modificando el ÚLTIMO movimiento del animal.
-        String sqlCheckLast = "SELECT id FROM historial_lote WHERE id_animal = ? ORDER BY fecha DESC, id DESC LIMIT 1";
-        try (PreparedStatement psCheck = connection.prepareStatement(sqlCheckLast)) {
-            psCheck.setString(1, codigoAnimal);
-            try (ResultSet rs = psCheck.executeQuery()) {
-                if (rs.next()) {
-                    int ultimoMovimientoId = rs.getInt("id");
-                    if (ultimoMovimientoId != idMovimiento) {
-                        throw new SQLException("Solo se puede modificar el movimiento más reciente de un animal.");
+            // PASO 2: VERIFICACIÓN CRÍTICA. Asegurarnos de que estamos modificando el
+            // ÚLTIMO movimiento del animal.
+            String sqlCheckLast = "SELECT id FROM historial_lote WHERE id_animal = ? ORDER BY fecha DESC, id DESC LIMIT 1";
+            try (PreparedStatement psCheck = connection.prepareStatement(sqlCheckLast)) {
+                psCheck.setString(1, codigoAnimal);
+                try (ResultSet rs = psCheck.executeQuery()) {
+                    if (rs.next()) {
+                        int ultimoMovimientoId = rs.getInt("id");
+                        if (ultimoMovimientoId != idMovimiento) {
+                            throw new SQLException("Solo se puede modificar el movimiento más reciente de un animal.");
+                        }
+                    } else {
+                        // Esto no debería pasar si el idMovimiento es válido, pero es una buena
+                        // salvaguarda.
+                        throw new SQLException("No se encontraron movimientos para el animal especificado.");
                     }
-                } else {
-                    // Esto no debería pasar si el idMovimiento es válido, pero es una buena salvaguarda.
-                    throw new SQLException("No se encontraron movimientos para el animal especificado.");
                 }
             }
-        }
 
-        // PASO 3: Actualizar el registro en la tabla de historial
-        String sqlUpdateHistorial = "UPDATE historial_lote SET id_lote_posterior = ?, fecha = ? WHERE id = ?";
-        try (PreparedStatement psUpdateHistorial = connection.prepareStatement(sqlUpdateHistorial)) {
-            psUpdateHistorial.setInt(1, nuevoIdLoteDestino);
-            psUpdateHistorial.setDate(2, nuevaFecha);
-            psUpdateHistorial.setInt(3, idMovimiento);
-            psUpdateHistorial.executeUpdate();
-        }
+            // PASO 3: Actualizar el registro en la tabla de historial
+            String sqlUpdateHistorial = "UPDATE historial_lote SET id_lote_posterior = ?, fecha = ? WHERE id = ?";
+            try (PreparedStatement psUpdateHistorial = connection.prepareStatement(sqlUpdateHistorial)) {
+                psUpdateHistorial.setInt(1, nuevoIdLoteDestino);
+                psUpdateHistorial.setDate(2, nuevaFecha);
+                psUpdateHistorial.setInt(3, idMovimiento);
+                psUpdateHistorial.executeUpdate();
+            }
 
-        // PASO 4: Actualizar la ubicación actual del animal en la tabla 'animal'
-        String sqlUpdateAnimal = "UPDATE animal SET id_lote_actual = ? WHERE codigo = ?";
-        try (PreparedStatement psUpdateAnimal = connection.prepareStatement(sqlUpdateAnimal)) {
-            psUpdateAnimal.setInt(1, nuevoIdLoteDestino);
-            psUpdateAnimal.setString(2, codigoAnimal);
-            psUpdateAnimal.executeUpdate();
-        }
+            // PASO 4: Actualizar la ubicación actual del animal en la tabla 'animal'
+            String sqlUpdateAnimal = "UPDATE animal SET id_lote_actual = ? WHERE codigo = ?";
+            try (PreparedStatement psUpdateAnimal = connection.prepareStatement(sqlUpdateAnimal)) {
+                psUpdateAnimal.setInt(1, nuevoIdLoteDestino);
+                psUpdateAnimal.setString(2, codigoAnimal);
+                psUpdateAnimal.executeUpdate();
+            }
 
-        // PASO 5: Confirmar la transacción
-        connection.commit();
-        JOptionPane.showMessageDialog(null, "Último movimiento modificado exitosamente.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
+            // PASO 5: Confirmar la transacción
+            connection.commit();
+            JOptionPane.showMessageDialog(null, "Último movimiento modificado exitosamente.", "Éxito",
+                    JOptionPane.INFORMATION_MESSAGE);
 
-    } catch (SQLException e) {
-        // Si algo falla, revertir todo
-        try {
-            connection.rollback();
-        } catch (SQLException ex) {
-            System.out.println("Error al hacer rollback: " + ex.getMessage());
-        }
-        JOptionPane.showMessageDialog(null, "Error al modificar el movimiento: " + e.getMessage(), "Error de Transacción", JOptionPane.ERROR_MESSAGE);
-    } finally {
-        // Siempre restaurar el modo auto-commit
-        try {
-            connection.setAutoCommit(true);
-        } catch (SQLException ex) {
-            System.out.println("Error al restaurar auto-commit: " + ex.getMessage());
-<<<<<<< HEAD
-=======
+        } catch (SQLException e) {
+            // Si algo falla, revertir todo
+            try {
+                connection.rollback();
+            } catch (SQLException ex) {
+                System.out.println("Error al hacer rollback: " + ex.getMessage());
+            }
+            JOptionPane.showMessageDialog(null, "Error al modificar el movimiento: " + e.getMessage(),
+                    "Error de Transacción", JOptionPane.ERROR_MESSAGE);
+        } finally {
+            // Siempre restaurar el modo auto-commit
+            try {
+                connection.setAutoCommit(true);
+            } catch (SQLException ex) {
+                System.out.println("Error al restaurar auto-commit: " + ex.getMessage());
 
+            }
         }
     }
-}
->>>>>>> d5b33d01bf881afc79593c6b75e85430551d5bd9
+
     public void modificarRegistroHistorial(int idMovimiento, String nuevoCodigoAnimal, int nuevoIdLoteDestino,
             java.sql.Date nuevaFecha) {
         String sql = "UPDATE historial_lote SET id_animal = ?, id_lote_posterior = ?, fecha = ? WHERE id = ?";
@@ -640,7 +679,6 @@ public void modificarUltimoMovimiento(int idMovimiento, String codigoAnimal, int
                     "Error de Base de Datos", JOptionPane.ERROR_MESSAGE);
         }
     }
-
 
     /**
      * Busca códigos de animales que coincidan con un texto de búsqueda.
@@ -929,10 +967,6 @@ public void modificarUltimoMovimiento(int idMovimiento, String codigoAnimal, int
         }
         return resultado;
     }
-<<<<<<< HEAD
-    return resultado;
-=======
->>>>>>> d5b33d01bf881afc79593c6b75e85430551d5bd9
 
     // --- MÉTODOS A AÑADIR EN TU CONTROLADOR ---
 
@@ -1063,13 +1097,6 @@ public void modificarUltimoMovimiento(int idMovimiento, String codigoAnimal, int
             }
         }
     }
-<<<<<<< HEAD
-}
-
-}
-
-=======
->>>>>>> d5b33d01bf881afc79593c6b75e85430551d5bd9
 
     /**
      * Obtiene todos los registros de producción de leche de la base de datos.
@@ -1125,7 +1152,7 @@ public void modificarUltimoMovimiento(int idMovimiento, String codigoAnimal, int
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(null, "Error al eliminar el registro: " + e.getMessage());
         }
-        
+
     }
 
 }

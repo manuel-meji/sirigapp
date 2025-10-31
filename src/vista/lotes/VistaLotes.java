@@ -12,20 +12,20 @@ public class VistaLotes extends JPanel {
     public static  panelHistorialLotes panelHistorial;
 
     public VistaLotes(Controlador controlador) {
-        System.out.println("1. [DEBUG] Entrando al constructor de VistaLotes...");
+        // System.out.println("1. [DEBUG] Entrando al constructor de VistaLotes...");
         this.controlador = controlador;
         initComponents();
-        System.out.println("7. [DEBUG] Fin del constructor de VistaLotes. Panel creado con éxito.");
+       //  System.out.println("7. [DEBUG] Fin del constructor de VistaLotes. Panel creado con éxito.");
     }
 
     private void initComponents() {
         setLayout(new BorderLayout());
         
-        System.out.println("2. [DEBUG] Creando panelRegistroLotes...");
+        //System.out.println("2. [DEBUG] Creando panelRegistroLotes...");
         panelRegistro = new panelRegistroLotes(controlador);
-        System.out.println("4. [DEBUG] panelRegistroLotes CREADO. Creando panelHistorialLotes...");
+        //System.out.println("4. [DEBUG] panelRegistroLotes CREADO. Creando panelHistorialLotes...");
         panelHistorial = new panelHistorialLotes(controlador);
-        System.out.println("6. [DEBUG] panelHistorialLotes CREADO. Añadiendo pestañas...");
+        //System.out.println("6. [DEBUG] panelHistorialLotes CREADO. Añadiendo pestañas...");
 
         tabbedPane = new JTabbedPane();
         

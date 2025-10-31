@@ -38,6 +38,13 @@ public class panelRegistroAnimales  extends JPanel{
     private final Font FONT_TITULO_MENU = FontLoader.loadFont("/resources/fonts/Montserrat-Black.ttf", 48f);
     private final Font FONT_BOTON_MENU = FontLoader.loadFont("/resources/fonts/Montserrat-SemiBold.ttf", 18f);
 
+     // --- Fuentes estandarizadas ---
+    private final Font FONT_SUBTITULO = FontLoader.loadFont("/resources/fonts/Montserrat-Bold.ttf", 24f);
+    private final Font FONT_LABEL = FontLoader.loadFont("/resources/fonts/Montserrat-SemiBold.ttf", 16f);
+    private final Font FONT_INPUT = FontLoader.loadFont("/resources/fonts/Montserrat-Light.ttf", 16f);
+    private final Font FONT_BOTON = FontLoader.loadFont("/resources/fonts/Montserrat-SemiBold.ttf", 14f);
+
+
     public panelRegistroAnimales(Controlador controlador){
         this.controlador = controlador;
         setLayout(new BorderLayout());
@@ -124,7 +131,13 @@ public class panelRegistroAnimales  extends JPanel{
         cbEstado.setBounds(col1X + labelW, rowY, col1W - labelW, fieldH); card.add(cbEstado);
 
         JButton btnGuardar = new JButton("Guardar");
+        btnGuardar.setBackground(new Color(0xFF43F7A4));
+        btnGuardar.setFont(FONT_BOTON);
         JButton btnLimpiar = new JButton("Limpiar");
+        btnLimpiar.setBackground(new Color(0xFF5773FA));
+        btnLimpiar.setForeground(Color.WHITE);
+        btnLimpiar.setFont(FONT_BOTON);
+        
         int btnW = 120; int btnH = 36; int btnGap = 12;
         final int baseY = rowY + rowGap + 10;
         card.add(btnLimpiar); card.add(btnGuardar);
