@@ -135,7 +135,7 @@ public class panelDesparacitaciones extends JPanel {
 
 		card.add(form, BorderLayout.NORTH);
 
-		String[] cols = {"ID", "Fecha", "Animal", "Producto ID", "Dosis", "Motivo", "Diagnóstico"};
+		String[] cols = {"ID", "Fecha", "Animal", "Producto ID", "Dosis", "Motivo"};
 		model = new DefaultTableModel(cols, 0) {
 			public boolean isCellEditable(int r, int c) {
 				return false;
@@ -178,7 +178,12 @@ public class panelDesparacitaciones extends JPanel {
 				}
 				Integer productoId = productoSeleccionado.getId();
 
-				Float dosis = txtDosis.getText().trim().isEmpty() ? null : Float.parseFloat(txtDosis.getText().trim());
+				Float dosis = Float.parseFloat(txtDosis.getText());
+
+				if (dosis <= 0 ) {
+					JOptionPane.showMessageDialog(this, "La dosis debe ser un número positivo.", "Error de validación", JOptionPane.WARNING_MESSAGE);
+					return;
+				}
 				java.sql.Timestamp fecha = new java.sql.Timestamp(dcFecha.getDate().getTime());
 
 				controlador.guardarEventoSanitario(fecha, productoId, dosis, "DESPARASITANTE", "", animal, "DESPARASITACION");
@@ -186,7 +191,7 @@ public class panelDesparacitaciones extends JPanel {
 				cargar(); // Recargar la tabla
 				JOptionPane.showMessageDialog(this, "Desparasitación registrada exitosamente");
 			} catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(this, "Error en el formato del número de Dosis: " + ex.getMessage(), "Error de Formato", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Debe colocar la cantidad de Dosis " , "Error", JOptionPane.ERROR_MESSAGE);
             } catch (Exception ex) {
 				JOptionPane.showMessageDialog(this, "Error al guardar el registro: " + ex.getMessage(), "Error General", JOptionPane.ERROR_MESSAGE);
 			}

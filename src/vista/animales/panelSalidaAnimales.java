@@ -214,45 +214,55 @@ public class panelSalidaAnimales extends JPanel {
     /**
      * Este método ahora decide si crear un nuevo registro o actualizar uno existente.
      */
-    private void guardarOActualizarSalida() {
-        if (idSalidaEditando == null) {
-            // --- MODO REGISTRO ---
-            try {
-                Object selectedItem = cbAnimal.getSelectedItem();
-                if (selectedItem == null || selectedItem.toString().trim().isEmpty()) {
-                    JOptionPane.showMessageDialog(this, "Debe seleccionar un animal válido.", "Error de Validación", JOptionPane.WARNING_MESSAGE);
-                    return;
-                }
+// REEMPLAZA ESTE MÉTODO EN TU CLASE panelSalidaAnimales.java
 
-                String animal = selectedItem.toString();
-                String motivo = cbMotivo.getSelectedItem().toString();
-                java.sql.Date fecha = new java.sql.Date(dcFecha.getDate().getTime());
-
-                controlador.guardarSalida(animal, motivo, fecha);
-                cargarSalidas();
-                limpiarFormulario();
-                JOptionPane.showMessageDialog(this, "Salida registrada exitosamente.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
-            } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "Error al registrar la salida: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+private void guardarOActualizarSalida() {
+    if (idSalidaEditando == null) {
+        // --- MODO REGISTRO ---
+        try {
+            // Obtenemos el texto directamente del editor, es la fuente más fiable.
+            String animal = ((JTextField) cbAnimal.getEditor().getEditorComponent()).getText().trim();
+            
+            if (animal.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "Debe introducir un ID de animal.", "Error de Validación", JOptionPane.WARNING_MESSAGE);
+                return;
             }
-        } else {
-            // --- MODO ACTUALIZACIÓN ---
-            try {
-                String motivo = cbMotivo.getSelectedItem().toString();
-                java.sql.Date fecha = new java.sql.Date(dcFecha.getDate().getTime());
 
-                // TODO: Debes crear este método en tu clase `Controlador`
-                // Ejemplo de firma: public void actualizarSalida(int id, String nuevoMotivo, java.sql.Date nuevaFecha)
-                controlador.actualizarSalida(idSalidaEditando, motivo, fecha);
-                
-                cargarSalidas();
-                limpiarFormulario(); // Esto también saldrá del modo edición
-                JOptionPane.showMessageDialog(this, "Salida actualizada exitosamente.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
-            } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "Error al actualizar la salida: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            // --- ¡NUEVA VERIFICACIÓN CRÍTICA! ---
+            // Antes de continuar, preguntamos al controlador si este animal realmente existe.
+            if (!controlador.animalExiste(animal)) {
+                JOptionPane.showMessageDialog(this, "El animal con el ID '" + animal + "' no existe. Por favor, verifique el código.", "Error de Validación", JOptionPane.ERROR_MESSAGE);
+                return; // Detenemos la operación aquí
             }
+            // --- FIN DE LA VERIFICACIÓN ---
+
+            String motivo = cbMotivo.getSelectedItem().toString();
+            java.sql.Date fecha = new java.sql.Date(dcFecha.getDate().getTime());
+
+            controlador.guardarSalida(animal, motivo, fecha);
+            cargarSalidas();
+            limpiarFormulario();
+            JOptionPane.showMessageDialog(this, "Salida registrada exitosamente.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Error al registrar la salida: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    } else {
+        // --- MODO ACTUALIZACIÓN ---
+        // (La lógica de actualización no necesita esta verificación porque el animal no se puede cambiar)
+        try {
+            String motivo = cbMotivo.getSelectedItem().toString();
+            java.sql.Date fecha = new java.sql.Date(dcFecha.getDate().getTime());
+
+            controlador.actualizarSalida(idSalidaEditando, motivo, fecha);
+            
+            cargarSalidas();
+            limpiarFormulario();
+            JOptionPane.showMessageDialog(this, "Salida actualizada exitosamente.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Error al actualizar la salida: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
+}
 
     /**
      * Prepara el formulario para editar un registro seleccionado.

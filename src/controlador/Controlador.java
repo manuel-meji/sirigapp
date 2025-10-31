@@ -1,10 +1,9 @@
 package controlador;
 
 import java.sql.*;
-import java.util.List;
 import java.time.LocalDate;
 import java.time.Period;
-
+import java.util.List;
 import javax.swing.JOptionPane;
 import vista.SiriGAppLogin;
 import vista.animales.AnimalesFrame;
@@ -637,6 +636,7 @@ public java.util.List<String> obtenerLotesParaComboBox() {
             JOptionPane.showMessageDialog(null, "Último movimiento modificado exitosamente.", "Éxito",
                     JOptionPane.INFORMATION_MESSAGE);
 
+<<<<<<< HEAD
         } catch (SQLException e) {
             // Si algo falla, revertir todo
             try {
@@ -652,11 +652,31 @@ public java.util.List<String> obtenerLotesParaComboBox() {
                 connection.setAutoCommit(true);
             } catch (SQLException ex) {
                 System.out.println("Error al restaurar auto-commit: " + ex.getMessage());
+=======
+    } catch (SQLException e) {
+        // Si algo falla, revertir todo
+        try {
+            connection.rollback();
+        } catch (SQLException ex) {
+            System.out.println("Error al hacer rollback: " + ex.getMessage());
+        }
+        JOptionPane.showMessageDialog(null, "Error al modificar el movimiento: " + e.getMessage(), "Error de Transacción", JOptionPane.ERROR_MESSAGE);
+    } finally {
+        // Siempre restaurar el modo auto-commit
+        try {
+            connection.setAutoCommit(true);
+        } catch (SQLException ex) {
+            System.out.println("Error al restaurar auto-commit: " + ex.getMessage());
+>>>>>>> e82f479b9446b5f1223a736f8414d87ead621879
 
             }
         }
     }
+<<<<<<< HEAD
 
+=======
+}
+>>>>>>> e82f479b9446b5f1223a736f8414d87ead621879
     public void modificarRegistroHistorial(int idMovimiento, String nuevoCodigoAnimal, int nuevoIdLoteDestino,
             java.sql.Date nuevaFecha) {
         String sql = "UPDATE historial_lote SET id_animal = ?, id_lote_posterior = ?, fecha = ? WHERE id = ?";
@@ -939,11 +959,11 @@ public java.util.List<String> obtenerLotesParaComboBox() {
     /**
      * Guarda un nuevo registro de producción de leche en la base de datos.
      */
-    public void guardarProduccionLeche(Timestamp fecha, int litrosMatutinos, int litrosVispertinos, String idAnimal)
+    public void guardarProduccionLeche(Date fecha, int litrosMatutinos, int litrosVispertinos, String idAnimal)
             throws SQLException {
         String sql = "INSERT INTO produccion_leche (fecha, litros_matutinos, litros_vispertinos, id_animal) VALUES (?, ?, ?, ?)";
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setTimestamp(1, fecha);
+            ps.setDate(1, fecha);
             ps.setInt(2, litrosMatutinos);
             ps.setInt(3, litrosVispertinos);
             ps.setString(4, idAnimal);
@@ -1111,7 +1131,7 @@ public java.util.List<String> obtenerLotesParaComboBox() {
             while (rs.next()) {
                 Object[] fila = new Object[5];
                 fila[0] = rs.getInt("id");
-                fila[1] = rs.getTimestamp("fecha");
+                fila[1] = rs.getDate("fecha");
                 fila[2] = rs.getString("id_animal");
                 fila[3] = rs.getInt("litros_matutinos");
                 fila[4] = rs.getInt("litros_vispertinos");
@@ -1126,11 +1146,11 @@ public java.util.List<String> obtenerLotesParaComboBox() {
     /**
      * Actualiza un registro de producción de leche existente.
      */
-    public void actualizarProduccionLeche(int id, Timestamp fecha, int litrosMatutinos, int litrosVispertinos,
+    public void actualizarProduccionLeche(int id, Date fecha, int litrosMatutinos, int litrosVispertinos,
             String idAnimal) throws SQLException {
         String sql = "UPDATE produccion_leche SET fecha = ?, litros_matutinos = ?, litros_vispertinos = ?, id_animal = ? WHERE id = ?";
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setTimestamp(1, fecha);
+            ps.setDate(1, fecha);
             ps.setInt(2, litrosMatutinos);
             ps.setInt(3, litrosVispertinos);
             ps.setString(4, idAnimal);
@@ -1154,5 +1174,20 @@ public java.util.List<String> obtenerLotesParaComboBox() {
         }
 
     }
+
+    public boolean animalExiste(String codigo) {
+    String sql = "SELECT codigo FROM animal WHERE codigo = ?";
+    try (PreparedStatement ps = connection.prepareStatement(sql)) {
+        ps.setString(1, codigo);
+        try (ResultSet rs = ps.executeQuery()) {
+            // Si rs.next() es verdadero, significa que la consulta encontró al menos una fila.
+            return rs.next();
+        }
+    } catch (SQLException e) {
+        // En caso de error, imprimimos el error y asumimos que no existe para ser seguros.
+        System.out.println("Error al verificar la existencia del animal: " + e.getMessage());
+        return false;
+    }
+}
 
 }
