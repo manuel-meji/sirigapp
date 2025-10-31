@@ -636,7 +636,6 @@ public java.util.List<String> obtenerLotesParaComboBox() {
             JOptionPane.showMessageDialog(null, "Último movimiento modificado exitosamente.", "Éxito",
                     JOptionPane.INFORMATION_MESSAGE);
 
-<<<<<<< HEAD
         } catch (SQLException e) {
             // Si algo falla, revertir todo
             try {
@@ -652,7 +651,6 @@ public java.util.List<String> obtenerLotesParaComboBox() {
                 connection.setAutoCommit(true);
             } catch (SQLException ex) {
                 System.out.println("Error al restaurar auto-commit: " + ex.getMessage());
-=======
     } catch (SQLException e) {
         // Si algo falla, revertir todo
         try {
@@ -667,16 +665,12 @@ public java.util.List<String> obtenerLotesParaComboBox() {
             connection.setAutoCommit(true);
         } catch (SQLException ex) {
             System.out.println("Error al restaurar auto-commit: " + ex.getMessage());
->>>>>>> e82f479b9446b5f1223a736f8414d87ead621879
 
             }
         }
     }
-<<<<<<< HEAD
 
-=======
 }
->>>>>>> e82f479b9446b5f1223a736f8414d87ead621879
     public void modificarRegistroHistorial(int idMovimiento, String nuevoCodigoAnimal, int nuevoIdLoteDestino,
             java.sql.Date nuevaFecha) {
         String sql = "UPDATE historial_lote SET id_animal = ?, id_lote_posterior = ?, fecha = ? WHERE id = ?";
