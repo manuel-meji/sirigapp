@@ -11,7 +11,8 @@ import javax.swing.table.TableRowSorter;
 import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.sql.Timestamp;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
@@ -34,9 +35,14 @@ public class panelProduccionLeche extends JPanel {
     private final Font FONT_INPUT = FontLoader.loadFont("/resources/fonts/Montserrat-Light.ttf", 16f);
     private final Font FONT_BOTON = FontLoader.loadFont("/resources/fonts/Montserrat-SemiBold.ttf", 14f);
 
+    // --- Formateador de fecha reutilizable ---
+    private final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+
     public panelProduccionLeche(Controlador controlador) {
         this.controlador = controlador;
         setLayout(new BorderLayout());
+        // El panel de contenido se crea y añade aquí
+        add(createContentPanel(), BorderLayout.CENTER);
     }
 
     public JPanel createContentPanel() {
@@ -206,18 +212,30 @@ public class panelProduccionLeche extends JPanel {
                 return;
             }
 
-            Timestamp fecha = new Timestamp(dcFecha.getDate().getTime());
+            Date fechaUtil = dcFecha.getDate();
+            if (fechaUtil == null) {
+                JOptionPane.showMessageDialog(this, "Debe seleccionar una fecha.", "Error de Validación", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            java.sql.Date fechaSql = new java.sql.Date(fechaUtil.getTime());
+
             int litrosM = Integer.parseInt(txtLitrosMatutinos.getText());
             int litrosV = Integer.parseInt(txtLitrosVispertinos.getText());
 
+            if (litrosM < 0 || litrosV < 0) {
+                JOptionPane.showMessageDialog(this, "Los litros no pueden ser negativos.", "Error de Validación",
+                        JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+
             if (idProduccionEditando == null) {
                 // MODO REGISTRO
-                controlador.guardarProduccionLeche(fecha, litrosM, litrosV, idAnimal);
+                controlador.guardarProduccionLeche(fechaSql, litrosM, litrosV, idAnimal);
                 JOptionPane.showMessageDialog(this, "Producción registrada exitosamente.", "Éxito",
                         JOptionPane.INFORMATION_MESSAGE);
             } else {
                 // MODO ACTUALIZACIÓN
-                controlador.actualizarProduccionLeche(idProduccionEditando, fecha, litrosM, litrosV, idAnimal);
+                controlador.actualizarProduccionLeche(idProduccionEditando, fechaSql, litrosM, litrosV, idAnimal);
                 JOptionPane.showMessageDialog(this, "Producción actualizada exitosamente.", "Éxito",
                         JOptionPane.INFORMATION_MESSAGE);
             }
@@ -230,6 +248,7 @@ public class panelProduccionLeche extends JPanel {
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this, "Error al guardar los datos: " + ex.getMessage(), "Error",
                     JOptionPane.ERROR_MESSAGE);
+            ex.printStackTrace(); // Imprime el error completo en la consola
         }
     }
 
@@ -241,22 +260,30 @@ public class panelProduccionLeche extends JPanel {
             return;
         }
 
-        int filaModelo = tablaProduccion.convertRowIndexToModel(filaVista);
-        idProduccionEditando = (Integer) modeloTabla.getValueAt(filaModelo, 0);
-        Date fecha = (Date) modeloTabla.getValueAt(filaModelo, 1);
-        String animal = (String) modeloTabla.getValueAt(filaModelo, 2);
-        int litrosM = (int) modeloTabla.getValueAt(filaModelo, 3);
-        int litrosV = (int) modeloTabla.getValueAt(filaModelo, 4);
+        try {
+            int filaModelo = tablaProduccion.convertRowIndexToModel(filaVista);
+            idProduccionEditando = (Integer) modeloTabla.getValueAt(filaModelo, 0);
+            
+            // --- CORRECCIÓN: La fecha en la tabla ahora es un String, se debe "parsear" de vuelta a Date ---
+            String fechaStr = (String) modeloTabla.getValueAt(filaModelo, 1);
+            Date fecha = sdf.parse(fechaStr);
+            
+            String animal = (String) modeloTabla.getValueAt(filaModelo, 2);
+            int litrosM = (int) modeloTabla.getValueAt(filaModelo, 3);
+            int litrosV = (int) modeloTabla.getValueAt(filaModelo, 4);
 
-        // Cargar datos en el formulario
-        dcFecha.setDate(fecha);
-        ((JTextField) cbAnimal.getEditor().getEditorComponent()).setText(animal);
-        txtLitrosMatutinos.setText(String.valueOf(litrosM));
-        txtLitrosVispertinos.setText(String.valueOf(litrosV));
+            // Cargar datos en el formulario
+            dcFecha.setDate(fecha);
+            ((JTextField) cbAnimal.getEditor().getEditorComponent()).setText(animal);
+            txtLitrosMatutinos.setText(String.valueOf(litrosM));
+            txtLitrosVispertinos.setText(String.valueOf(litrosV));
 
-        // Adaptar UI para edición
-        btnGuardar.setText("Actualizar");
-        cbAnimal.setEnabled(true); // Permitir cambiar el animal si fue un error de registro
+            // Adaptar UI para edición
+            btnGuardar.setText("Actualizar");
+            cbAnimal.setEnabled(true);
+        } catch (ParseException e) {
+            JOptionPane.showMessageDialog(this, "Error al leer la fecha del registro.", "Error de Formato", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     private void eliminarProduccion() {
@@ -281,14 +308,18 @@ public class panelProduccionLeche extends JPanel {
         modeloTabla.setRowCount(0);
         List<Object[]> produccion = controlador.obtenerProduccionLeche();
         for (Object[] fila : produccion) {
-            // fila[0]=id, fila[1]=fecha, fila[2]=id_animal, fila[3]=l_mat, fila[4]=l_vis
             int id = (int) fila[0];
+            
+            // --- CORRECCIÓN: Formatear la fecha (que ahora viene como java.sql.Date) a un String ---
             Date fecha = (Date) fila[1];
+            String fechaFormateada = (fecha != null) ? sdf.format(fecha) : "";
+            
             String animal = (String) fila[2];
             int litrosM = (int) fila[3];
             int litrosV = (int) fila[4];
             int total = litrosM + litrosV;
-            modeloTabla.addRow(new Object[] { id, fecha, animal, litrosM, litrosV, total });
+            
+            modeloTabla.addRow(new Object[] { id, fechaFormateada, animal, litrosM, litrosV, total });
         }
     }
 
@@ -314,13 +345,8 @@ public class panelProduccionLeche extends JPanel {
     }
 
     private void actualizarBusquedaAnimal(String filtro) {
-        // ANTES:
-        // List<String> animales = controlador.buscarAnimales(filtro);
-
-        // DESPUÉS (Llamada al nuevo método):
         List<String> animales = controlador.buscarAnimalesHembras(filtro);
 
-        // El resto del método permanece exactamente igual...
         DefaultComboBoxModel<String> model = (DefaultComboBoxModel<String>) cbAnimal.getModel();
         model.removeAllElements();
         animales.forEach(model::addElement);
