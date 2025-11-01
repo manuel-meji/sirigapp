@@ -217,7 +217,14 @@ public class panelProduccionLeche extends JPanel {
                 JOptionPane.showMessageDialog(this, "Debe seleccionar una fecha.", "Error de Validación", JOptionPane.WARNING_MESSAGE);
                 return;
             }
+
+            
             java.sql.Date fechaSql = new java.sql.Date(fechaUtil.getTime());
+
+
+            if (verificarProduccionPorAnimalYFecha(idAnimal, fechaUtil)){
+                return;
+            }
 
             int litrosM = Integer.parseInt(txtLitrosMatutinos.getText());
             int litrosV = Integer.parseInt(txtLitrosVispertinos.getText());
@@ -358,5 +365,14 @@ public class panelProduccionLeche extends JPanel {
         } else {
             cbAnimal.hidePopup();
         }
+    }
+
+    public boolean  verificarProduccionPorAnimalYFecha(String idAnimal, Date fecha) {
+        boolean existe = controlador.existeProduccionLechePorAnimalYFecha(idAnimal, new java.sql.Date(fecha.getTime()));
+        if (existe) {
+            JOptionPane.showMessageDialog(this, "Ya existe un registro de producción para este animal en la fecha seleccionada.", "Aviso",
+                    JOptionPane.WARNING_MESSAGE);
+        }
+        return existe;
     }
 }
