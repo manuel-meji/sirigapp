@@ -52,7 +52,7 @@ public class AnimalesFrame extends JFrame {
         setSize(1366, 720);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
-        setResizable(false);
+        //setResizable(false);
         setLayout(new BorderLayout());
 
         //Inicialización de los paneles
@@ -200,6 +200,7 @@ public class AnimalesFrame extends JFrame {
             button.setForeground(Color.WHITE);
         } else {
            button.setForeground(COLOR_TEXTO_BOTON);
+           button.setHorizontalAlignment(SwingConstants.LEFT);
         }
         button.setFont(FONT_BOTON_MENU);
         button.setBackground(backgroundColor);
