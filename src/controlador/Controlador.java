@@ -803,29 +803,30 @@ public java.util.List<String> obtenerLotesParaComboBox() {
         ps.executeUpdate();
     }
 
-    public java.util.List<Object[]> obtenerEventosSanitarios() {
-        java.util.List<Object[]> lista = new java.util.ArrayList<>();
-        String sql = "SELECT id, fecha, tipo, id_animal, id_producto, dosis, motivo, diagnostico FROM eventos_sanitarios ORDER BY fecha DESC";
-        try {
-            PreparedStatement ps = connection.prepareStatement(sql);
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                Object[] fila = new Object[8];
-                fila[0] = rs.getInt("id");
-                fila[1] = rs.getTimestamp("fecha");
-                fila[2] = rs.getString("tipo");
-                fila[3] = rs.getString("id_animal");
-                fila[4] = rs.getObject("id_producto");
-                fila[5] = rs.getObject("dosis");
-                fila[6] = rs.getString("motivo");
-                fila[7] = rs.getString("diagnostico");
-                lista.add(fila);
-            }
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(null, "Error al obtener eventos sanitarios: " + e.getMessage());
+public java.util.List<Object[]> obtenerEventosSanitarios() {
+    java.util.List<Object[]> lista = new java.util.ArrayList<>();
+    String sql = "SELECT es.id, es.fecha, es.tipo, es.id_animal, p.producto AS nombre_producto, es.dosis, es.motivo, es.diagnostico " +
+                 "FROM eventos_sanitarios es LEFT JOIN productos p ON es.id_producto = p.id " +
+                 "ORDER BY es.fecha DESC";
+    try (PreparedStatement ps = connection.prepareStatement(sql);
+         ResultSet rs = ps.executeQuery()) {
+        while (rs.next()) {
+            Object[] fila = new Object[8];
+            fila[0] = rs.getInt("id");
+            fila[1] = rs.getTimestamp("fecha");
+            fila[2] = rs.getString("tipo");
+            fila[3] = rs.getString("id_animal");
+            fila[4] = rs.getString("nombre_producto"); // Ahora obtenemos el nombre directamente
+            fila[5] = rs.getObject("dosis");
+            fila[6] = rs.getString("motivo");
+            fila[7] = rs.getString("diagnostico");
+            lista.add(fila);
         }
-        return lista;
+    } catch (Exception e) {
+        JOptionPane.showMessageDialog(null, "Error al obtener eventos sanitarios: " + e.getMessage());
     }
+    return lista;
+}
 
     public java.util.List<Object[]> obtenerEventosSanitariosPorTipo(String tipo) {
         java.util.List<Object[]> lista = new java.util.ArrayList<>();
@@ -1199,4 +1200,62 @@ public boolean existeProduccionLechePorAnimalYFecha(String idAnimal, java.sql.Da
         }
 
 }
+public java.util.List<Object[]> buscarEventosSanitarios(String filtro) {
+    java.util.List<Object[]> lista = new java.util.ArrayList<>();
+    // Consulta SQL que une eventos_sanitarios con productos para poder buscar por el nombre del producto
+    String sql = "SELECT es.id, es.fecha, es.tipo, es.id_animal, p.producto, es.dosis, es.motivo, es.diagnostico " +
+                 "FROM eventos_sanitarios es LEFT JOIN productos p ON es.id_producto = p.id " +
+                 "WHERE es.id_animal LIKE ? OR es.tipo LIKE ? OR es.motivo LIKE ? OR es.diagnostico LIKE ? OR p.producto LIKE ? OR es.dosis LIKE ? OR es.fecha LIKE ? " +
+                 "ORDER BY es.fecha DESC";
+    
+    try (PreparedStatement ps = connection.prepareStatement(sql)) {
+        String likeFiltro = "%" + filtro + "%";
+        ps.setString(1, likeFiltro);
+        ps.setString(2, likeFiltro);
+        ps.setString(3, likeFiltro);
+        ps.setString(4, likeFiltro);
+        ps.setString(5, likeFiltro);
+        ps.setString(6, likeFiltro);
+        ps.setString(7, likeFiltro); // Búsqueda por fecha como texto
+
+        try (ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                // El resultado debe coincidir con la estructura que espera la tabla
+                Object[] fila = new Object[8];
+                fila[0] = rs.getInt("es.id");
+                fila[1] = rs.getTimestamp("es.fecha");
+                fila[2] = rs.getString("es.tipo");
+                fila[3] = rs.getString("es.id_animal");
+                fila[4] = rs.getString("p.producto"); // Se obtiene el nombre del producto
+                fila[5] = rs.getObject("es.dosis");
+                fila[6] = rs.getString("es.motivo");
+                fila[7] = rs.getString("es.diagnostico");
+                lista.add(fila);
+            }
+        }
+    } catch (Exception e) {
+        JOptionPane.showMessageDialog(null, "Error al buscar eventos sanitarios: " + e.getMessage());
+    }
+    return lista;
+}
+
+public java.util.List<Object[]> buscarProductosTratamiento(String filtro) {
+    java.util.List<Object[]> lista = new java.util.ArrayList<>();
+    String sql = "SELECT id, producto FROM productos WHERE producto LIKE ? AND (tipo != 'Desparasitante' OR tipo IS NULL) ORDER BY producto";
+    try (PreparedStatement ps = connection.prepareStatement(sql)) {
+        ps.setString(1, "%" + filtro + "%");
+        try (ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                Object[] fila = new Object[2];
+                fila[0] = rs.getInt("id");
+                fila[1] = rs.getString("producto");
+                lista.add(fila);
+            }
+        }
+    } catch (Exception e) {
+        System.out.println("Error al buscar productos de tratamiento: " + e.getMessage());
+    }
+    return lista;
+}
+
 }
