@@ -2,9 +2,8 @@ package vista.salud;
 
 import controlador.Controlador;
 import controlador.FontLoader;
-
-import javax.swing.*;
 import java.awt.*;
+import javax.swing.*;
 
 /**
  * Panel contenedor de salud que muestra pestañas para eventos sanitarios y desparasitaciones.
@@ -35,7 +34,7 @@ public class vistaSalud extends JPanel {
 		tabs.setFont(controlador.estilos.FONT_TITLE_TAB.deriveFont(Font.PLAIN, 16f));
 
 		panelEventosSanitarios eventos = new panelEventosSanitarios(controlador);
-		panelDesparacitaciones despar = new panelDesparacitaciones(controlador);
+		panelDesparasitaciones despar = new panelDesparasitaciones(controlador);
         panelProductos productos = new panelProductos(controlador);
 
 		tabs.addTab("Eventos sanitarios", eventos.createContentPanel());
