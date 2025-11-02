@@ -53,7 +53,7 @@ public class Controlador {
             preparedStatement.setString(2, contraseña);
             ResultSet resultSet = preparedStatement.executeQuery();
             if (resultSet.next()) {
-                JOptionPane.showMessageDialog(null, "Inicio de sesión exitoso");
+                //JOptionPane.showMessageDialog(null, "Inicio de sesión exitoso");
                 loginFrame.setVisible(false);
                 animalesFrame = new AnimalesFrame(this);
                 animalesFrame.setVisible(true);

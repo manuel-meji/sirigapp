@@ -71,7 +71,7 @@ public class panelRegistroLotes extends JPanel {
         lblEtapa.setBounds(10, 50, 150, 30);
         formPanel.add(lblEtapa);
 
-        String[] etapas = {"Seleccione una etapa", "Cría", "Levante", "Ceba", "Producción"};
+        String[] etapas = {"Seleccione una etapa","Terneros Lactantes", "Destete","Vaquilla", "Torete","Novilla", "Vaca", "Toro", "Producción"};
         cmbEtapa = new JComboBox<>(etapas);
         cmbEtapa.setFont(FONT_INPUT);
         cmbEtapa.setBounds(170, 50, 300, 30);

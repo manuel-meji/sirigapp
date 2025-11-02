@@ -1,6 +1,7 @@
 package vista.animales;
 
 import controlador.Controlador;
+import vista.SiriGAppLogin;
 import vista.lotes.VistaLotes;
 import vista.produccion.panelProduccionLeche;
 import vista.salud.vistaSalud;
@@ -30,6 +31,7 @@ public class AnimalesFrame extends JFrame {
     private Controlador controlador;
     JPanel contentPanel;
     // Panel de contenido principal
+
     // --- Colores (Design System) ---
     private final Color COLOR_FONDO_MENU = DesignSystem.COLOR_FONDO_MENU;
     private final Color COLOR_BOTON_NORMAL = DesignSystem.COLOR_BOTON_NORMAL;
@@ -48,7 +50,7 @@ public class AnimalesFrame extends JFrame {
     }
 
     private void initUI() {
-        setTitle("SiriGApp - Menú Principal");
+        setTitle("SiriGApp");
         setSize(1366, 720);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
@@ -61,6 +63,7 @@ public class AnimalesFrame extends JFrame {
         pSalida = new panelSalidaAnimales(controlador);
         pSalud = new vistaSalud(controlador);
         pProduccionLeche = new panelProduccionLeche(controlador);
+        pRegistro = new panelRegistroAnimales(controlador);
 
         // 1. Panel del Menú Lateral
         JPanel menuPanel = createMenuPanel();
@@ -72,15 +75,8 @@ public class AnimalesFrame extends JFrame {
         contentPanel.setBackground(Color.WHITE);
         add(contentPanel, BorderLayout.CENTER);
         
-        pRegistro = new panelRegistroAnimales(controlador);
+        
         cambiarPanelContenido(pRegistro.createContentPanel());
-
-        //  contentPanel.add(contentPanel, BorderLayout.CENTER);
-        //  contentPanel.revalidate();
-        //  contentPanel.repaint();
-
-
-        //createContentPanel();
 
     }
 
@@ -185,6 +181,13 @@ public class AnimalesFrame extends JFrame {
         logoutPanel.setOpaque(false);
         JButton btnCerrarSesion = createMenuButton("Cerrar Sesión", COLOR_BOTON_CERRAR_SESION);
         logoutPanel.add(btnCerrarSesion, BorderLayout.SOUTH); // Coloca el botón en la parte inferior del panel
+
+        btnCerrarSesion.addActionListener(e ->{
+            this.dispose();
+            controlador.loginFrame = new SiriGAppLogin(controlador);
+            controlador.loginFrame.setVisible(true);
+
+        });
         
         gbc.gridy = 3;
         gbc.weighty = 0.2; // Espacio que empuja el botón hacia abajo

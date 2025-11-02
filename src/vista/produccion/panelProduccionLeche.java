@@ -50,7 +50,7 @@ public class panelProduccionLeche extends JPanel {
         content.setBackground(new Color(245, 246, 248));
 
         JLabel title = new JLabel("Registro de Producción de Leche");
-        title.setFont(FONT_SUBTITULO);
+        title.setFont(controlador.estilos.FONT_TITULO_MENU.deriveFont(Font.BOLD, 26f));
         title.setBorder(new EmptyBorder(20, 24, 8, 24));
         content.add(title, BorderLayout.NORTH);
 

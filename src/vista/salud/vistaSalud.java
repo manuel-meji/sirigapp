@@ -32,6 +32,7 @@ public class vistaSalud extends JPanel {
 		main.add(title, BorderLayout.NORTH);
 
 		JTabbedPane tabs = new JTabbedPane();
+		tabs.setFont(controlador.estilos.FONT_TITLE_TAB.deriveFont(Font.PLAIN, 16f));
 
 		panelEventosSanitarios eventos = new panelEventosSanitarios(controlador);
 		panelDesparacitaciones despar = new panelDesparacitaciones(controlador);

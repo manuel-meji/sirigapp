@@ -18,9 +18,13 @@ public final class DesignSystem {
     public static final Color COLOR_CARD_BORDER = new Color(220, 223, 230);
 
     // Fuentes base (cargadas una sola vez)
+    public final Font FONT_TITULO = FontLoader.loadFont("/resources/fonts/Montserrat-Black.ttf", 28f);
     public static final Font FONT_TITULO_MENU = FontLoader.loadFont("/resources/fonts/Montserrat-Black.ttf", 40f);
     public static final Font FONT_SUBTITULO = FontLoader.loadFont("/resources/fonts/Montserrat-Bold.ttf", 18f);
     public static final Font FONT_BOTON_MENU = FontLoader.loadFont("/resources/fonts/Montserrat-SemiBold.ttf", 18f);
+    public final Font FONT_LABEL = FontLoader.loadFont("/resources/fonts/Montserrat-SemiBold.ttf", 16f);
+    public final Font FONT_INPUT = FontLoader.loadFont("/resources/fonts/Montserrat-Light.ttf", 16f);
+    public final Font FONT_TITLE_TAB = FontLoader.loadFont("/resources/fonts/Montserrat-Light.ttf", 16f);
 
     //Colores de botones específicos
     public static final Color COLOR_GUARDAR = new Color(0, 136, 255);

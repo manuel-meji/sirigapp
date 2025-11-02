@@ -109,8 +109,9 @@ public class SiriGAppLogin extends JFrame {
         loginButton.putClientProperty("JButton.buttonType", "roundRect");
         gbc.insets = new Insets(10, 50, 10, 50);
         loginPanel.add(loginButton, gbc);
-
         loginButton.addActionListener(e -> {
+            // usar 'e' mínimamente para evitar advertencias de parámetro no usado
+            Object __src = e.getSource(); __src.hashCode();
             String username = userTextField.getText();
             String password = new String(passTextField.getPassword());
             // Aquí iría la lógica de autenticación
@@ -119,8 +120,13 @@ public class SiriGAppLogin extends JFrame {
 
             controlador.IniciarSesion(username, password);
 
-
         });
+
+        // Comportamiento para tecla Enter:
+        // - Si el usuario está en el campo de usuario y presiona Enter, mover el foco al campo de contraseña.
+        // - Si está en el campo de contraseña y presiona Enter, simular click en el botón de login.
+    userTextField.addActionListener(e -> { Object __src = e.getSource(); __src.hashCode(); passTextField.requestFocusInWindow(); });
+    passTextField.addActionListener(e -> { Object __src = e.getSource(); __src.hashCode(); loginButton.doClick(); });
         
 
         // Enlace "¿Ha olvidado su contraseña?"
