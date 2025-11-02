@@ -3,7 +3,6 @@ package vista.animales;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
-
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -13,13 +12,11 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
-
 import com.toedter.calendar.JDateChooser;
-
 import controlador.Controlador;
 import controlador.FontLoader;
 
-public class panelRegistroAnimales  extends JPanel{
+public class panelRegistroAnimales extends JPanel {
 
     Controlador controlador;
 
@@ -33,34 +30,26 @@ public class panelRegistroAnimales  extends JPanel{
     private JTextField txtIdPadre;
     private JComboBox<String> cbEstado;
 
-    
-    // --- Fuentes ---
-    private final Font FONT_TITULO_MENU = FontLoader.loadFont("/resources/fonts/Montserrat-Black.ttf", 48f);
-    private final Font FONT_BOTON_MENU = FontLoader.loadFont("/resources/fonts/Montserrat-SemiBold.ttf", 18f);
-
-     // --- Fuentes estandarizadas ---
+    // --- Fuentes estandarizadas ---
     private final Font FONT_SUBTITULO = FontLoader.loadFont("/resources/fonts/Montserrat-Bold.ttf", 24f);
     private final Font FONT_LABEL = FontLoader.loadFont("/resources/fonts/Montserrat-SemiBold.ttf", 16f);
     private final Font FONT_INPUT = FontLoader.loadFont("/resources/fonts/Montserrat-Light.ttf", 16f);
     private final Font FONT_BOTON = FontLoader.loadFont("/resources/fonts/Montserrat-SemiBold.ttf", 14f);
 
-
-    public panelRegistroAnimales(Controlador controlador){
+    public panelRegistroAnimales(Controlador controlador) {
         this.controlador = controlador;
         setLayout(new BorderLayout());
     }
 
     public JPanel createContentPanel() {
-        
-        JPanel contentPanel = new JPanel();
-        contentPanel.removeAll();
-        contentPanel.setLayout(new BorderLayout());
+        JPanel contentPanel = new JPanel(new BorderLayout());
         contentPanel.setBackground(new Color(245, 246, 248));
 
+        // CAMBIO: Se aplica la fuente estándar para el subtítulo
         JLabel title = new JLabel("Registro de Animales");
         title.setHorizontalAlignment(SwingConstants.LEFT);
         title.setBorder(new EmptyBorder(24, 32, 8, 32));
-        title.setFont(FONT_TITULO_MENU.deriveFont(Font.BOLD, 26f));
+        title.setFont(controlador.estilos.FONT_TITULO_MENU.deriveFont(Font.BOLD, 26f));
         contentPanel.add(title, BorderLayout.NORTH);
 
         JPanel wrapper = new JPanel(null);
@@ -79,69 +68,115 @@ public class panelRegistroAnimales  extends JPanel{
             public void componentResized(java.awt.event.ComponentEvent e) {
                 int w = wrapper.getWidth();
                 int x = Math.max(32, (w - 980) / 2);
-                card.setBounds(x, 20, 980, 500);
+                card.setBounds(x, 20, 980, 400); // Ajustada la altura para que encaje mejor
             }
         });
 
-        Font labelFont = FONT_BOTON_MENU.deriveFont(Font.PLAIN, 16f);
-        int col1X = 30;  int col1W = 380;
-        int col2X = 500; int col2W = 380;
-        int labelW = 200; int fieldH = 34; int rowY = 20; int rowGap = 46;
+        // CAMBIO: Se usa FONT_LABEL directamente
+        int col1X = 30;  int col1W = 400;
+        int col2X = 500; int col2W = 400;
+        int labelW = 185; int fieldH = 34; int rowY = 20; int rowGap = 46;
 
-        JLabel lCodigo = new JLabel("Código:"); lCodigo.setFont(labelFont);
-        lCodigo.setBounds(col1X, rowY, labelW, 24); card.add(lCodigo);
-        txtCodigo = new JTextField(); txtCodigo.setBounds(col1X + labelW, rowY, col1W - labelW, fieldH); card.add(txtCodigo);
+        JLabel lCodigo = new JLabel("Código:");
+        lCodigo.setFont(FONT_LABEL);
+        lCodigo.setBounds(col1X, rowY, labelW, 24);
+        card.add(lCodigo);
+        txtCodigo = new JTextField();
+        txtCodigo.setFont(FONT_INPUT); // CAMBIO: Aplicada la fuente de input
+        txtCodigo.setBounds(col1X + labelW, rowY, col1W - labelW, fieldH);
+        card.add(txtCodigo);
 
-        JLabel lFecha = new JLabel("Fecha de nacimiento:"); lFecha.setFont(labelFont);
-        lFecha.setBounds(col2X, rowY, labelW, 24); card.add(lFecha);
-        dcFechaNacimiento = new JDateChooser(); dcFechaNacimiento.setDateFormatString("yyyy-MM-dd");
-        dcFechaNacimiento.setBounds(col2X + labelW, rowY, col2W - labelW, fieldH); card.add(dcFechaNacimiento);
-
-        rowY += rowGap;
-        JLabel lSexo = new JLabel("Sexo:"); lSexo.setFont(labelFont);
-        lSexo.setBounds(col1X, rowY, labelW, 24); card.add(lSexo);
-        cbSexo = new JComboBox<>(new String[] {"M", "F"}); cbSexo.setBounds(col1X + labelW, rowY, col1W - labelW, fieldH); card.add(cbSexo);
-
-        JLabel lRaza = new JLabel("Raza:"); lRaza.setFont(labelFont);
-        lRaza.setBounds(col2X, rowY, labelW, 24); card.add(lRaza);
-        txtRaza = new JTextField(); txtRaza.setBounds(col2X + labelW, rowY, col2W - labelW, fieldH); card.add(txtRaza);
-
-        rowY += rowGap;
-        JLabel lPesoNac = new JLabel("Peso nacimiento (kg):"); lPesoNac.setFont(labelFont);
-        lPesoNac.setBounds(col1X, rowY, labelW, 24); card.add(lPesoNac);
-        txtPesoNacimiento = new JTextField(); txtPesoNacimiento.setBounds(col1X + labelW, rowY, col1W - labelW, fieldH); card.add(txtPesoNacimiento);
-
-        JLabel lPeso = new JLabel("Peso actual (kg):"); lPeso.setFont(labelFont);
-        lPeso.setBounds(col2X, rowY, labelW, 24); card.add(lPeso);
-        txtPeso = new JTextField(); txtPeso.setBounds(col2X + labelW, rowY, col2W - labelW, fieldH); card.add(txtPeso);
+        JLabel lFecha = new JLabel("Fecha de nacimiento:");
+        lFecha.setFont(FONT_LABEL);
+        lFecha.setBounds(col2X, rowY, labelW, 24);
+        card.add(lFecha);
+        dcFechaNacimiento = new JDateChooser();
+        dcFechaNacimiento.setDateFormatString("yyyy-MM-dd");
+        dcFechaNacimiento.setFont(FONT_INPUT); // CAMBIO: Aplicada la fuente de input
+        dcFechaNacimiento.setBounds(col2X + labelW, rowY, col2W - labelW, fieldH);
+        card.add(dcFechaNacimiento);
 
         rowY += rowGap;
-        JLabel lMadre = new JLabel("ID madre:"); lMadre.setFont(labelFont);
-        lMadre.setBounds(col1X, rowY, labelW, 24); card.add(lMadre);
-        txtIdMadre = new JTextField(); txtIdMadre.setBounds(col1X + labelW, rowY, col1W - labelW, fieldH); card.add(txtIdMadre);
+        JLabel lSexo = new JLabel("Sexo:");
+        lSexo.setFont(FONT_LABEL);
+        lSexo.setBounds(col1X, rowY, labelW, 24);
+        card.add(lSexo);
+        cbSexo = new JComboBox<>(new String[]{"M", "F"});
+        cbSexo.setFont(FONT_INPUT); // CAMBIO: Aplicada la fuente de input
+        cbSexo.setBounds(col1X + labelW, rowY, col1W - labelW, fieldH);
+        card.add(cbSexo);
 
-        JLabel lPadre = new JLabel("ID padre:"); lPadre.setFont(labelFont);
-        lPadre.setBounds(col2X, rowY, labelW, 24); card.add(lPadre);
-        txtIdPadre = new JTextField(); txtIdPadre.setBounds(col2X + labelW, rowY, col2W - labelW, fieldH); card.add(txtIdPadre);
+        JLabel lRaza = new JLabel("Raza:");
+        lRaza.setFont(FONT_LABEL);
+        lRaza.setBounds(col2X, rowY, labelW, 24);
+        card.add(lRaza);
+        txtRaza = new JTextField();
+        txtRaza.setFont(FONT_INPUT); // CAMBIO: Aplicada la fuente de input
+        txtRaza.setBounds(col2X + labelW, rowY, col2W - labelW, fieldH);
+        card.add(txtRaza);
 
         rowY += rowGap;
-        JLabel lEstado = new JLabel("Estado:"); lEstado.setFont(labelFont);
-        lEstado.setBounds(col1X, rowY, labelW, 24); card.add(lEstado);
-        cbEstado = new JComboBox<>(new String[] {"ACTIVO", "VENDIDO", "MUERTO"});
-        cbEstado.setBounds(col1X + labelW, rowY, col1W - labelW, fieldH); card.add(cbEstado);
+        JLabel lPesoNac = new JLabel("Peso nacimiento (kg):");
+        lPesoNac.setFont(FONT_LABEL);
+        lPesoNac.setBounds(col1X, rowY, labelW, 24);
+        card.add(lPesoNac);
+        txtPesoNacimiento = new JTextField();
+        txtPesoNacimiento.setFont(FONT_INPUT); // CAMBIO: Aplicada la fuente de input
+        txtPesoNacimiento.setBounds(col1X + labelW, rowY, col1W - labelW, fieldH);
+        card.add(txtPesoNacimiento);
 
-        JButton btnGuardar = new JButton("Guardar");
-        btnGuardar.setBackground(controlador.estilos.COLOR_GUARDAR);
+        JLabel lPeso = new JLabel("Peso actual (kg):");
+        lPeso.setFont(FONT_LABEL);
+        lPeso.setBounds(col2X, rowY, labelW, 24);
+        card.add(lPeso);
+        txtPeso = new JTextField();
+        txtPeso.setFont(FONT_INPUT); // CAMBIO: Aplicada la fuente de input
+        txtPeso.setBounds(col2X + labelW, rowY, col2W - labelW, fieldH);
+        card.add(txtPeso);
+
+        rowY += rowGap;
+        JLabel lMadre = new JLabel("ID madre:");
+        lMadre.setFont(FONT_LABEL);
+        lMadre.setBounds(col1X, rowY, labelW, 24);
+        card.add(lMadre);
+        txtIdMadre = new JTextField();
+        txtIdMadre.setFont(FONT_INPUT); // CAMBIO: Aplicada la fuente de input
+        txtIdMadre.setBounds(col1X + labelW, rowY, col1W - labelW, fieldH);
+        card.add(txtIdMadre);
+
+        JLabel lPadre = new JLabel("ID padre:");
+        lPadre.setFont(FONT_LABEL);
+        lPadre.setBounds(col2X, rowY, labelW, 24);
+        card.add(lPadre);
+        txtIdPadre = new JTextField();
+        txtIdPadre.setFont(FONT_INPUT); // CAMBIO: Aplicada la fuente de input
+        txtIdPadre.setBounds(col2X + labelW, rowY, col2W - labelW, fieldH);
+        card.add(txtIdPadre);
+
+        rowY += rowGap;
+        JLabel lEstado = new JLabel("Estado:");
+        lEstado.setFont(FONT_LABEL);
+        lEstado.setBounds(col1X, rowY, labelW, 24);
+        card.add(lEstado);
+        cbEstado = new JComboBox<>(new String[]{"ACTIVO", "VENDIDO", "MUERTO"});
+        cbEstado.setFont(FONT_INPUT); // CAMBIO: Aplicada la fuente de input
+        cbEstado.setBounds(col1X + labelW, rowY, col1W - labelW, fieldH);
+        card.add(cbEstado);
+
+        JButton btnGuardar = new JButton("Guardar Animal");
+        btnGuardar.setBackground(controlador.estilos.COLOR_GUARDAR); // CAMBIO: Color estandarizado
         btnGuardar.setFont(FONT_BOTON);
         btnGuardar.setForeground(Color.WHITE);
+        
         JButton btnLimpiar = new JButton("Limpiar");
-        btnLimpiar.setBackground(controlador.estilos.COLOR_LIMPIAR);
+        btnLimpiar.setBackground(controlador.estilos.COLOR_LIMPIAR); // CAMBIO: Color estandarizado
         btnLimpiar.setForeground(Color.WHITE);
         btnLimpiar.setFont(FONT_BOTON);
-        
-        int btnW = 120; int btnH = 36; int btnGap = 12;
-        final int baseY = rowY + rowGap + 10;
-        card.add(btnLimpiar); card.add(btnGuardar);
+
+        int btnW = 180; int btnH = 45; int btnGap = 12;
+        final int baseY = rowY + rowGap + 20;
+        card.add(btnLimpiar);
+        card.add(btnGuardar);
 
         card.addComponentListener(new java.awt.event.ComponentAdapter() {
             public void componentResized(java.awt.event.ComponentEvent e) {
@@ -153,9 +188,7 @@ public class panelRegistroAnimales  extends JPanel{
 
         btnGuardar.addActionListener(e -> guardarAnimal());
         btnLimpiar.addActionListener(e -> limpiarFormulario());
-
-        contentPanel.revalidate();
-        contentPanel.repaint();
+        
         return contentPanel;
     }
 
@@ -182,30 +215,30 @@ public class panelRegistroAnimales  extends JPanel{
         String idPadre = txtIdPadre.getText().trim();
         String estado = (String) cbEstado.getSelectedItem();
 
-        if (codigo.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Ingrese el código del animal");
+        if (codigo.isEmpty() || fecha == null) {
+            JOptionPane.showMessageDialog(this, "El código y la fecha de nacimiento son obligatorios.", "Error de Validación", JOptionPane.WARNING_MESSAGE);
             return;
         }
 
         try {
+            // El controlador espera un java.sql.Timestamp, no un java.sql.Date
+            //java.sql.Timestamp fechaNacimientoSql = new java.sql.Timestamp(fecha.getTime());
+
             controlador.guardarAnimal(
-                codigo,
-                new java.sql.Date(fecha.getTime()),
-                sexo,
-                raza,
-                pesoNacimiento,
-                peso,
-                idMadre,
-                idPadre,
-                estado
+               codigo,
+            new java.sql.Date(fecha.getTime()),
+            sexo,
+            raza,
+            pesoNacimiento,
+            peso,
+            idMadre,
+            idPadre,
+            estado
             );
-            JOptionPane.showMessageDialog(this, "Animal registrado correctamente");
+            JOptionPane.showMessageDialog(this, "Animal registrado correctamente", "Éxito", JOptionPane.INFORMATION_MESSAGE);
             limpiarFormulario();
         } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Error al guardar: " + ex.getMessage());
+            JOptionPane.showMessageDialog(this, "Error al guardar: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
-
-        
     }
-
 }

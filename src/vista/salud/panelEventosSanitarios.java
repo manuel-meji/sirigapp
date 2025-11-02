@@ -209,7 +209,7 @@ public class panelEventosSanitarios extends JPanel {
 		txtBusqueda.setBounds(170, 175, 380, 30);
 		form.add(txtBusqueda);
 		JButton btnGuardar = new JButton("Registrar Evento");
-		btnGuardar.setBackground(new Color(67, 160, 71));
+		btnGuardar.setBackground(controlador.estilos.COLOR_GUARDAR);
 		btnGuardar.setForeground(Color.WHITE);
 		btnGuardar.setFont(FONT_BOTON);
 		btnGuardar.setBounds(560, 175, 250, 40);
@@ -235,10 +235,10 @@ public class panelEventosSanitarios extends JPanel {
 		btns.setOpaque(false);
 		JButton btnEditar = new JButton("Editar");
 		JButton btnEliminar = new JButton("Eliminar");
-		btnEditar.setBackground(new Color(100, 181, 246));
+		btnEditar.setBackground(controlador.estilos.COLOR_MODIFICAR);
 		btnEditar.setForeground(Color.WHITE);
 		btnEditar.setFont(FONT_BOTON);
-		btnEliminar.setBackground(new Color(229, 57, 53));
+		btnEliminar.setBackground(controlador.estilos.COLOR_ELIMINAR);
 		btnEliminar.setForeground(Color.WHITE);
 		btnEliminar.setFont(FONT_BOTON);
 		btns.add(btnEditar);
@@ -258,13 +258,7 @@ public class panelEventosSanitarios extends JPanel {
 			}
 		});
 
-		// --- Botón ---
-		btnGuardar = new JButton("Registrar Evento");
-		btnGuardar.setBackground(controlador.estilos.COLOR_GUARDAR);
-		btnGuardar.setForeground(Color.WHITE);
-		btnGuardar.setFont(FONT_BOTON);
-		btnGuardar.setBounds(560, 175, 250, 40);
-		form.add(btnGuardar);
+		
 		cargarEventos();
 		// Carga inicial de los placeholders
 		setPlaceholder(cbAnimal, PLACEHOLDER_ANIMAL);

@@ -118,7 +118,7 @@ public class panelSalidaAnimales extends JPanel {
         JPanel tableContainer = new JPanel(new BorderLayout(0, 8));
         tableContainer.setOpaque(false);
 
-        JPanel searchBarPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
+        JPanel searchBarPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
         searchBarPanel.setOpaque(false);
         JLabel lblBuscarTabla = new JLabel("Buscar en la tabla:");
         lblBuscarTabla.setFont(FONT_LABEL.deriveFont(14f));
