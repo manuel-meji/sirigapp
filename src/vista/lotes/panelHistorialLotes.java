@@ -71,35 +71,35 @@ public class panelHistorialLotes extends JPanel {
 
         JLabel lblAnimalId = new JLabel("Buscar Animal (ID):");
         lblAnimalId.setFont(FONT_LABEL);
-        lblAnimalId.setBounds(10, 10, 180, 30);
+        lblAnimalId.setBounds(10, 10, 190, 30);
         formPanel.add(lblAnimalId);
 
         comboModelAnimales = new DefaultComboBoxModel<>();
         cmbAnimalesId = new JComboBox<>(comboModelAnimales);
         cmbAnimalesId.setFont(FONT_INPUT);
         cmbAnimalesId.setEditable(true);
-        cmbAnimalesId.setBounds(190, 10, 280, 30);
+        cmbAnimalesId.setBounds(200, 10, 280, 30);
         formPanel.add(cmbAnimalesId);
 
         JLabel lblLoteDestinoId = new JLabel("Lote de Destino:");
         lblLoteDestinoId.setFont(FONT_LABEL);
-        lblLoteDestinoId.setBounds(10, 50, 180, 30);
+        lblLoteDestinoId.setBounds(10, 50, 190, 30);
         formPanel.add(lblLoteDestinoId);
         
         cmbLotesDestinoId = new JComboBox<>();
         cmbLotesDestinoId.setFont(FONT_INPUT);
-        cmbLotesDestinoId.setBounds(190, 50, 280, 30);
+        cmbLotesDestinoId.setBounds(200, 50, 280, 30);
         formPanel.add(cmbLotesDestinoId);
 
         JLabel lblFecha = new JLabel("Fecha del Movimiento:");
         lblFecha.setFont(FONT_LABEL);
-        lblFecha.setBounds(10, 90, 180, 30);
+        lblFecha.setBounds(10, 90, 190, 30);
         formPanel.add(lblFecha);
 
         dateChooser = new JDateChooser();
         dateChooser.setDateFormatString("yyyy-MM-dd");
         dateChooser.setFont(FONT_INPUT);
-        dateChooser.setBounds(190, 90, 280, 30);
+        dateChooser.setBounds(200, 90, 280, 30);
         formPanel.add(dateChooser);
         
         btnGuardar = new JButton("Registrar Movimiento");

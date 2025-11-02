@@ -135,7 +135,8 @@ public class panelMostrarAnimales {
 		// Acción para agregar animal
 		btnAgregar.addActionListener(e -> {
 			e.getSource();
-			if (onAgregar != null) onAgregar.run();
+			//if (onAgregar != null) onAgregar.run();
+			controlador.animalesFrame.cambiarPanelContenido(controlador.animalesFrame.pRegistro.createContentPanel());
 		});
 
 		// Acción para editar animal seleccionado
