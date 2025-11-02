@@ -20,14 +20,19 @@ public class VistaLotes extends JPanel {
 
     private void initComponents() {
         setLayout(new BorderLayout());
-        
+        JLabel title = new JLabel("Administración de Lotes");
+        title.setFont(controlador.estilos.FONT_TITULO.deriveFont(Font.BOLD, 28f));
+        title.setBorder(BorderFactory.createEmptyBorder(20, 24, 8, 24));
+        add(title, BorderLayout.NORTH);
         //System.out.println("2. [DEBUG] Creando panelRegistroLotes...");
         panelRegistro = new panelRegistroLotes(controlador);
         //System.out.println("4. [DEBUG] panelRegistroLotes CREADO. Creando panelHistorialLotes...");
         panelHistorial = new panelHistorialLotes(controlador);
         //System.out.println("6. [DEBUG] panelHistorialLotes CREADO. Añadiendo pestañas...");
 
+
         tabbedPane = new JTabbedPane();
+        tabbedPane.setFont(controlador.estilos.FONT_TITLE_TAB.deriveFont(Font.PLAIN, 16f));
         
         tabbedPane.addTab("Registro de Lotes", panelRegistro);
         tabbedPane.addTab("Historial de Lotes", panelHistorial);

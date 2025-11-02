@@ -30,6 +30,7 @@ public class AnimalesFrame extends JFrame {
     private Controlador controlador;
     JPanel contentPanel;
     // Panel de contenido principal
+    
     // --- Colores (Design System) ---
     private final Color COLOR_FONDO_MENU = DesignSystem.COLOR_FONDO_MENU;
     private final Color COLOR_BOTON_NORMAL = DesignSystem.COLOR_BOTON_NORMAL;
@@ -48,7 +49,7 @@ public class AnimalesFrame extends JFrame {
     }
 
     private void initUI() {
-        setTitle("SiriGApp - Menú Principal");
+        setTitle("SiriGApp");
         setSize(1366, 720);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
@@ -74,13 +75,6 @@ public class AnimalesFrame extends JFrame {
         
         pRegistro = new panelRegistroAnimales(controlador);
         cambiarPanelContenido(pRegistro.createContentPanel());
-
-        //  contentPanel.add(contentPanel, BorderLayout.CENTER);
-        //  contentPanel.revalidate();
-        //  contentPanel.repaint();
-
-
-        //createContentPanel();
 
     }
 
