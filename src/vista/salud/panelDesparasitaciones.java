@@ -379,7 +379,7 @@ public class panelDesparasitaciones extends JPanel {
                 + texto));
     }
 
-    private void cargarEventos() {
+    public void cargarEventos() {
         model.setRowCount(0);
         List<Object[]> rows = controlador.obtenerEventosSanitariosPorTipo("DESPARASITACION");
         for (Object[] r : rows) {
@@ -418,6 +418,10 @@ public class panelDesparasitaciones extends JPanel {
         } else {
             cbProducto.hidePopup();
         }
+    }
+
+    public void cargarProductos() {
+        filtrarProductos("");
     }
 
     private <T> void setPlaceholder(JComboBox<T> comboBox, String text) {

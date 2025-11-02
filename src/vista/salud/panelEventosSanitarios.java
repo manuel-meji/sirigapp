@@ -399,7 +399,7 @@ public class panelEventosSanitarios extends JPanel {
         sorter.setRowFilter(texto.trim().isEmpty() ? null : RowFilter.regexFilter("(?i)" + texto));
     }
 
-    private void cargarEventos() {
+    public void cargarEventos() {
         model.setRowCount(0);
         List<Object[]> rows = controlador.obtenerEventosSanitarios();
         for (Object[] r : rows) {
@@ -410,6 +410,10 @@ public class panelEventosSanitarios extends JPanel {
                 model.addRow(filaFormateada);
             }
         }
+    }
+
+    public void cargarProductos() {
+        filtrarProductos("");
     }
 
     private void filtrarAnimales(String filtro) {
