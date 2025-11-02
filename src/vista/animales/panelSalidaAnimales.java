@@ -45,7 +45,7 @@ public class panelSalidaAnimales extends JPanel {
         content.setBackground(new Color(245, 246, 248));
 
         JLabel title = new JLabel("Registro de Salidas de Animales");
-        title.setFont(FONT_SUBTITULO);
+        title.setFont(controlador.estilos.FONT_TITULO_MENU.deriveFont(Font.BOLD, 26f));
         title.setBorder(new EmptyBorder(20, 24, 8, 24));
         content.add(title, BorderLayout.NORTH);
 
@@ -107,7 +107,7 @@ public class panelSalidaAnimales extends JPanel {
 
         btnGuardar = new JButton("Registrar Salida"); // Asignado a la variable de clase
         btnGuardar.setFont(FONT_BOTON);
-        btnGuardar.setBackground(new Color(67, 160, 71));
+        btnGuardar.setBackground(controlador.estilos.COLOR_GUARDAR);
         btnGuardar.setForeground(Color.WHITE);
         btnGuardar.setBounds(570, 60, 250, 40);
         formPanel.add(btnGuardar);
@@ -154,11 +154,11 @@ public class panelSalidaAnimales extends JPanel {
         JButton btnEliminar = new JButton("Eliminar");
 
         btnEditar.setFont(FONT_BOTON);
-        btnEditar.setBackground(new Color(100, 181, 246));
+        btnEditar.setBackground(controlador.estilos.COLOR_MODIFICAR);
         btnEditar.setForeground(Color.WHITE);
 
         btnEliminar.setFont(FONT_BOTON);
-        btnEliminar.setBackground(new Color(229, 57, 53));
+        btnEliminar.setBackground(controlador.estilos.COLOR_ELIMINAR);
         btnEliminar.setForeground(Color.WHITE);
 
         tableButtonsPanel.add(btnEditar);

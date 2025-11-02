@@ -131,10 +131,11 @@ public class panelRegistroAnimales  extends JPanel{
         cbEstado.setBounds(col1X + labelW, rowY, col1W - labelW, fieldH); card.add(cbEstado);
 
         JButton btnGuardar = new JButton("Guardar");
-        btnGuardar.setBackground(new Color(0xFF43F7A4));
+        btnGuardar.setBackground(controlador.estilos.COLOR_GUARDAR);
         btnGuardar.setFont(FONT_BOTON);
+        btnGuardar.setForeground(Color.WHITE);
         JButton btnLimpiar = new JButton("Limpiar");
-        btnLimpiar.setBackground(new Color(0xFF5773FA));
+        btnLimpiar.setBackground(controlador.estilos.COLOR_LIMPIAR);
         btnLimpiar.setForeground(Color.WHITE);
         btnLimpiar.setFont(FONT_BOTON);
         

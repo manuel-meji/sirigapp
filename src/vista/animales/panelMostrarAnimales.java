@@ -108,19 +108,21 @@ public class panelMostrarAnimales {
 		actionsPanel.setOpaque(false);
 
 		JButton btnEditar = new JButton("Editar");
+		
 		JButton btnEliminar = new JButton("Eliminar");
-		JButton btnAgregar = new JButton("Agregar animal");
+		JButton btnAgregar = new JButton("Nuevo animal");
 
 		btnEditar.setFont(FONT_BOTON_MENU);
 		btnEliminar.setFont(FONT_BOTON_MENU);
 		btnAgregar.setFont(FONT_BOTON_MENU);
 
-		btnEditar.setBackground(new Color(100, 181, 246));
+		btnEditar.setBackground(controlador.estilos.COLOR_MODIFICAR);
 		btnEditar.setForeground(Color.WHITE);
-		btnEliminar.setBackground(new Color(229, 57, 53));
+		btnEditar.setSize(100, 45);
+		btnEliminar.setBackground(controlador.estilos.COLOR_ELIMINAR);
 		btnEliminar.setForeground(Color.WHITE);
-		btnAgregar.setBackground(new Color(0xFF6AFFC1));
-		btnAgregar.setForeground(Color.black);
+		btnAgregar.setBackground(controlador.estilos.COLOR_GUARDAR);
+		btnAgregar.setForeground(Color.WHITE);
 
 		btnEditar.setFocusPainted(false);
 		btnEliminar.setFocusPainted(false);

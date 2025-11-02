@@ -7,8 +7,11 @@ import java.util.List;
 import javax.swing.JOptionPane;
 import vista.SiriGAppLogin;
 import vista.animales.AnimalesFrame;
+import vista.ui.DesignSystem;
 
 public class Controlador {
+
+    public DesignSystem estilos;
 
     public Connection connection = null;
     public Statement statement = null;
@@ -33,6 +36,8 @@ public class Controlador {
             JOptionPane.showMessageDialog(null, "Error de conexión a la base de datos: " + e.getMessage());
 
         }
+
+        estilos = new DesignSystem();
 
         loginFrame = new SiriGAppLogin(this);
         loginFrame.setVisible(true);

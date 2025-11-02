@@ -91,14 +91,15 @@ public class panelRegistroLotes extends JPanel {
         // --- Columna 2: Botones del Formulario ---
         btnGuardar = new JButton("Registrar Lote");
         btnGuardar.setFont(FONT_BOTON);
-        btnGuardar.setBackground(new Color(67, 160, 71));
+        btnGuardar.setBackground(controlador.estilos.COLOR_GUARDAR);
         btnGuardar.setForeground(Color.WHITE);
         btnGuardar.setBounds(500, 10, 200, 45);
         formPanel.add(btnGuardar);
 
         btnLimpiar = new JButton("Limpiar Campos");
+        btnLimpiar.setBackground(controlador.estilos.COLOR_LIMPIAR);
         btnLimpiar.setFont(FONT_BOTON);
-        btnLimpiar.setBackground(new Color(117, 117, 117)); // Gris neutro
+        btnLimpiar.setBackground(controlador.estilos.COLOR_LIMPIAR); // Gris neutro
         btnLimpiar.setForeground(Color.WHITE);
         btnLimpiar.setBounds(500, 65, 200, 45);
         formPanel.add(btnLimpiar);
@@ -124,13 +125,13 @@ public class panelRegistroLotes extends JPanel {
         
         btnModificar = new JButton("Modificar Lote");
         btnModificar.setFont(FONT_BOTON);
-        btnModificar.setBackground(new Color(100, 181, 246));
+        btnModificar.setBackground(controlador.estilos.COLOR_MODIFICAR);
         btnModificar.setForeground(Color.WHITE);
         btnModificar.setPreferredSize(new Dimension(180, 40));
 
         btnEliminar = new JButton("Eliminar Lote");
         btnEliminar.setFont(FONT_BOTON);
-        btnEliminar.setBackground(new Color(229, 57, 53));
+        btnEliminar.setBackground(controlador.estilos.COLOR_ELIMINAR);
         btnEliminar.setForeground(Color.WHITE);
         btnEliminar.setPreferredSize(new Dimension(180, 40));
 

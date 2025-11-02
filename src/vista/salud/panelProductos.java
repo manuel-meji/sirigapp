@@ -75,7 +75,7 @@ public class panelProductos extends JPanel {
 		// --- Botón Guardar / Actualizar ---
 		btnGuardar = new JButton("Guardar");
 		btnGuardar.setFont(FONT_BOTON);
-		btnGuardar.setBackground(new Color(67, 160, 71));
+		btnGuardar.setBackground(controlador.estilos.COLOR_GUARDAR);
 		btnGuardar.setForeground(Color.WHITE);
 		btnGuardar.setBounds(560, 60, 250, 40);
 		formPanel.add(btnGuardar);
@@ -105,11 +105,11 @@ public class panelProductos extends JPanel {
 		JButton btnEliminar = new JButton("Eliminar");
 
 		btnEditar.setFont(FONT_BOTON);
-		btnEditar.setBackground(new Color(100, 181, 246));
+		btnEditar.setBackground(controlador.estilos.COLOR_MODIFICAR);
 		btnEditar.setForeground(Color.WHITE);
 		
 		btnEliminar.setFont(FONT_BOTON);
-		btnEliminar.setBackground(new Color(229, 57, 53));
+		btnEliminar.setBackground(controlador.estilos.COLOR_ELIMINAR);
 		btnEliminar.setForeground(Color.WHITE);
 
 		tableButtonsPanel.add(btnEditar);

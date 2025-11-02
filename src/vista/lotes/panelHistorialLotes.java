@@ -104,14 +104,14 @@ public class panelHistorialLotes extends JPanel {
         
         btnGuardar = new JButton("Registrar Movimiento");
         btnGuardar.setFont(FONT_BOTON);
-        btnGuardar.setBackground(new Color(67, 160, 71));
+        btnGuardar.setBackground(controlador.estilos.COLOR_GUARDAR);
         btnGuardar.setForeground(Color.WHITE);
         btnGuardar.setBounds(500, 10, 220, 45);
         formPanel.add(btnGuardar);
 
         JButton btnLimpiar = new JButton("Limpiar Campos");
         btnLimpiar.setFont(FONT_BOTON);
-        btnLimpiar.setBackground(new Color(117, 117, 117));
+        btnLimpiar.setBackground(controlador.estilos.COLOR_LIMPIAR);
         btnLimpiar.setForeground(Color.WHITE);
         btnLimpiar.setBounds(500, 65, 220, 45);
         formPanel.add(btnLimpiar);
@@ -135,13 +135,13 @@ public class panelHistorialLotes extends JPanel {
         
         btnModificarMovimiento = new JButton("Modificar Movimiento");
         btnModificarMovimiento.setFont(FONT_BOTON);
-        btnModificarMovimiento.setBackground(new Color(100, 181, 246));
+        btnModificarMovimiento.setBackground(controlador.estilos.COLOR_MODIFICAR);
         btnModificarMovimiento.setForeground(Color.WHITE);
         btnModificarMovimiento.setPreferredSize(new Dimension(200, 40));
         
         btnEliminarMovimiento = new JButton("Eliminar Movimiento");
         btnEliminarMovimiento.setFont(FONT_BOTON);
-        btnEliminarMovimiento.setBackground(new Color(229, 57, 53));
+        btnEliminarMovimiento.setBackground(controlador.estilos.COLOR_ELIMINAR);
         btnEliminarMovimiento.setForeground(Color.WHITE);
         btnEliminarMovimiento.setPreferredSize(new Dimension(200, 40));
 

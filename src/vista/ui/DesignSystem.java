@@ -3,6 +3,8 @@ package vista.ui;
 import java.awt.Color;
 import java.awt.Font;
 
+import javax.swing.JButton;
+
 import controlador.FontLoader;
 
 public final class DesignSystem {
@@ -20,7 +22,24 @@ public final class DesignSystem {
     public static final Font FONT_SUBTITULO = FontLoader.loadFont("/resources/fonts/Montserrat-Bold.ttf", 18f);
     public static final Font FONT_BOTON_MENU = FontLoader.loadFont("/resources/fonts/Montserrat-SemiBold.ttf", 18f);
 
-    private DesignSystem() {}
+    //Colores de botones específicos
+    public static final Color COLOR_GUARDAR = new Color(0, 136, 255);
+    public static final Color COLOR_LIMPIAR = new Color(255, 141, 40);
+    public static final Color COLOR_ELIMINAR = new Color(255, 56, 60);
+    public static final Color COLOR_MODIFICAR = new Color(52, 199, 89);
+
+    public DesignSystem() {}
+
+    public JButton crearBotonConEstilo(String text, Color backgroundColor) {
+        JButton button = new JButton(text);
+        button.setFocusPainted(false);
+        button.setBorderPainted(false);
+        button.setFont(FONT_BOTON_MENU);
+        button.setBackground(backgroundColor);
+        return button;
+    
+    }
+
 }
 
 

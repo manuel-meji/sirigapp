@@ -127,7 +127,7 @@ public class panelDesparacitaciones extends JPanel {
 
 		// --- Botón Guardar ---
 		JButton btnGuardar = new JButton("Registrar");
-		btnGuardar.setBackground(new Color(67, 160, 71));
+		btnGuardar.setBackground(controlador.estilos.COLOR_GUARDAR);
 		btnGuardar.setForeground(Color.WHITE);
 		btnGuardar.setFont(FONT_BOTON);
 		btnGuardar.setBounds(560, 110, 250, 40);
@@ -152,10 +152,10 @@ public class panelDesparacitaciones extends JPanel {
 		JButton btnEditar = new JButton("Editar");
 		JButton btnEliminar = new JButton("Eliminar");
 
-		btnEditar.setBackground(new Color(100, 181, 246));
+		btnEditar.setBackground(controlador.estilos.COLOR_MODIFICAR);
 		btnEditar.setForeground(Color.WHITE);
 		btnEditar.setFont(FONT_BOTON);
-		btnEliminar.setBackground(new Color(229, 57, 53));
+		btnEliminar.setBackground(controlador.estilos.COLOR_ELIMINAR);
 		btnEliminar.setForeground(Color.WHITE);
 		btnEliminar.setFont(FONT_BOTON);
 
