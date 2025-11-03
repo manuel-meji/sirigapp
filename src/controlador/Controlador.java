@@ -53,7 +53,7 @@ public class Controlador {
             preparedStatement.setString(2, contraseña);
             ResultSet resultSet = preparedStatement.executeQuery();
             if (resultSet.next()) {
-                //JOptionPane.showMessageDialog(null, "Inicio de sesión exitoso");
+                // JOptionPane.showMessageDialog(null, "Inicio de sesión exitoso");
                 loginFrame.setVisible(false);
                 animalesFrame = new AnimalesFrame(this);
                 animalesFrame.setVisible(true);
@@ -389,51 +389,51 @@ public class Controlador {
         }
     }
 
-   public java.util.List<Object[]> obtenerDetallesTodosLotes() {
-    java.util.List<Object[]> lista = new java.util.ArrayList<>();
-    String sql = "SELECT id, nombre, etapa, descripcion FROM lotes";
-    
-    try (PreparedStatement ps = connection.prepareStatement(sql);
-         ResultSet rs = ps.executeQuery()) {
-        
-        while (rs.next()) {
-            Object[] fila = {
-                rs.getInt("id"),
-                rs.getString("nombre"),
-                rs.getString("etapa"),
-                rs.getString("descripcion")
-            };
-            lista.add(fila);
-        }
-    } catch (SQLException e) {
-        System.err.println("Error al obtener detalles de lotes: " + e.getMessage());
-        e.printStackTrace();
-    }
-    return lista;
-}
+    public java.util.List<Object[]> obtenerDetallesTodosLotes() {
+        java.util.List<Object[]> lista = new java.util.ArrayList<>();
+        String sql = "SELECT id, nombre, etapa, descripcion FROM lotes";
 
-public java.util.List<String> obtenerLotesParaComboBox() {
-    java.util.List<String> lotesFormateados = new java.util.ArrayList<>();
-    String sql = "SELECT id, nombre FROM lotes ORDER BY nombre";
-    
-    try (PreparedStatement ps = connection.prepareStatement(sql);
-         ResultSet rs = ps.executeQuery()) {
-        
-        while (rs.next()) {
-            String item = rs.getInt("id") + " - " + rs.getString("nombre");
-            lotesFormateados.add(item);
-        }
-    } catch (SQLException e) {
-        // ANTES:
-        // JOptionPane.showMessageDialog(null, "Error al obtener lotes para ComboBox: " + e.getMessage());
-        
-        // AHORA:
-        System.err.println("Error al obtener lotes para ComboBox: " + e.getMessage());
-        e.printStackTrace();
-    }
-    return lotesFormateados;
-}
+        try (PreparedStatement ps = connection.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery()) {
 
+            while (rs.next()) {
+                Object[] fila = {
+                        rs.getInt("id"),
+                        rs.getString("nombre"),
+                        rs.getString("etapa"),
+                        rs.getString("descripcion")
+                };
+                lista.add(fila);
+            }
+        } catch (SQLException e) {
+            System.err.println("Error al obtener detalles de lotes: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return lista;
+    }
+
+    public java.util.List<String> obtenerLotesParaComboBox() {
+        java.util.List<String> lotesFormateados = new java.util.ArrayList<>();
+        String sql = "SELECT id, nombre FROM lotes ORDER BY nombre";
+
+        try (PreparedStatement ps = connection.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                String item = rs.getInt("id") + " - " + rs.getString("nombre");
+                lotesFormateados.add(item);
+            }
+        } catch (SQLException e) {
+            // ANTES:
+            // JOptionPane.showMessageDialog(null, "Error al obtener lotes para ComboBox: "
+            // + e.getMessage());
+
+            // AHORA:
+            System.err.println("Error al obtener lotes para ComboBox: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return lotesFormateados;
+    }
 
     public void modificarLote(int idLote, String nombre, String etapa, String descripcion) {
         PreparedStatement ps = null;
@@ -594,58 +594,61 @@ public java.util.List<String> obtenerLotesParaComboBox() {
      * Verifica que sea el último movimiento, actualiza el historial y la ubicación
      * actual del animal dentro de una transacción.
      */
-// REEMPLAZA ESTE MÉTODO EN TU CLASE 'Controlador.java'
+    // REEMPLAZA ESTE MÉTODO EN TU CLASE 'Controlador.java'
 
-/**
- * Modifica el último movimiento de un animal de forma segura.
- * Lanza una SQLException si la verificación falla, para que la vista la maneje.
- */
-public void modificarUltimoMovimiento(int idMovimiento, String codigoAnimal, int nuevoIdLoteDestino, java.sql.Date nuevaFecha) throws SQLException {
-    try {
-        connection.setAutoCommit(false);
+    /**
+     * Modifica el último movimiento de un animal de forma segura.
+     * Lanza una SQLException si la verificación falla, para que la vista la maneje.
+     */
+    public void modificarUltimoMovimiento(int idMovimiento, String codigoAnimal, int nuevoIdLoteDestino,
+            java.sql.Date nuevaFecha) throws SQLException {
+        try {
+            connection.setAutoCommit(false);
 
-        String sqlCheckLast = "SELECT id FROM historial_lote WHERE id_animal = ? ORDER BY fecha DESC, id DESC LIMIT 1";
-        try (PreparedStatement psCheck = connection.prepareStatement(sqlCheckLast)) {
-            psCheck.setString(1, codigoAnimal);
-            try (ResultSet rs = psCheck.executeQuery()) {
-                if (rs.next()) {
-                    int ultimoMovimientoId = rs.getInt("id");
-                    if (ultimoMovimientoId != idMovimiento) {
-                        // --- CAMBIO CLAVE: Se lanza la excepción en lugar de mostrar un JOptionPane ---
-                        throw new SQLException("Solo se puede modificar el movimiento más reciente de un animal.");
+            String sqlCheckLast = "SELECT id FROM historial_lote WHERE id_animal = ? ORDER BY fecha DESC, id DESC LIMIT 1";
+            try (PreparedStatement psCheck = connection.prepareStatement(sqlCheckLast)) {
+                psCheck.setString(1, codigoAnimal);
+                try (ResultSet rs = psCheck.executeQuery()) {
+                    if (rs.next()) {
+                        int ultimoMovimientoId = rs.getInt("id");
+                        if (ultimoMovimientoId != idMovimiento) {
+                            // --- CAMBIO CLAVE: Se lanza la excepción en lugar de mostrar un JOptionPane
+                            // ---
+                            throw new SQLException("Solo se puede modificar el movimiento más reciente de un animal.");
+                        }
+                    } else {
+                        throw new SQLException("No se encontraron movimientos para el animal especificado.");
                     }
-                } else {
-                    throw new SQLException("No se encontraron movimientos para el animal especificado.");
                 }
             }
+
+            String sqlUpdateHistorial = "UPDATE historial_lote SET id_lote_posterior = ?, fecha = ? WHERE id = ?";
+            try (PreparedStatement psUpdateHistorial = connection.prepareStatement(sqlUpdateHistorial)) {
+                psUpdateHistorial.setInt(1, nuevoIdLoteDestino);
+                psUpdateHistorial.setDate(2, nuevaFecha);
+                psUpdateHistorial.setInt(3, idMovimiento);
+                psUpdateHistorial.executeUpdate();
+            }
+
+            String sqlUpdateAnimal = "UPDATE animal SET id_lote_actual = ? WHERE codigo = ?";
+            try (PreparedStatement psUpdateAnimal = connection.prepareStatement(sqlUpdateAnimal)) {
+                psUpdateAnimal.setInt(1, nuevoIdLoteDestino);
+                psUpdateAnimal.setString(2, codigoAnimal);
+                psUpdateAnimal.executeUpdate();
+            }
+
+            connection.commit();
+            JOptionPane.showMessageDialog(null, "Último movimiento modificado exitosamente.", "Éxito",
+                    JOptionPane.INFORMATION_MESSAGE);
+
+        } catch (SQLException e) {
+            connection.rollback();
+            // --- CAMBIO CLAVE: Se re-lanza la excepción para que el panel la reciba ---
+            throw e;
+        } finally {
+            connection.setAutoCommit(true);
         }
-
-        String sqlUpdateHistorial = "UPDATE historial_lote SET id_lote_posterior = ?, fecha = ? WHERE id = ?";
-        try (PreparedStatement psUpdateHistorial = connection.prepareStatement(sqlUpdateHistorial)) {
-            psUpdateHistorial.setInt(1, nuevoIdLoteDestino);
-            psUpdateHistorial.setDate(2, nuevaFecha);
-            psUpdateHistorial.setInt(3, idMovimiento);
-            psUpdateHistorial.executeUpdate();
-        }
-
-        String sqlUpdateAnimal = "UPDATE animal SET id_lote_actual = ? WHERE codigo = ?";
-        try (PreparedStatement psUpdateAnimal = connection.prepareStatement(sqlUpdateAnimal)) {
-            psUpdateAnimal.setInt(1, nuevoIdLoteDestino);
-            psUpdateAnimal.setString(2, codigoAnimal);
-            psUpdateAnimal.executeUpdate();
-        }
-
-        connection.commit();
-        JOptionPane.showMessageDialog(null, "Último movimiento modificado exitosamente.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
-
-    } catch (SQLException e) {
-        connection.rollback();
-        // --- CAMBIO CLAVE: Se re-lanza la excepción para que el panel la reciba ---
-        throw e;
-    } finally {
-        connection.setAutoCommit(true);
     }
-}
 
     public void modificarRegistroHistorial(int idMovimiento, String nuevoCodigoAnimal, int nuevoIdLoteDestino,
             java.sql.Date nuevaFecha) {
@@ -779,30 +782,31 @@ public void modificarUltimoMovimiento(int idMovimiento, String codigoAnimal, int
         ps.executeUpdate();
     }
 
-public java.util.List<Object[]> obtenerEventosSanitarios() {
-    java.util.List<Object[]> lista = new java.util.ArrayList<>();
-    String sql = "SELECT es.id, es.fecha, es.tipo, es.id_animal, p.producto AS nombre_producto, es.dosis, es.motivo, es.diagnostico " +
-                 "FROM eventos_sanitarios es LEFT JOIN productos p ON es.id_producto = p.id " +
-                 "ORDER BY es.fecha DESC";
-    try (PreparedStatement ps = connection.prepareStatement(sql);
-         ResultSet rs = ps.executeQuery()) {
-        while (rs.next()) {
-            Object[] fila = new Object[8];
-            fila[0] = rs.getInt("id");
-            fila[1] = rs.getTimestamp("fecha");
-            fila[2] = rs.getString("tipo");
-            fila[3] = rs.getString("id_animal");
-            fila[4] = rs.getString("nombre_producto"); // Ahora obtenemos el nombre directamente
-            fila[5] = rs.getObject("dosis");
-            fila[6] = rs.getString("motivo");
-            fila[7] = rs.getString("diagnostico");
-            lista.add(fila);
+    public java.util.List<Object[]> obtenerEventosSanitarios() {
+        java.util.List<Object[]> lista = new java.util.ArrayList<>();
+        String sql = "SELECT es.id, es.fecha, es.tipo, es.id_animal, p.producto AS nombre_producto, es.dosis, es.motivo, es.diagnostico "
+                +
+                "FROM eventos_sanitarios es LEFT JOIN productos p ON es.id_producto = p.id " +
+                "ORDER BY es.fecha DESC";
+        try (PreparedStatement ps = connection.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                Object[] fila = new Object[8];
+                fila[0] = rs.getInt("id");
+                fila[1] = rs.getTimestamp("fecha");
+                fila[2] = rs.getString("tipo");
+                fila[3] = rs.getString("id_animal");
+                fila[4] = rs.getString("nombre_producto"); // Ahora obtenemos el nombre directamente
+                fila[5] = rs.getObject("dosis");
+                fila[6] = rs.getString("motivo");
+                fila[7] = rs.getString("diagnostico");
+                lista.add(fila);
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Error al obtener eventos sanitarios: " + e.getMessage());
         }
-    } catch (Exception e) {
-        JOptionPane.showMessageDialog(null, "Error al obtener eventos sanitarios: " + e.getMessage());
+        return lista;
     }
-    return lista;
-}
 
     public java.util.List<Object[]> obtenerEventosSanitariosPorTipo(String tipo) {
         java.util.List<Object[]> lista = new java.util.ArrayList<>();
@@ -840,46 +844,53 @@ public java.util.List<Object[]> obtenerEventosSanitarios() {
         }
     }
 
-public Object[] obtenerEventoSanitarioPorId(int id) {
-    String sql = "SELECT id, fecha, tipo, id_animal, id_producto, dosis, motivo, diagnostico FROM eventos_sanitarios WHERE id = ?";
-    try (PreparedStatement ps = connection.prepareStatement(sql)) {
-        ps.setInt(1, id);
-        try (ResultSet rs = ps.executeQuery()) {
-            if (rs.next()) {
-                Object[] fila = new Object[8];
-                fila[0] = rs.getInt("id");
-                fila[1] = rs.getTimestamp("fecha");
-                fila[2] = rs.getString("tipo");
-                fila[3] = rs.getString("id_animal");
-                fila[4] = rs.getObject("id_producto"); // Devuelve el ID del producto
-                fila[5] = rs.getObject("dosis");
-                fila[6] = rs.getString("motivo");
-                fila[7] = rs.getString("diagnostico");
-                return fila;
+    public Object[] obtenerEventoSanitarioPorId(int id) {
+        String sql = "SELECT id, fecha, tipo, id_animal, id_producto, dosis, motivo, diagnostico FROM eventos_sanitarios WHERE id = ?";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, id);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    Object[] fila = new Object[8];
+                    fila[0] = rs.getInt("id");
+                    fila[1] = rs.getTimestamp("fecha");
+                    fila[2] = rs.getString("tipo");
+                    fila[3] = rs.getString("id_animal");
+                    fila[4] = rs.getObject("id_producto"); // Devuelve el ID del producto
+                    fila[5] = rs.getObject("dosis");
+                    fila[6] = rs.getString("motivo");
+                    fila[7] = rs.getString("diagnostico");
+                    return fila;
+                }
             }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Error al obtener datos del evento: " + e.getMessage());
         }
-    } catch (Exception e) {
-        JOptionPane.showMessageDialog(null, "Error al obtener datos del evento: " + e.getMessage());
+        return null; // Retorna null si no se encuentra o hay un error
     }
-    return null; // Retorna null si no se encuentra o hay un error
-}
 
-/**
- * Actualiza un registro de evento sanitario existente en la base de datos.
- */
-public void actualizarEventoSanitario(int idEvento, java.sql.Timestamp fecha, Integer idProducto, Float dosis, String idAnimal, String motivo, String diagnostico) throws SQLException {
-    String sql = "UPDATE eventos_sanitarios SET fecha = ?, id_producto = ?, dosis = ?, id_animal = ?, motivo = ?, diagnostico = ? WHERE id = ?";
-    try (PreparedStatement ps = connection.prepareStatement(sql)) {
-        ps.setTimestamp(1, fecha);
-        if (idProducto != null) ps.setInt(2, idProducto); else ps.setNull(2, java.sql.Types.INTEGER);
-        if (dosis != null) ps.setFloat(3, dosis); else ps.setNull(3, java.sql.Types.FLOAT);
-        ps.setString(4, idAnimal);
-        ps.setString(5, motivo);
-        ps.setString(6, diagnostico);
-        ps.setInt(7, idEvento);
-        ps.executeUpdate();
+    /**
+     * Actualiza un registro de evento sanitario existente en la base de datos.
+     */
+    public void actualizarEventoSanitario(int idEvento, java.sql.Timestamp fecha, Integer idProducto, Float dosis,
+            String idAnimal, String motivo, String diagnostico) throws SQLException {
+        String sql = "UPDATE eventos_sanitarios SET fecha = ?, id_producto = ?, dosis = ?, id_animal = ?, motivo = ?, diagnostico = ? WHERE id = ?";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setTimestamp(1, fecha);
+            if (idProducto != null)
+                ps.setInt(2, idProducto);
+            else
+                ps.setNull(2, java.sql.Types.INTEGER);
+            if (dosis != null)
+                ps.setFloat(3, dosis);
+            else
+                ps.setNull(3, java.sql.Types.FLOAT);
+            ps.setString(4, idAnimal);
+            ps.setString(5, motivo);
+            ps.setString(6, diagnostico);
+            ps.setInt(7, idEvento);
+            ps.executeUpdate();
+        }
     }
-}
 
     public void actualizarSalida(int idSalida, String nuevoMotivo, java.sql.Date nuevaFecha) {
         String idAnimal = null;
@@ -1165,22 +1176,23 @@ public void actualizarEventoSanitario(int idEvento, java.sql.Timestamp fecha, In
     }
 
     public boolean animalExiste(String codigo) {
-    String sql = "SELECT codigo FROM animal WHERE codigo = ?";
-    try (PreparedStatement ps = connection.prepareStatement(sql)) {
-        ps.setString(1, codigo);
-        try (ResultSet rs = ps.executeQuery()) {
-            // Si rs.next() es verdadero, significa que la consulta encontró al menos una fila.
-            return rs.next();
+        String sql = "SELECT codigo FROM animal WHERE codigo = ?";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, codigo);
+            try (ResultSet rs = ps.executeQuery()) {
+                // Si rs.next() es verdadero, significa que la consulta encontró al menos una
+                // fila.
+                return rs.next();
+            }
+        } catch (SQLException e) {
+            // En caso de error, imprimimos el error y asumimos que no existe para ser
+            // seguros.
+            System.out.println("Error al verificar la existencia del animal: " + e.getMessage());
+            return false;
         }
-    } catch (SQLException e) {
-        // En caso de error, imprimimos el error y asumimos que no existe para ser seguros.
-        System.out.println("Error al verificar la existencia del animal: " + e.getMessage());
-        return false;
     }
-}
 
-
-public boolean existeProduccionLechePorAnimalYFecha(String idAnimal, java.sql.Date fecha) {
+    public boolean existeProduccionLechePorAnimalYFecha(String idAnimal, java.sql.Date fecha) {
         String sql = "SELECT id FROM produccion_leche WHERE id_animal = ? AND fecha = ?";
         try (PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setString(1, idAnimal);
@@ -1193,103 +1205,228 @@ public boolean existeProduccionLechePorAnimalYFecha(String idAnimal, java.sql.Da
             return false; // En caso de error, asumimos que no existe
         }
 
-}
-public java.util.List<Object[]> buscarEventosSanitarios(String filtro) {
-    java.util.List<Object[]> lista = new java.util.ArrayList<>();
-    // Consulta SQL que une eventos_sanitarios con productos para poder buscar por el nombre del producto
-    String sql = "SELECT es.id, es.fecha, es.tipo, es.id_animal, p.producto, es.dosis, es.motivo, es.diagnostico " +
-                 "FROM eventos_sanitarios es LEFT JOIN productos p ON es.id_producto = p.id " +
-                 "WHERE es.id_animal LIKE ? OR es.tipo LIKE ? OR es.motivo LIKE ? OR es.diagnostico LIKE ? OR p.producto LIKE ? OR es.dosis LIKE ? OR es.fecha LIKE ? " +
-                 "ORDER BY es.fecha DESC";
+    }
+
+    public java.util.List<Object[]> buscarEventosSanitarios(String filtro) {
+        java.util.List<Object[]> lista = new java.util.ArrayList<>();
+        // Consulta SQL que une eventos_sanitarios con productos para poder buscar por
+        // el nombre del producto
+        String sql = "SELECT es.id, es.fecha, es.tipo, es.id_animal, p.producto, es.dosis, es.motivo, es.diagnostico " +
+                "FROM eventos_sanitarios es LEFT JOIN productos p ON es.id_producto = p.id " +
+                "WHERE es.id_animal LIKE ? OR es.tipo LIKE ? OR es.motivo LIKE ? OR es.diagnostico LIKE ? OR p.producto LIKE ? OR es.dosis LIKE ? OR es.fecha LIKE ? "
+                +
+                "ORDER BY es.fecha DESC";
+
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            String likeFiltro = "%" + filtro + "%";
+            ps.setString(1, likeFiltro);
+            ps.setString(2, likeFiltro);
+            ps.setString(3, likeFiltro);
+            ps.setString(4, likeFiltro);
+            ps.setString(5, likeFiltro);
+            ps.setString(6, likeFiltro);
+            ps.setString(7, likeFiltro); // Búsqueda por fecha como texto
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    // El resultado debe coincidir con la estructura que espera la tabla
+                    Object[] fila = new Object[8];
+                    fila[0] = rs.getInt("es.id");
+                    fila[1] = rs.getTimestamp("es.fecha");
+                    fila[2] = rs.getString("es.tipo");
+                    fila[3] = rs.getString("es.id_animal");
+                    fila[4] = rs.getString("p.producto"); // Se obtiene el nombre del producto
+                    fila[5] = rs.getObject("es.dosis");
+                    fila[6] = rs.getString("es.motivo");
+                    fila[7] = rs.getString("es.diagnostico");
+                    lista.add(fila);
+                }
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Error al buscar eventos sanitarios: " + e.getMessage());
+        }
+        return lista;
+    }
+
+    public java.util.List<Object[]> buscarProductosTratamiento(String filtro) {
+        java.util.List<Object[]> lista = new java.util.ArrayList<>();
+        String sql = "SELECT id, producto FROM productos WHERE producto LIKE ? AND (tipo != 'Desparasitante' OR tipo IS NULL) ORDER BY producto";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, "%" + filtro + "%");
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Object[] fila = new Object[2];
+                    fila[0] = rs.getInt("id");
+                    fila[1] = rs.getString("producto");
+                    lista.add(fila);
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Error al buscar productos de tratamiento: " + e.getMessage());
+        }
+        return lista;
+    }
+
+    public boolean esUltimoMovimiento(int idMovimiento, String codigoAnimal) {
+        String sql = "SELECT id FROM historial_lote WHERE id_animal = ? ORDER BY fecha DESC, id DESC LIMIT 1";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, codigoAnimal);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    int ultimoId = rs.getInt("id");
+                    return ultimoId == idMovimiento;
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("Error al verificar el último movimiento: " + e.getMessage());
+        }
+        // Si no se encuentra el animal o hay un error, devolvemos false por seguridad.
+        return false;
+    }
+
+    public java.util.List<Object[]> buscarProductosDesparasitantes(String filtro) {
+        java.util.List<Object[]> lista = new java.util.ArrayList<>();
+        String sql = "SELECT id, producto FROM productos WHERE producto LIKE ? AND tipo = 'Desparasitante' ORDER BY producto";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, "%" + filtro + "%");
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Object[] fila = new Object[2];
+                    fila[0] = rs.getInt("id");
+                    fila[1] = rs.getString("producto");
+                    lista.add(fila);
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Error al buscar productos desparasitantes: " + e.getMessage());
+        }
+        return lista;
+    }
+
+    public void actualizarEventoSanitario(int idEvento, java.sql.Timestamp fecha, Integer idProducto, Float dosis,
+            String idAnimal) throws SQLException {
+        // Reutilizamos el método existente, pasando los valores implícitos
+        this.actualizarEventoSanitario(idEvento, fecha, idProducto, dosis, idAnimal, "DESPARASITANTE", "");
+    }
+
+    public java.util.List<Object[]> buscarLotes(String filtro) {
+        java.util.List<Object[]> lista = new java.util.ArrayList<>();
+        
+        // --- LÓGICA MEJORADA ---
+        String sql;
+        boolean esNumero = false;
+        int idFiltro = 0;
     
-    try (PreparedStatement ps = connection.prepareStatement(sql)) {
-        String likeFiltro = "%" + filtro + "%";
-        ps.setString(1, likeFiltro);
-        ps.setString(2, likeFiltro);
-        ps.setString(3, likeFiltro);
-        ps.setString(4, likeFiltro);
-        ps.setString(5, likeFiltro);
-        ps.setString(6, likeFiltro);
-        ps.setString(7, likeFiltro); // Búsqueda por fecha como texto
-
-        try (ResultSet rs = ps.executeQuery()) {
-            while (rs.next()) {
-                // El resultado debe coincidir con la estructura que espera la tabla
-                Object[] fila = new Object[8];
-                fila[0] = rs.getInt("es.id");
-                fila[1] = rs.getTimestamp("es.fecha");
-                fila[2] = rs.getString("es.tipo");
-                fila[3] = rs.getString("es.id_animal");
-                fila[4] = rs.getString("p.producto"); // Se obtiene el nombre del producto
-                fila[5] = rs.getObject("es.dosis");
-                fila[6] = rs.getString("es.motivo");
-                fila[7] = rs.getString("es.diagnostico");
-                lista.add(fila);
-            }
+        // 1. Intentamos convertir el filtro a un número entero
+        try {
+            idFiltro = Integer.parseInt(filtro);
+            esNumero = true;
+        } catch (NumberFormatException e) {
+            // Si falla, no es un número, esNumero sigue en false. No hacemos nada.
         }
-    } catch (Exception e) {
-        JOptionPane.showMessageDialog(null, "Error al buscar eventos sanitarios: " + e.getMessage());
-    }
-    return lista;
-}
-
-public java.util.List<Object[]> buscarProductosTratamiento(String filtro) {
-    java.util.List<Object[]> lista = new java.util.ArrayList<>();
-    String sql = "SELECT id, producto FROM productos WHERE producto LIKE ? AND (tipo != 'Desparasitante' OR tipo IS NULL) ORDER BY producto";
-    try (PreparedStatement ps = connection.prepareStatement(sql)) {
-        ps.setString(1, "%" + filtro + "%");
-        try (ResultSet rs = ps.executeQuery()) {
-            while (rs.next()) {
-                Object[] fila = new Object[2];
-                fila[0] = rs.getInt("id");
-                fila[1] = rs.getString("producto");
-                lista.add(fila);
-            }
+    
+        // 2. Elegimos la consulta SQL adecuada
+        if (esNumero) {
+            // Si es un número, buscamos en los campos de texto O por el ID exacto
+            sql = "SELECT id, nombre, etapa, descripcion FROM lotes " +
+                  "WHERE nombre LIKE ? OR etapa LIKE ? OR descripcion LIKE ? OR id = ?";
+        } else {
+            // Si no es un número, mantenemos la consulta original
+            sql = "SELECT id, nombre, etapa, descripcion FROM lotes " +
+                  "WHERE nombre LIKE ? OR etapa LIKE ? OR descripcion LIKE ?";
         }
-    } catch (Exception e) {
-        System.out.println("Error al buscar productos de tratamiento: " + e.getMessage());
-    }
-    return lista;
-}
-
-public boolean esUltimoMovimiento(int idMovimiento, String codigoAnimal) {
-    String sql = "SELECT id FROM historial_lote WHERE id_animal = ? ORDER BY fecha DESC, id DESC LIMIT 1";
-    try (PreparedStatement ps = connection.prepareStatement(sql)) {
-        ps.setString(1, codigoAnimal);
-        try (ResultSet rs = ps.executeQuery()) {
-            if (rs.next()) {
-                int ultimoId = rs.getInt("id");
-                return ultimoId == idMovimiento;
+        
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            String likeFiltro = "%" + filtro + "%";
+            ps.setString(1, likeFiltro);
+            ps.setString(2, likeFiltro);
+            ps.setString(3, likeFiltro);
+            
+            // 3. Si era un número, añadimos el parámetro extra para el ID
+            if (esNumero) {
+                ps.setInt(4, idFiltro);
             }
-        }
-    } catch (SQLException e) {
-        System.out.println("Error al verificar el último movimiento: " + e.getMessage());
-    }
-    // Si no se encuentra el animal o hay un error, devolvemos false por seguridad.
-    return false;
-}
-
-public java.util.List<Object[]> buscarProductosDesparasitantes(String filtro) {
-    java.util.List<Object[]> lista = new java.util.ArrayList<>();
-    String sql = "SELECT id, producto FROM productos WHERE producto LIKE ? AND tipo = 'Desparasitante' ORDER BY producto";
-    try (PreparedStatement ps = connection.prepareStatement(sql)) {
-        ps.setString(1, "%" + filtro + "%");
-        try (ResultSet rs = ps.executeQuery()) {
-            while (rs.next()) {
-                Object[] fila = new Object[2];
-                fila[0] = rs.getInt("id");
-                fila[1] = rs.getString("producto");
-                lista.add(fila);
+            
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Object[] fila = {
+                        rs.getInt("id"),
+                        rs.getString("nombre"),
+                        rs.getString("etapa"),
+                        rs.getString("descripcion")
+                    };
+                    lista.add(fila);
+                }
             }
+        } catch (SQLException e) {
+            System.err.println("Error al buscar lotes: " + e.getMessage());
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Error al realizar la búsqueda de lotes: " + e.getMessage(), "Error de Búsqueda", JOptionPane.ERROR_MESSAGE);
         }
-    } catch (Exception e) {
-        System.out.println("Error al buscar productos desparasitantes: " + e.getMessage());
+        return lista;
     }
-    return lista;
-}
 
-public void actualizarEventoSanitario(int idEvento, java.sql.Timestamp fecha, Integer idProducto, Float dosis, String idAnimal) throws SQLException {
-    // Reutilizamos el método existente, pasando los valores implícitos
-    this.actualizarEventoSanitario(idEvento, fecha, idProducto, dosis, idAnimal, "DESPARASITANTE", "");
-}
+    public java.util.List<Object[]> buscarMovimientosHistorial(String filtro) {
+        java.util.List<Object[]> lista = new java.util.ArrayList<>();
+        
+        String sql;
+        boolean esNumero = false;
+        int filtroNumerico = 0;
+    
+        try {
+            filtroNumerico = Integer.parseInt(filtro);
+            esNumero = true;
+        } catch (NumberFormatException e) {
+            // No es un número, se buscará solo como texto
+        }
+    
+        if (esNumero) {
+            // Si es número, busca en los campos de texto O en los campos numéricos
+            sql = "SELECT id, id_animal, id_lote_anterior, id_lote_posterior, fecha FROM historial_lote " +
+                  "WHERE id_animal LIKE ? OR CAST(fecha AS CHAR) LIKE ? " +
+                  "OR id = ? OR id_lote_anterior = ? OR id_lote_posterior = ? " +
+                  "ORDER BY fecha DESC";
+        } else {
+            // Si no es número, solo busca en los campos de texto (ID animal y fecha)
+            sql = "SELECT id, id_animal, id_lote_anterior, id_lote_posterior, fecha FROM historial_lote " +
+                  "WHERE id_animal LIKE ? OR CAST(fecha AS CHAR) LIKE ? " +
+                  "ORDER BY fecha DESC";
+        }
+    
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            String likeFiltro = "%" + filtro + "%";
+            ps.setString(1, likeFiltro);
+            ps.setString(2, likeFiltro);
+            
+            if (esNumero) {
+                ps.setInt(3, filtroNumerico);
+                ps.setInt(4, filtroNumerico);
+                ps.setInt(5, filtroNumerico);
+            }
+            
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    // IMPORTANTE: La lógica aquí debe ser idéntica a la de cargarHistorialEnTabla()
+                    Object loteAnterior = rs.getObject("id_lote_anterior") == null 
+                                          ? "N/A" 
+                                          : rs.getInt("id_lote_anterior");
+                    
+                    Object[] fila = {
+                        rs.getInt("id"),
+                        rs.getString("id_animal"),
+                        loteAnterior,
+                        rs.getInt("id_lote_posterior"),
+                        rs.getDate("fecha")
+                    };
+                    lista.add(fila);
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Error al buscar en el historial de movimientos: " + e.getMessage());
+            e.printStackTrace();
+        }
+        return lista;
+    }
+    
+    
 }

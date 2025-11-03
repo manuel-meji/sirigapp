@@ -6,6 +6,8 @@ import com.toedter.calendar.JDateChooser;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.FocusAdapter;
@@ -31,6 +33,9 @@ public class panelHistorialLotes extends JPanel {
     private String codigoAnimalEditando = null;
     private DefaultComboBoxModel<String> comboModelAnimales;
     private final String PLACEHOLDER_ANIMAL = "Escriba para buscar un ID...";
+
+    // --- NUEVO COMPONENTE PARA LA BÚSQUEDA ---
+    private JTextField txtBuscar;
 
     private final Font FONT_SUBTITULO = FontLoader.loadFont("/resources/fonts/Montserrat-Bold.ttf", 24f);
     private final Font FONT_LABEL = FontLoader.loadFont("/resources/fonts/Montserrat-SemiBold.ttf", 16f);
@@ -98,6 +103,28 @@ public class panelHistorialLotes extends JPanel {
         btnLimpiar.setBounds(500, 65, 220, 45);
         formPanel.add(btnLimpiar);
         card.add(formPanel, BorderLayout.NORTH);
+        
+        // --- Panel Intermedio para la Búsqueda y la Tabla ---
+        JPanel centerPanel = new JPanel(new BorderLayout());
+        centerPanel.setOpaque(false);
+
+        // --- Panel de Búsqueda ---
+        JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 8));
+        searchPanel.setOpaque(false);
+        searchPanel.setBorder(new EmptyBorder(8, 0, 0, 0));
+
+        JLabel lblBuscar = new JLabel("Buscar en Historial:");
+        lblBuscar.setFont(FONT_LABEL);
+        lblBuscar.setBorder(new EmptyBorder(0, 0, 0, 10));
+        searchPanel.add(lblBuscar);
+
+        txtBuscar = new JTextField(30);
+        txtBuscar.setFont(FONT_INPUT);
+        searchPanel.add(txtBuscar);
+        
+        centerPanel.add(searchPanel, BorderLayout.NORTH);
+
+        // --- Tabla de Historial ---
         String[] columnas = {"ID Mov.", "ID Animal", "Lote Anterior", "Lote Posterior", "Fecha"};
         modeloTablaHistorial = new DefaultTableModel(columnas, 0) {
             public boolean isCellEditable(int row, int column) {
@@ -109,8 +136,10 @@ public class panelHistorialLotes extends JPanel {
         tablaHistorial.setFont(FONT_INPUT.deriveFont(14f));
         tablaHistorial.getTableHeader().setFont(FONT_LABEL.deriveFont(14f));
         JScrollPane scrollPaneTabla = new JScrollPane(tablaHistorial);
-        scrollPaneTabla.setBorder(new EmptyBorder(8, 0, 0, 0));
-        card.add(scrollPaneTabla, BorderLayout.CENTER);
+        centerPanel.add(scrollPaneTabla, BorderLayout.CENTER);
+        
+        card.add(centerPanel, BorderLayout.CENTER);
+        
         JPanel tableButtonsPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         tableButtonsPanel.setOpaque(false);
         btnModificarMovimiento = new JButton("Modificar Movimiento");
@@ -127,6 +156,25 @@ public class panelHistorialLotes extends JPanel {
         tableButtonsPanel.add(btnEliminarMovimiento);
         card.add(tableButtonsPanel, BorderLayout.SOUTH);
         content.add(card, BorderLayout.CENTER);
+
+        // --- LISTENERS ---
+        
+        // >>> INICIO: LÓGICA DE BÚSQUEDA DINÁMICA <<<
+        txtBuscar.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                filtrarTabla();
+            }
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                filtrarTabla();
+            }
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                filtrarTabla();
+            }
+        });
+        // >>> FIN: LÓGICA DE BÚSQUEDA DINÁMICA <<<
 
         JTextField editor = (JTextField) cmbAnimalesId.getEditor().getEditorComponent();
         editor.addKeyListener(new KeyAdapter() {
@@ -156,15 +204,16 @@ public class panelHistorialLotes extends JPanel {
                 guardarCambiosMovimiento();
             } else {
                 registrarMovimiento();
+            }
+        });
         
-            }});
         btnLimpiar.addActionListener(e -> {
             if (modoEdicion) {
                 salirModoEdicion();
             } else {
                 limpiarCampos();
-        
-            }});
+            }
+        });
 
         btnModificarMovimiento.addActionListener(e -> {
             int fila = tablaHistorial.getSelectedRow();
@@ -189,18 +238,38 @@ public class panelHistorialLotes extends JPanel {
             }
             int idMovimiento = (int) modeloTablaHistorial.getValueAt(filaSeleccionada, 0);
             String codigoAnimal = (String) modeloTablaHistorial.getValueAt(filaSeleccionada, 1);
-            if (controlador.esUltimoMovimiento(idMovimiento, codigoAnimal)) {
-                if (JOptionPane.showConfirmDialog(this, "¿Está seguro de revertir este movimiento?\nEl animal " + codigoAnimal + " volverá a su lote anterior.", "Confirmar Reversión", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
-                    Object idLoteAnterior = modeloTablaHistorial.getValueAt(filaSeleccionada, 2);
-                    controlador.revertirMovimientoHistorial(idMovimiento, codigoAnimal, idLoteAnterior);
-                    cargarHistorialEnTabla();
-                }
+            
+            // Reutilizamos la lógica de verificación del controlador
+            if(controlador.esUltimoMovimiento(idMovimiento, codigoAnimal)) {
+                Object idLoteAnterior = modeloTablaHistorial.getValueAt(filaSeleccionada, 2);
+                controlador.revertirMovimientoHistorial(idMovimiento, codigoAnimal, idLoteAnterior);
+                cargarHistorialEnTabla();
             } else {
                 JOptionPane.showMessageDialog(this, "No se puede revertir este movimiento. No es el más reciente para este animal.", "Acción no permitida", JOptionPane.ERROR_MESSAGE);
             }
         });
 
         return content;
+    }
+
+    // --- NUEVO MÉTODO PARA CENTRALIZAR LA LÓGICA DE FILTRADO ---
+    private void filtrarTabla() {
+        String textoBusqueda = txtBuscar.getText().trim();
+        if (textoBusqueda.isEmpty()) {
+            cargarHistorialEnTabla(); // Si no hay texto, muestra todo el historial
+        } else {
+            // Llama al nuevo método en el controlador para buscar
+            List<Object[]> historialFiltrado = controlador.buscarMovimientosHistorial(textoBusqueda);
+            actualizarTablaConNuevosDatos(historialFiltrado);
+        }
+    }
+    
+    // --- NUEVO MÉTODO PARA ACTUALIZAR LA TABLA ---
+    private void actualizarTablaConNuevosDatos(List<Object[]> movimientos) {
+        modeloTablaHistorial.setRowCount(0); // Limpia la tabla
+        for (Object[] fila : movimientos) {
+            modeloTablaHistorial.addRow(fila); // Agrega las nuevas filas
+        }
     }
 
     private void entrarModoEdicion(int fila) {
@@ -211,10 +280,8 @@ public class panelHistorialLotes extends JPanel {
         int idLotePosterior = (int) modeloTablaHistorial.getValueAt(fila, 3);
         Date fecha = (Date) modeloTablaHistorial.getValueAt(fila, 4);
 
-        // --- CORRECCIÓN DEFINITIVA PARA CARGAR EL ANIMAL ---
         JTextField editorAnimal = (JTextField) cmbAnimalesId.getEditor().getEditorComponent();
         editorAnimal.setForeground(Color.BLACK);
-        // Se establece el texto directamente en el editor, que es lo que el usuario ve.
         editorAnimal.setText(idAnimal);
 
         dateChooser.setDate(fecha);
@@ -233,6 +300,7 @@ public class panelHistorialLotes extends JPanel {
         btnEliminarMovimiento.setEnabled(false);
         tablaHistorial.setEnabled(false);
         cmbAnimalesId.setEnabled(false);
+        txtBuscar.setEnabled(false); // Deshabilitar búsqueda en modo edición
     }
 
     private void guardarCambiosMovimiento() {
@@ -257,14 +325,12 @@ public class panelHistorialLotes extends JPanel {
 
         } catch (SQLException ex) {
             JOptionPane.showMessageDialog(this, ex.getMessage(), "Error de Verificación", JOptionPane.ERROR_MESSAGE);
-            // No salimos del modo edición si hay un error de verificación, para que el usuario pueda corregir.
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this, "Ocurrió un error inesperado al guardar: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             salirModoEdicion();
         }
     }
 
-    // --- El resto de los métodos se mantienen igual ---
     private void salirModoEdicion() {
         modoEdicion = false;
         idMovimientoSeleccionado = -1;
@@ -275,6 +341,7 @@ public class panelHistorialLotes extends JPanel {
         btnEliminarMovimiento.setEnabled(true);
         tablaHistorial.setEnabled(true);
         cmbAnimalesId.setEnabled(true);
+        txtBuscar.setEnabled(true); // Habilitar búsqueda al salir de edición
         limpiarCampos();
     }
 
@@ -334,17 +401,17 @@ public class panelHistorialLotes extends JPanel {
     private void filtrarComboAnimales(String busqueda) {
         if (busqueda.equals(PLACEHOLDER_ANIMAL)) {
             return;
-        
-        }try {
+        }
+        try {
             ResultSet rs = controlador.buscarCodigosAnimales(busqueda);
             String textoActual = ((JTextField) cmbAnimalesId.getEditor().getEditorComponent()).getText();
             comboModelAnimales.removeAllElements();
             if (rs != null) {
                 while (rs.next()) {
                     comboModelAnimales.addElement(rs.getString("codigo"));
-            
                 }
-            }((JTextField) cmbAnimalesId.getEditor().getEditorComponent()).setText(textoActual);
+            }
+            ((JTextField) cmbAnimalesId.getEditor().getEditorComponent()).setText(textoActual);
             if (comboModelAnimales.getSize() > 0 && !textoActual.isEmpty()) {
                 if (cmbAnimalesId.isShowing()) {
                     cmbAnimalesId.showPopup();

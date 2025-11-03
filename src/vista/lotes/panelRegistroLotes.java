@@ -4,10 +4,11 @@ import controlador.Controlador;
 import controlador.FontLoader; // Asegúrate de tener la importación del FontLoader
 
 import java.awt.*;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.util.List;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
 
 public class panelRegistroLotes extends JPanel {
@@ -20,6 +21,9 @@ public class panelRegistroLotes extends JPanel {
     private DefaultTableModel modeloTablaLotes;
     private boolean modoEdicion = false;
     private int idLoteSeleccionado = -1;
+
+    // --- NUEVOS COMPONENTES PARA LA BÚSQUEDA ---
+    private JTextField txtBuscar;
 
     // --- Fuentes estandarizadas para el diseño ---
     private final Font FONT_SUBTITULO = FontLoader.loadFont("/resources/fonts/Montserrat-Bold.ttf", 24f);
@@ -106,6 +110,25 @@ public class panelRegistroLotes extends JPanel {
 
         card.add(formPanel, BorderLayout.NORTH);
 
+        // --- Panel Intermedio para la Búsqueda ---
+        JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 8));
+        searchPanel.setOpaque(false);
+        searchPanel.setBorder(new EmptyBorder(8, 0, 0, 0));
+
+        JLabel lblBuscar = new JLabel("Buscar Lote:");
+        lblBuscar.setFont(FONT_LABEL);
+        lblBuscar.setBorder(new EmptyBorder(0, 0, 0, 10)); // Margen a la derecha
+        searchPanel.add(lblBuscar);
+
+        txtBuscar = new JTextField(30); // Ancho del campo de búsqueda
+        txtBuscar.setFont(FONT_INPUT);
+        searchPanel.add(txtBuscar);
+        
+        // --- Panel Central que contendrá la búsqueda y la tabla ---
+        JPanel centerPanel = new JPanel(new BorderLayout());
+        centerPanel.setOpaque(false);
+        centerPanel.add(searchPanel, BorderLayout.NORTH);
+
         // --- Tabla de Lotes ---
         String[] columnas = {"ID Lote", "Nombre", "Etapa", "Descripción"};
         modeloTablaLotes = new DefaultTableModel(columnas, 0) {
@@ -116,8 +139,10 @@ public class panelRegistroLotes extends JPanel {
         tablaLotes.setFont(FONT_INPUT.deriveFont(14f));
         tablaLotes.getTableHeader().setFont(FONT_LABEL.deriveFont(14f));
         JScrollPane scrollPaneTabla = new JScrollPane(tablaLotes);
-        scrollPaneTabla.setBorder(new EmptyBorder(8, 0, 0, 0));
-        card.add(scrollPaneTabla, BorderLayout.CENTER);
+        centerPanel.add(scrollPaneTabla, BorderLayout.CENTER);
+
+        card.add(centerPanel, BorderLayout.CENTER);
+
 
         // --- Botones de acción de la tabla ---
         JPanel tableButtonsPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
@@ -141,7 +166,28 @@ public class panelRegistroLotes extends JPanel {
 
         content.add(card, BorderLayout.CENTER);
 
-        // --- Listeners (Lógica de negocio sin cambios) ---
+        // --- LISTENERS ---
+
+        // >>> INICIO: LÓGICA DE BÚSQUEDA DINÁMICA <<<
+        txtBuscar.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                filtrarTabla();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                filtrarTabla();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                filtrarTabla();
+            }
+        });
+        // >>> FIN: LÓGICA DE BÚSQUEDA DINÁMICA <<<
+
+
         btnGuardar.addActionListener(e -> {
             if (cmbEtapa.getSelectedIndex() == 0 || txtNombre.getText().trim().isEmpty()) {
                 JOptionPane.showMessageDialog(this, "Debe seleccionar una etapa y un nombre para el lote.", "Error de validación", JOptionPane.ERROR_MESSAGE);
@@ -176,10 +222,8 @@ public class panelRegistroLotes extends JPanel {
             if (filaSeleccionada != -1) {
                 if (JOptionPane.showConfirmDialog(this, "¿Está seguro de eliminar el lote seleccionado?", "Confirmar Eliminación", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
                     int idLote = (int) modeloTablaLotes.getValueAt(filaSeleccionada, 0);
-                    controlador.eliminarLote(idLote); // Asumo que este método ya existe en el controlador
+                    controlador.eliminarLote(idLote); 
                     cargarLotesEnTabla();
-                    // Considerar actualizar otros paneles si es necesario, pero de una forma más desacoplada si es posible
-                    // VistaLotes.panelHistorial.cargarLotesEnCombo();
                 }
             } else {
                 JOptionPane.showMessageDialog(this, "Por favor, seleccione un lote de la tabla para eliminar.", "Aviso", JOptionPane.WARNING_MESSAGE);
@@ -188,18 +232,34 @@ public class panelRegistroLotes extends JPanel {
         
         return content;
     }
-
-    public void cargarLotesEnTabla() {
-    modeloTablaLotes.setRowCount(0);
     
-    // Llama al método que devuelve una Lista, es más seguro
-    java.util.List<Object[]> lotes = controlador.obtenerDetallesTodosLotes();
-    
-    // Simplemente itera sobre la lista y añade las filas
-    for (Object[] fila : lotes) {
-        modeloTablaLotes.addRow(fila);
+    // --- NUEVO MÉTODO PARA CENTRALIZAR LA LÓGICA DE FILTRADO ---
+    private void filtrarTabla() {
+        String textoBusqueda = txtBuscar.getText().trim();
+        if (textoBusqueda.isEmpty()) {
+            cargarLotesEnTabla(); // Si no hay texto, muestra todos los lotes
+        } else {
+            // Llama al nuevo método en el controlador para buscar
+            List<Object[]> lotesFiltrados = controlador.buscarLotes(textoBusqueda);
+            actualizarTablaConNuevosDatos(lotesFiltrados);
+        }
     }
-}
+
+    // --- NUEVO MÉTODO PARA ACTUALIZAR LA TABLA ---
+    private void actualizarTablaConNuevosDatos(List<Object[]> lotes) {
+        modeloTablaLotes.setRowCount(0); // Limpia la tabla
+        for (Object[] fila : lotes) {
+            modeloTablaLotes.addRow(fila); // Agrega las nuevas filas
+        }
+    }
+    
+    public void cargarLotesEnTabla() {
+        modeloTablaLotes.setRowCount(0);
+        java.util.List<Object[]> lotes = controlador.obtenerDetallesTodosLotes();
+        for (Object[] fila : lotes) {
+            modeloTablaLotes.addRow(fila);
+        }
+    }
 
     private void entrarModoEdicion(int fila) {
         modoEdicion = true;
@@ -212,6 +272,7 @@ public class panelRegistroLotes extends JPanel {
         btnModificar.setEnabled(false);
         btnEliminar.setEnabled(false);
         tablaLotes.setEnabled(false);
+        txtBuscar.setEnabled(false); // Deshabilitar búsqueda en modo edición
     }
 
     private void salirModoEdicion() {
@@ -223,6 +284,7 @@ public class panelRegistroLotes extends JPanel {
         btnModificar.setEnabled(true);
         btnEliminar.setEnabled(true);
         tablaLotes.setEnabled(true);
+        txtBuscar.setEnabled(true); // Habilitar búsqueda al salir de edición
     }
 
     private void registrarLote() {
@@ -231,7 +293,6 @@ public class panelRegistroLotes extends JPanel {
         String descripcion = areaDescripcion.getText().trim();
         controlador.registrarNuevoLote(nombre, etapa, descripcion);
         cargarLotesEnTabla();
-        // VistaLotes.panelHistorial.cargarLotesEnCombo(); // Actualizar otros paneles si es necesario
         limpiarCampos();
     }
 
@@ -241,7 +302,6 @@ public class panelRegistroLotes extends JPanel {
         String descripcion = areaDescripcion.getText().trim();
         controlador.modificarLote(idLoteSeleccionado, nombre, etapa, descripcion);
         cargarLotesEnTabla();
-        // VistaLotes.panelHistorial.cargarLotesEnCombo(); // Actualizar otros paneles si es necesario
         salirModoEdicion();
     }
 
