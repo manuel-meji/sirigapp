@@ -42,7 +42,7 @@ public class panelRegistroLotes extends JPanel {
         JPanel content = new JPanel(new BorderLayout());
         content.setBackground(new Color(245, 246, 248));
 
-        JLabel title = new JLabel("Administración de Lotes de Ganado");
+        JLabel title = new JLabel("Registro y administración de lotes");
         title.setFont(FONT_SUBTITULO);
         title.setBorder(new EmptyBorder(20, 24, 8, 24));
         content.add(title, BorderLayout.NORTH);

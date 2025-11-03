@@ -53,7 +53,7 @@ public class panelHistorialLotes extends JPanel {
         // --- El diseño se mantiene intacto ---
         JPanel content = new JPanel(new BorderLayout());
         content.setBackground(new Color(245, 246, 248));
-        JLabel title = new JLabel("Historial de Movimientos de Animales");
+        JLabel title = new JLabel("Historial de movimientos de animales");
         title.setFont(FONT_SUBTITULO);
         title.setBorder(new EmptyBorder(20, 24, 8, 24));
         content.add(title, BorderLayout.NORTH);
