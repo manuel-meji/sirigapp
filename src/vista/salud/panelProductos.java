@@ -82,10 +82,10 @@ public class panelProductos extends JPanel {
 		formPanel.add(btnGuardar);
         
         // --- NUEVO: Se añade el botón de limpiar al formulario ---
-        btnLimpiar = new JButton("Limpiar");
-        btnLimpiar.setFont(FONT_BOTON);
-        btnLimpiar.setBounds(300, 60, 250, 40);
-        formPanel.add(btnLimpiar);
+       // btnLimpiar = new JButton("Limpiar");
+       // btnLimpiar.setFont(FONT_BOTON);
+       // btnLimpiar.setBounds(300, 60, 250, 40);
+       // formPanel.add(btnLimpiar);
 
 		card.add(formPanel, BorderLayout.NORTH);
         
@@ -95,7 +95,7 @@ public class panelProductos extends JPanel {
         tableContainer.setBorder(new EmptyBorder(10,0,0,0));
 
         // --- NUEVO: Barra de búsqueda ---
-        JPanel searchBarPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
+        JPanel searchBarPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
         searchBarPanel.setOpaque(false);
         JLabel lblBuscar = new JLabel("Buscar en registros:");
         lblBuscar.setFont(FONT_LABEL.deriveFont(14f));
@@ -125,6 +125,10 @@ public class panelProductos extends JPanel {
 		
 		JPanel tableButtonsPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
 		tableButtonsPanel.setOpaque(false);
+		btnLimpiar = new JButton("Limpiar");
+		btnLimpiar.setFont(FONT_BOTON);
+		btnLimpiar.setBackground(controlador.estilos.COLOR_LIMPIAR);
+		btnLimpiar.setForeground(Color.WHITE);
 		JButton btnEditar = new JButton("Editar");
 		JButton btnEliminar = new JButton("Eliminar");
 		btnEditar.setFont(FONT_BOTON);
@@ -133,6 +137,7 @@ public class panelProductos extends JPanel {
 		btnEliminar.setFont(FONT_BOTON);
 		btnEliminar.setBackground(controlador.estilos.COLOR_ELIMINAR);
 		btnEliminar.setForeground(Color.WHITE);
+		tableButtonsPanel.add(btnLimpiar);
 		tableButtonsPanel.add(btnEditar);
 		tableButtonsPanel.add(btnEliminar);
 		card.add(tableButtonsPanel, BorderLayout.SOUTH);
@@ -236,7 +241,7 @@ public class panelProductos extends JPanel {
         
         // --- LÓGICA DE MODO EDICIÓN ---
         btnGuardar.setText("Guardar");
-        btnLimpiar.setText("Limpiar Campos");
+        btnLimpiar.setText("Limpiar");
 	}
 
 	private void actualizarTabla() {

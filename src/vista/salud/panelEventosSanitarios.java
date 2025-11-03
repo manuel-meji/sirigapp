@@ -179,8 +179,11 @@ public class panelEventosSanitarios extends JPanel {
         JPanel btns = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         btns.setOpaque(false);
         btnLimpiar = new JButton("Limpiar");
+        
         JButton btnEditar = new JButton("Editar");
         JButton btnEliminar = new JButton("Eliminar");
+        btnLimpiar.setBackground(controlador.estilos.COLOR_LIMPIAR);
+        btnLimpiar.setForeground(Color.WHITE);
         btnEditar.setBackground(controlador.estilos.COLOR_MODIFICAR);
         btnEditar.setForeground(Color.WHITE);
         btnEditar.setFont(FONT_BOTON);

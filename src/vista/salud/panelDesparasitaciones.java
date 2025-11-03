@@ -168,7 +168,8 @@ public class panelDesparasitaciones extends JPanel {
         btnLimpiar = new JButton("Limpiar");
         JButton btnEditar = new JButton("Editar");
         JButton btnEliminar = new JButton("Eliminar");
-
+        btnLimpiar.setBackground(controlador.estilos.COLOR_LIMPIAR);
+        btnLimpiar.setForeground(Color.WHITE);
         btnLimpiar.setFont(FONT_BOTON);
         btnEditar.setBackground(controlador.estilos.COLOR_MODIFICAR);
         btnEditar.setForeground(Color.WHITE);
