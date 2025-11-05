@@ -17,6 +17,7 @@ import java.util.Date;
 import java.util.List;
 
 public class panelProduccionLeche extends JPanel {
+
     private Controlador controlador;
     private JTable tablaProduccion;
     private DefaultTableModel modeloTabla;
@@ -146,7 +147,7 @@ public class panelProduccionLeche extends JPanel {
         tableContainer.add(searchBarPanel, BorderLayout.NORTH);
 
         // --- Tabla ---
-        String[] columnas = { "ID", "Fecha", "Animal", "L. Mañana", "L. Tarde", "Total Día" };
+        String[] columnas = {"ID", "Fecha", "Animal", "L. Mañana", "L. Tarde", "Total Día"};
         modeloTabla = new DefaultTableModel(columnas, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -218,13 +219,7 @@ public class panelProduccionLeche extends JPanel {
                 return;
             }
 
-            
             java.sql.Date fechaSql = new java.sql.Date(fechaUtil.getTime());
-
-
-            if (verificarProduccionPorAnimalYFecha(idAnimal, fechaUtil)){
-                return;
-            }
 
             int litrosM = Integer.parseInt(txtLitrosMatutinos.getText());
             int litrosV = Integer.parseInt(txtLitrosVispertinos.getText());
@@ -237,11 +232,16 @@ public class panelProduccionLeche extends JPanel {
 
             if (idProduccionEditando == null) {
                 // MODO REGISTRO
+
+                if (verificarProduccionPorAnimalYFecha(idAnimal, fechaUtil)) {
+                    return;
+                }
                 controlador.guardarProduccionLeche(fechaSql, litrosM, litrosV, idAnimal);
                 JOptionPane.showMessageDialog(this, "Producción registrada exitosamente.", "Éxito",
                         JOptionPane.INFORMATION_MESSAGE);
             } else {
                 // MODO ACTUALIZACIÓN
+
                 controlador.actualizarProduccionLeche(idProduccionEditando, fechaSql, litrosM, litrosV, idAnimal);
                 JOptionPane.showMessageDialog(this, "Producción actualizada exitosamente.", "Éxito",
                         JOptionPane.INFORMATION_MESSAGE);
@@ -270,11 +270,11 @@ public class panelProduccionLeche extends JPanel {
         try {
             int filaModelo = tablaProduccion.convertRowIndexToModel(filaVista);
             idProduccionEditando = (Integer) modeloTabla.getValueAt(filaModelo, 0);
-            
+
             // --- CORRECCIÓN: La fecha en la tabla ahora es un String, se debe "parsear" de vuelta a Date ---
             String fechaStr = (String) modeloTabla.getValueAt(filaModelo, 1);
             Date fecha = sdf.parse(fechaStr);
-            
+
             String animal = (String) modeloTabla.getValueAt(filaModelo, 2);
             int litrosM = (int) modeloTabla.getValueAt(filaModelo, 3);
             int litrosV = (int) modeloTabla.getValueAt(filaModelo, 4);
@@ -316,17 +316,17 @@ public class panelProduccionLeche extends JPanel {
         List<Object[]> produccion = controlador.obtenerProduccionLeche();
         for (Object[] fila : produccion) {
             int id = (int) fila[0];
-            
+
             // --- CORRECCIÓN: Formatear la fecha (que ahora viene como java.sql.Date) a un String ---
             Date fecha = (Date) fila[1];
             String fechaFormateada = (fecha != null) ? sdf.format(fecha) : "";
-            
+
             String animal = (String) fila[2];
             int litrosM = (int) fila[3];
             int litrosV = (int) fila[4];
             int total = litrosM + litrosV;
-            
-            modeloTabla.addRow(new Object[] { id, fechaFormateada, animal, litrosM, litrosV, total });
+
+            modeloTabla.addRow(new Object[]{id, fechaFormateada, animal, litrosM, litrosV, total});
         }
     }
 
@@ -367,7 +367,7 @@ public class panelProduccionLeche extends JPanel {
         }
     }
 
-    public boolean  verificarProduccionPorAnimalYFecha(String idAnimal, Date fecha) {
+    public boolean verificarProduccionPorAnimalYFecha(String idAnimal, Date fecha) {
         boolean existe = controlador.existeProduccionLechePorAnimalYFecha(idAnimal, new java.sql.Date(fecha.getTime()));
         if (existe) {
             JOptionPane.showMessageDialog(this, "Ya existe un registro de producción para este animal en la fecha seleccionada.", "Aviso",
