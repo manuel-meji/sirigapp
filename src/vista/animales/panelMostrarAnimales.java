@@ -17,8 +17,9 @@ public class panelMostrarAnimales {
 
 	/**
 	 * Retorna un JPanel con la tabla de animales y botones de acción.
+	 * 
 	 * @param controlador El controlador para obtener y modificar datos.
-	 * @param onAgregar Acción para redirigir al panel de registro.
+	 * @param onAgregar   Acción para redirigir al panel de registro.
 	 */
 	public JPanel createContentPanel(Controlador controlador, Runnable onAgregar) {
 		JPanel contentPanel = new JPanel(new BorderLayout());
@@ -28,9 +29,9 @@ public class panelMostrarAnimales {
 		title.setFont(FONT_TITULO_MENU.deriveFont(Font.BOLD, 26f));
 		title.setBorder(new EmptyBorder(24, 32, 8, 32));
 		title.setHorizontalAlignment(SwingConstants.LEFT);
-        
-	// Barra de búsqueda
-	JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 4));
+
+		// Barra de búsqueda
+		JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 4));
 		searchPanel.setOpaque(false);
 		searchPanel.setBorder(new EmptyBorder(0, 32, 0, 32));
 		JLabel lblSearch = new JLabel("Buscar:");
@@ -40,13 +41,14 @@ public class panelMostrarAnimales {
 		txtBuscar.setColumns(24);
 		searchPanel.add(lblSearch);
 		searchPanel.add(txtBuscar);
-        
-	// Top panel que contiene el título y la búsqueda (título arriba, búsqueda debajo)
-	JPanel topPanel = new JPanel(new BorderLayout());
-	topPanel.setOpaque(false);
-	topPanel.add(title, BorderLayout.NORTH);
-	topPanel.add(searchPanel, BorderLayout.SOUTH);
-	contentPanel.add(topPanel, BorderLayout.NORTH);
+
+		// Top panel que contiene el título y la búsqueda (título arriba, búsqueda
+		// debajo)
+		JPanel topPanel = new JPanel(new BorderLayout());
+		topPanel.setOpaque(false);
+		topPanel.add(title, BorderLayout.NORTH);
+		topPanel.add(searchPanel, BorderLayout.SOUTH);
+		contentPanel.add(topPanel, BorderLayout.NORTH);
 
 		// Panel central con la tabla
 		JPanel centerPanel = new JPanel(new BorderLayout());
@@ -54,9 +56,12 @@ public class panelMostrarAnimales {
 		centerPanel.setBorder(new EmptyBorder(16, 32, 32, 32));
 
 		// Modelo de la tabla
-		String[] columnas = {"Código", "Edad", "Sexo", "Raza", "Peso Nac.", "Peso", "Madre", "Padre", "Lote","Estado"};
+		String[] columnas = { "Código", "Edad", "Sexo", "Raza", "Peso Nac.", "Peso", "Madre", "Padre", "Lote",
+				"Estado" };
 		DefaultTableModel model = new DefaultTableModel(columnas, 0) {
-			public boolean isCellEditable(int row, int column) { return false; }
+			public boolean isCellEditable(int row, int column) {
+				return false;
+			}
 		};
 
 		// Obtener datos de animales del controlador (inicial)
@@ -77,17 +82,24 @@ public class panelMostrarAnimales {
 				}
 				// limpiar tabla
 				model.setRowCount(0);
-				for (Object[] a : nuevos) model.addRow(a);
+				for (Object[] a : nuevos)
+					model.addRow(a);
 			}
 
 			@Override
-			public void insertUpdate(DocumentEvent e) { refresh(); }
+			public void insertUpdate(DocumentEvent e) {
+				refresh();
+			}
 
 			@Override
-			public void removeUpdate(DocumentEvent e) { refresh(); }
+			public void removeUpdate(DocumentEvent e) {
+				refresh();
+			}
 
 			@Override
-			public void changedUpdate(DocumentEvent e) { refresh(); }
+			public void changedUpdate(DocumentEvent e) {
+				refresh();
+			}
 		});
 
 		JTable table = new JTable(model);
@@ -110,7 +122,7 @@ public class panelMostrarAnimales {
 		JButton btnEditar = new JButton("Editar");
 		btnEditar.setHorizontalTextPosition(SwingConstants.LEFT);
 		btnEditar.setIcon(new ImageIcon("src/resources/images/icon-editar.png"));
-		
+
 		JButton btnEliminar = new JButton("Eliminar");
 		btnEliminar.setHorizontalTextPosition(SwingConstants.LEFT);
 		btnEliminar.setIcon(new ImageIcon("src/resources/images/icon-eliminar.png"));
@@ -124,7 +136,7 @@ public class panelMostrarAnimales {
 
 		btnEditar.setBackground(controlador.estilos.COLOR_MODIFICAR);
 		btnEditar.setForeground(Color.WHITE);
-	
+
 		btnEditar.setSize(100, 45);
 
 		btnEliminar.setBackground(controlador.estilos.COLOR_ELIMINAR);
@@ -143,21 +155,25 @@ public class panelMostrarAnimales {
 		// Acción para agregar animal
 		btnAgregar.addActionListener(e -> {
 			e.getSource();
-			//if (onAgregar != null) onAgregar.run();
+			// if (onAgregar != null) onAgregar.run();
 			controlador.animalesFrame.cambiarPanelContenido(controlador.animalesFrame.pRegistro.createContentPanel());
 		});
 
 		// Acción para editar animal seleccionado
 		btnEditar.addActionListener(e -> {
-			e.getSource();
-			int row = table.getSelectedRow();
-			if (row == -1) {
-				JOptionPane.showMessageDialog(contentPanel, "Seleccione un animal para editar.");
+			int filaSeleccionada = table.getSelectedRow();
+			if (filaSeleccionada == -1) {
+				JOptionPane.showMessageDialog(contentPanel, "Por favor, seleccione un animal de la tabla para editar.",
+						"Ningún animal seleccionado", JOptionPane.INFORMATION_MESSAGE);
 				return;
 			}
-			// Aquí puedes abrir un panel de edición, por ejemplo:
-			Object codigo = table.getValueAt(row, 0);
-			controlador.editarAnimal(codigo); // Implementa este método en el controlador
+
+			// Obtenemos el código del animal de la primera columna
+			Object codigo = table.getValueAt(filaSeleccionada, 0);
+
+			// Llamamos al método del controlador para iniciar la edición
+			// Esta llamada es la que desencadena todo el proceso.
+			controlador.iniciarEdicionAnimal(codigo.toString());
 		});
 
 		// Acción para eliminar animal seleccionado
@@ -169,7 +185,8 @@ public class panelMostrarAnimales {
 				return;
 			}
 			Object codigo = table.getValueAt(row, 0);
-			int confirm = JOptionPane.showConfirmDialog(contentPanel, "¿Está seguro de eliminar el animal?", "Confirmar", JOptionPane.YES_NO_OPTION);
+			int confirm = JOptionPane.showConfirmDialog(contentPanel, "¿Está seguro de eliminar el animal?",
+					"Confirmar", JOptionPane.YES_NO_OPTION);
 			if (confirm == JOptionPane.YES_OPTION) {
 				controlador.eliminarAnimal(codigo); // Implementa este método en el controlador
 				model.removeRow(row);

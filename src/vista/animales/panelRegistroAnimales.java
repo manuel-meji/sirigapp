@@ -31,6 +31,12 @@ public class panelRegistroAnimales extends JPanel {
     private JTextField txtIdPadre;
     private JComboBox<String> cbEstado;
 
+     // Para saber si estamos editando o guardando uno nuevo
+    private boolean enModoEdicion = false;
+    // Para guardar el código original del animal que se está editando
+    private String codigoOriginal;
+
+
     // --- Fuentes estandarizadas ---
     private final Font FONT_SUBTITULO = FontLoader.loadFont("/resources/fonts/Montserrat-Bold.ttf", 24f);
     private final Font FONT_LABEL = FontLoader.loadFont("/resources/fonts/Montserrat-SemiBold.ttf", 16f);
@@ -198,8 +204,29 @@ public class panelRegistroAnimales extends JPanel {
         return contentPanel;
     }
 
+    public void cargarDatosParaEdicion(String codigo, java.sql.Date fechaNacimiento, String sexo, String raza, 
+                                     String pesoNacimiento, String pesoActual, String idMadre, String idPadre, String estado) {
+        
+        txtCodigo.setText(codigo);
+        txtCodigo.setEditable(false); // No se debe poder editar el código (PK)
+
+        dcFechaNacimiento.setDate(new java.util.Date(fechaNacimiento.getTime()));
+        cbSexo.setSelectedItem(sexo);
+        txtRaza.setText(raza);
+        txtPesoNacimiento.setText(pesoNacimiento);
+        txtPeso.setText(pesoActual);
+        txtIdMadre.setText(idMadre);
+        txtIdPadre.setText(idPadre);
+        cbEstado.setSelectedItem(estado);
+
+        // Activamos el modo edición
+        this.enModoEdicion = true;
+        this.codigoOriginal = codigo; // Guardamos el código original
+    }
+
     private void limpiarFormulario() {
         txtCodigo.setText("");
+        txtCodigo.setEditable(true); // Se puede editar el código al crear uno nuevo
         dcFechaNacimiento.setDate(new java.util.Date());
         cbSexo.setSelectedIndex(0);
         txtRaza.setText("");
@@ -208,9 +235,15 @@ public class panelRegistroAnimales extends JPanel {
         txtIdMadre.setText("");
         txtIdPadre.setText("");
         cbEstado.setSelectedIndex(0);
+
+        // ---- AÑADIDO ----
+        // Desactivamos el modo edición al limpiar
+        this.enModoEdicion = false;
+        this.codigoOriginal = null;
     }
 
     private void guardarAnimal() {
+        // Obtenemos los datos del formulario (sin cambios)
         String codigo = txtCodigo.getText().trim();
         java.util.Date fecha = dcFechaNacimiento.getDate();
         String sexo = (String) cbSexo.getSelectedItem();
@@ -227,24 +260,43 @@ public class panelRegistroAnimales extends JPanel {
         }
 
         try {
-            // El controlador espera un java.sql.Timestamp, no un java.sql.Date
-            //java.sql.Timestamp fechaNacimientoSql = new java.sql.Timestamp(fecha.getTime());
-
-            controlador.guardarAnimal(
-               codigo,
-            new java.sql.Date(fecha.getTime()),
-            sexo,
-            raza,
-            pesoNacimiento,
-            peso,
-            idMadre,
-            idPadre,
-            estado
-            );
-            JOptionPane.showMessageDialog(this, "Animal registrado correctamente", "Éxito", JOptionPane.INFORMATION_MESSAGE);
+            // ---- LÓGICA MODIFICADA ----
+            if (enModoEdicion) {
+                // Si estamos editando, llamamos al método para actualizar
+                controlador.actualizarAnimal(
+                    codigoOriginal, // Usamos el código original para la cláusula WHERE de SQL
+                    new java.sql.Timestamp(fecha.getTime()),
+                    sexo,
+                    raza,
+                    pesoNacimiento,
+                    peso,
+                    idMadre,
+                    idPadre,
+                    estado
+                );
+                JOptionPane.showMessageDialog(this, "Animal actualizado correctamente", "Éxito", JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                // Si no, llamamos al método original para guardar un nuevo animal
+                controlador.guardarAnimal(
+                   codigo,
+                   new java.sql.Date(fecha.getTime()),
+                   sexo,
+                   raza,
+                   pesoNacimiento,
+                   peso,
+                   idMadre,
+                   idPadre,
+                   estado
+                );
+                JOptionPane.showMessageDialog(this, "Animal registrado correctamente", "Éxito", JOptionPane.INFORMATION_MESSAGE);
+            }
             limpiarFormulario();
+            // Opcional: Después de guardar, puedes volver a la tabla
+            // controlador.animalesFrame.cambiarPanelContenido(controlador.animalesFrame.pMostrar.createContentPanel(...));
+            
         } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Error al guardar: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Error al guardar los datos: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
+
 }
