@@ -32,11 +32,11 @@ public class vistaSalud extends JPanel {
         tabs.setFont(controlador.estilos.FONT_TITLE_TAB.deriveFont(Font.PLAIN, 16f));
 
         // Inicializar los paneles usando los atributos de clase
-        eventos = new panelEventosSanitarios(controlador);
+       eventos = new panelEventosSanitarios(controlador);
         despar = new panelDesparasitaciones(controlador);
         productos = new panelProductos(controlador);
 
-        tabs.addTab("Eventos sanitarios", eventos.createContentPanel());
+       tabs.addTab("Eventos sanitarios", eventos.createContentPanel());
         tabs.addTab("Desparasitaciones", despar.createContentPanel());
         tabs.addTab("Productos", productos.createContentPanel());
 

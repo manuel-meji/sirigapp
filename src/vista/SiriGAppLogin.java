@@ -35,6 +35,9 @@ public class SiriGAppLogin extends JFrame {
         setLocationRelativeTo(null);
         setResizable(false);
 
+        Image icon = Toolkit.getDefaultToolkit().getImage("src/resources/images/icon-login.png");
+        this.setIconImage(icon);
+
         // Panel principal con el color de fondo oscuro
         JPanel mainPanel = new JPanel();
         mainPanel.setBackground(new Color(0, 38, 51));
@@ -114,9 +117,9 @@ public class SiriGAppLogin extends JFrame {
             Object __src = e.getSource(); __src.hashCode();
             String username = userTextField.getText();
             String password = new String(passTextField.getPassword());
-            // Aquí iría la lógica de autenticación
-            System.out.println("Usuario: " + username);
-            System.out.println("Contraseña: " + password);
+           
+           // System.out.println("Usuario: " + username);
+            //System.out.println("Contraseña: " + password);
 
             controlador.IniciarSesion(username, password);
 

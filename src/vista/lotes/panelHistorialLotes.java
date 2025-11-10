@@ -91,12 +91,17 @@ public class panelHistorialLotes extends JPanel {
         dateChooser.setBounds(200, 90, 280, 30);
         formPanel.add(dateChooser);
         btnGuardar = new JButton("Registrar Movimiento");
+        btnGuardar.setIcon(new ImageIcon("src/resources/images/icon-guardar.png"));
+        btnGuardar.setHorizontalTextPosition(SwingConstants.LEFT);
+
         btnGuardar.setFont(FONT_BOTON);
         btnGuardar.setBackground(controlador.estilos.COLOR_GUARDAR);
         btnGuardar.setForeground(Color.WHITE);
         btnGuardar.setBounds(500, 10, 220, 45);
         formPanel.add(btnGuardar);
         btnLimpiar = new JButton("Limpiar Campos");
+        btnLimpiar.setIcon(new ImageIcon("src/resources/images/icon-limpiar.png"));
+        btnLimpiar.setHorizontalTextPosition(SwingConstants.LEFT);
         btnLimpiar.setFont(FONT_BOTON);
         btnLimpiar.setBackground(controlador.estilos.COLOR_LIMPIAR);
         btnLimpiar.setForeground(Color.WHITE);
@@ -142,12 +147,16 @@ public class panelHistorialLotes extends JPanel {
         
         JPanel tableButtonsPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         tableButtonsPanel.setOpaque(false);
-        btnModificarMovimiento = new JButton("Modificar Movimiento");
+        btnModificarMovimiento = new JButton("Modificar");
+        btnModificarMovimiento.setIcon(new ImageIcon("src/resources/images/icon-editar.png"));
+        btnModificarMovimiento.setHorizontalTextPosition(SwingConstants.LEFT);
         btnModificarMovimiento.setFont(FONT_BOTON);
         btnModificarMovimiento.setBackground(controlador.estilos.COLOR_MODIFICAR);
         btnModificarMovimiento.setForeground(Color.WHITE);
         btnModificarMovimiento.setPreferredSize(new Dimension(200, 40));
-        btnEliminarMovimiento = new JButton("Eliminar Movimiento");
+        btnEliminarMovimiento = new JButton("Eliminar");
+        btnEliminarMovimiento.setIcon(new ImageIcon("src/resources/images/icon-eliminar.png"));
+        btnEliminarMovimiento.setHorizontalTextPosition(SwingConstants.LEFT);
         btnEliminarMovimiento.setFont(FONT_BOTON);
         btnEliminarMovimiento.setBackground(controlador.estilos.COLOR_ELIMINAR);
         btnEliminarMovimiento.setForeground(Color.WHITE);
@@ -384,45 +393,50 @@ public class panelHistorialLotes extends JPanel {
         }
     }
 
-    public void cargarHistorialEnTabla() {
-        modeloTablaHistorial.setRowCount(0);
-        try (ResultSet rs = controlador.obtenerHistorialMovimientos()) {
-            if (rs != null) {
-                while (rs.next()) {
-                    Object[] fila = {rs.getInt("id"), rs.getString("id_animal"), rs.getObject("id_lote_anterior") == null ? "N/A" : rs.getInt("id_lote_anterior"), rs.getInt("id_lote_posterior"), rs.getDate("fecha")};
-                    modeloTablaHistorial.addRow(fila);
-                }
-            }
-        } catch (SQLException e) {
-            JOptionPane.showMessageDialog(null, "Error al cargar el historial: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-        }
+public void cargarHistorialEnTabla() {
+    // 1. Limpiamos la tabla como antes.
+    modeloTablaHistorial.setRowCount(0);
+    
+    // 2. Obtenemos la lista de datos ya procesada desde el controlador.
+    java.util.List<Object[]> historial = controlador.obtenerHistorialMovimientos();
+    
+    // 3. Simplemente iteramos sobre la lista y añadimos cada fila al modelo.
+    //    ¡No hay ResultSet, no hay try-catch, no hay SQLException!
+    for (Object[] fila : historial) {
+        modeloTablaHistorial.addRow(fila);
     }
+}
 
-    private void filtrarComboAnimales(String busqueda) {
-        if (busqueda.equals(PLACEHOLDER_ANIMAL)) {
-            return;
-        }
-        try {
-            ResultSet rs = controlador.buscarCodigosAnimales(busqueda);
-            String textoActual = ((JTextField) cmbAnimalesId.getEditor().getEditorComponent()).getText();
-            comboModelAnimales.removeAllElements();
-            if (rs != null) {
-                while (rs.next()) {
-                    comboModelAnimales.addElement(rs.getString("codigo"));
-                }
-            }
-            ((JTextField) cmbAnimalesId.getEditor().getEditorComponent()).setText(textoActual);
-            if (comboModelAnimales.getSize() > 0 && !textoActual.isEmpty()) {
-                if (cmbAnimalesId.isShowing()) {
-                    cmbAnimalesId.showPopup();
-                }
-            } else {
-                cmbAnimalesId.hidePopup();
-            }
-        } catch (SQLException e) {
-            JOptionPane.showMessageDialog(null, "Error al filtrar animales: " + e.getMessage(), "Error de BD", JOptionPane.ERROR_MESSAGE);
-        }
+private void filtrarComboAnimales(String busqueda) {
+    if (busqueda.equals(PLACEHOLDER_ANIMAL)) {
+        return;
     }
+    
+    // 1. Obtenemos la lista de Strings. ¡No hay try-catch ni SQLException aquí!
+    java.util.List<String> codigos = controlador.buscarCodigosAnimales(busqueda);
+    
+    // 2. Guardamos el texto actual que el usuario ha escrito.
+    String textoActual = ((JTextField) cmbAnimalesId.getEditor().getEditorComponent()).getText();
+    
+    // 3. Limpiamos el modelo del ComboBox.
+    comboModelAnimales.removeAllElements();
+    
+    // 4. Llenamos el modelo con los resultados de la lista.
+    for (String codigo : codigos) {
+        comboModelAnimales.addElement(codigo);
+    }
+    
+    // 5. Restauramos el texto y manejamos la visibilidad del popup.
+    //    Esta lógica no cambia.
+    ((JTextField) cmbAnimalesId.getEditor().getEditorComponent()).setText(textoActual);
+    if (comboModelAnimales.getSize() > 0 && !textoActual.isEmpty()) {
+        if (cmbAnimalesId.isShowing()) {
+            cmbAnimalesId.showPopup();
+        }
+    } else {
+        cmbAnimalesId.hidePopup();
+    }
+}
 
     private void restaurarPlaceholderAnimal() {
         JTextField editor = (JTextField) cmbAnimalesId.getEditor().getEditorComponent();

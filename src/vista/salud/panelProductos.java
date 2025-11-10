@@ -78,6 +78,8 @@ public class panelProductos extends JPanel {
 		btnGuardar.setFont(FONT_BOTON);
 		btnGuardar.setBackground(controlador.estilos.COLOR_GUARDAR);
 		btnGuardar.setForeground(Color.WHITE);
+		btnGuardar.setIcon(new ImageIcon("src/resources/images/icon-guardar.png"));
+        btnGuardar.setHorizontalTextPosition(SwingConstants.LEFT);
 		btnGuardar.setBounds(560, 60, 250, 40);
 		formPanel.add(btnGuardar);
         
@@ -95,7 +97,7 @@ public class panelProductos extends JPanel {
         tableContainer.setBorder(new EmptyBorder(10,0,0,0));
 
         // --- NUEVO: Barra de búsqueda ---
-        JPanel searchBarPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
+        JPanel searchBarPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
         searchBarPanel.setOpaque(false);
         JLabel lblBuscar = new JLabel("Buscar en registros:");
         lblBuscar.setFont(FONT_LABEL.deriveFont(14f));
@@ -125,12 +127,25 @@ public class panelProductos extends JPanel {
 		
 		JPanel tableButtonsPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
 		tableButtonsPanel.setOpaque(false);
+
+		
+
 		btnLimpiar = new JButton("Limpiar");
+		btnLimpiar.setIcon(new ImageIcon("src/resources/images/icon-limpiar.png"));
+        btnLimpiar.setHorizontalTextPosition(SwingConstants.LEFT);
 		btnLimpiar.setFont(FONT_BOTON);
 		btnLimpiar.setBackground(controlador.estilos.COLOR_LIMPIAR);
 		btnLimpiar.setForeground(Color.WHITE);
+
+
 		JButton btnEditar = new JButton("Editar");
+		btnEditar.setIcon(new ImageIcon("src/resources/images/icon-editar.png"));
+        btnEditar.setHorizontalTextPosition(SwingConstants.LEFT);
+
 		JButton btnEliminar = new JButton("Eliminar");
+		btnEliminar.setIcon(new ImageIcon("src/resources/images/icon-eliminar.png"));
+        btnEliminar.setHorizontalTextPosition(SwingConstants.LEFT);
+		
 		btnEditar.setFont(FONT_BOTON);
 		btnEditar.setBackground(controlador.estilos.COLOR_MODIFICAR);
 		btnEditar.setForeground(Color.WHITE);

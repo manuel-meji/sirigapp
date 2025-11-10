@@ -11,7 +11,7 @@ public final class DesignSystem {
 
     // Colores base
     public static final Color COLOR_FONDO_MENU = new Color(0, 38, 51);
-    public static final Color COLOR_BOTON_NORMAL = new Color(106, 255, 193);
+    public static final Color COLOR_BOTON_NORMAL = new Color(0xFF00737A);
     public static final Color COLOR_TEXTO_BOTON = new Color(0, 38, 51);
     public static final Color COLOR_BOTON_CERRAR_SESION = new Color(247, 51, 116);
     public static final Color COLOR_FONDO_APP = new Color(245, 246, 248);

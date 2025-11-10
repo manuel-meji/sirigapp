@@ -46,14 +46,13 @@ public class Controlador {
     }
 
     public void IniciarSesion(String usuario, String contraseña) {
-        String sql = "SELECT * FROM usuarios WHERE id = ? AND contrasena = ?";
-        try {
-            PreparedStatement preparedStatement = connection.prepareStatement(sql);
-            preparedStatement.setString(1, usuario);
-            preparedStatement.setString(2, contraseña);
-            ResultSet resultSet = preparedStatement.executeQuery();
+        String sql = "{CALL sp_iniciar_sesion(?, ?)}";
+
+        try (CallableStatement callableStatement = connection.prepareCall(sql)) {
+            callableStatement.setString(1, usuario);
+            callableStatement.setString(2, contraseña);
+            ResultSet resultSet = callableStatement.executeQuery();
             if (resultSet.next()) {
-                // JOptionPane.showMessageDialog(null, "Inicio de sesión exitoso");
                 loginFrame.setVisible(false);
                 animalesFrame = new AnimalesFrame(this);
                 animalesFrame.setVisible(true);
@@ -77,18 +76,23 @@ public class Controlador {
             String idMadre,
             String idPadre,
             String estado) throws SQLException {
-        String sql = "INSERT INTO animal (codigo, fecha_nacimiento, sexo, raza, peso_nacimiento, peso, id_madre, id_padre, estado) VALUES (?,?,?,?,?,?,?,?,?)";
-        PreparedStatement ps = connection.prepareStatement(sql);
-        ps.setString(1, codigo);
-        ps.setDate(2, fechaNacimiento);
-        ps.setString(3, sexo);
-        ps.setString(4, raza);
-        ps.setString(5, pesoNacimiento);
-        ps.setString(6, peso);
-        ps.setString(7, idMadre);
-        ps.setString(8, idPadre);
-        ps.setString(9, estado);
-        ps.executeUpdate();
+        // 1. Llamada al nuevo procedimiento almacenado
+        String sql = "{CALL sp_guardar_animal(?, ?, ?, ?, ?, ?, ?, ?, ?)}";
+        // 2. Uso de CallableStatement dentro de un try-with-resources
+        try (CallableStatement cs = connection.prepareCall(sql)) {
+            // 3. Los parámetros se asignan de la misma manera que con PreparedStatement
+            cs.setString(1, codigo);
+            cs.setDate(2, fechaNacimiento);
+            cs.setString(3, sexo);
+            cs.setString(4, raza);
+            cs.setString(5, pesoNacimiento);
+            cs.setString(6, peso);
+            cs.setString(7, idMadre);
+            cs.setString(8, idPadre);
+            cs.setString(9, estado);
+            // 4. Se ejecuta la actualización
+            cs.executeUpdate();
+        }
     }
 
     /**
@@ -98,40 +102,27 @@ public class Controlador {
      */
     public java.util.List<Object[]> obtenerAnimales() {
         java.util.List<Object[]> lista = new java.util.ArrayList<>();
-        // Traemos también el nombre del lote (puede ser NULL si no tiene lote asignado)
-        String sql = "SELECT a.codigo, a.fecha_nacimiento, a.sexo, a.raza, a.peso_nacimiento, a.peso, a.id_madre, a.id_padre, a.estado, l.nombre AS lote_nombre "
-                + "FROM animal a LEFT JOIN lotes l ON a.id_lote_actual = l.id ORDER BY a.codigo";
-        try (PreparedStatement ps = connection.prepareStatement(sql);
-                ResultSet rs = ps.executeQuery()) {
+        String sql = "{CALL sp_obtener_animales()}"; // Llamada al SP
+        try (CallableStatement cs = connection.prepareCall(sql);
+                ResultSet rs = cs.executeQuery()) {
             while (rs.next()) {
                 Object[] fila = new Object[10];
-                // 0: Código
                 fila[0] = rs.getString("codigo");
-
-                // 1: Edad (calculada a partir de fecha_nacimiento)
                 java.sql.Timestamp ts = rs.getTimestamp("fecha_nacimiento");
                 if (ts != null) {
-                    java.sql.Date sqlDate = new java.sql.Date(ts.getTime());
-                    fila[1] = calcularEdad(sqlDate);
+                    fila[1] = calcularEdad(new java.sql.Date(ts.getTime()));
                 } else {
                     fila[1] = "";
                 }
-
-                // 2..7: otros atributos
                 fila[2] = rs.getString("sexo");
                 fila[3] = rs.getString("raza");
                 fila[4] = rs.getString("peso_nacimiento");
                 fila[5] = rs.getString("peso");
                 fila[6] = rs.getString("id_madre");
                 fila[7] = rs.getString("id_padre");
-
-                // 8: Nombre del lote (puede ser NULL)
                 String loteNombre = rs.getString("lote_nombre");
                 fila[8] = loteNombre != null ? loteNombre : "--";
-
-                // 9: Estado
                 fila[9] = rs.getString("estado");
-
                 lista.add(fila);
             }
         } catch (Exception e) {
@@ -151,27 +142,20 @@ public class Controlador {
      */
     public java.util.List<Object[]> buscarAnimalesCompletos(String filtro) {
         java.util.List<Object[]> lista = new java.util.ArrayList<>();
-        String sql = "SELECT a.codigo, a.fecha_nacimiento, a.sexo, a.raza, a.peso_nacimiento, a.peso, a.id_madre, a.id_padre, a.estado, l.nombre AS lote_nombre "
-                + "FROM animal a LEFT JOIN lotes l ON a.id_lote_actual = l.id "
-                + "WHERE a.codigo LIKE ? OR a.raza LIKE ? OR l.nombre LIKE ? ORDER BY a.codigo";
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+        String sql = "{CALL sp_buscar_animales_completos(?)}"; // Llamada al SP
+        try (CallableStatement cs = connection.prepareCall(sql)) {
             String like = "%" + filtro + "%";
-            ps.setString(1, like);
-            ps.setString(2, like);
-            ps.setString(3, like);
-            try (ResultSet rs = ps.executeQuery()) {
+            cs.setString(1, like); // Solo un parámetro ahora
+            try (ResultSet rs = cs.executeQuery()) {
                 while (rs.next()) {
                     Object[] fila = new Object[10];
                     fila[0] = rs.getString("codigo");
-
                     java.sql.Timestamp ts = rs.getTimestamp("fecha_nacimiento");
                     if (ts != null) {
-                        java.sql.Date sqlDate = new java.sql.Date(ts.getTime());
-                        fila[1] = calcularEdad(sqlDate);
+                        fila[1] = calcularEdad(new java.sql.Date(ts.getTime()));
                     } else {
                         fila[1] = "";
                     }
-
                     fila[2] = rs.getString("sexo");
                     fila[3] = rs.getString("raza");
                     fila[4] = rs.getString("peso_nacimiento");
@@ -223,11 +207,10 @@ public class Controlador {
      * Elimina un animal por su código.
      */
     public void eliminarAnimal(Object codigo) {
-        String sql = "DELETE FROM animal WHERE codigo = ?";
-        try {
-            PreparedStatement ps = connection.prepareStatement(sql);
-            ps.setString(1, codigo.toString());
-            ps.executeUpdate();
+        String sql = "{CALL sp_eliminar_animal(?)}";
+        try (CallableStatement cs = connection.prepareCall(sql)) {
+            cs.setString(1, codigo.toString());
+            cs.executeUpdate();
             JOptionPane.showMessageDialog(null, "Animal eliminado correctamente.");
         } catch (Exception e) {
             JOptionPane.showMessageDialog(null, "Error al eliminar animal: " + e.getMessage());
@@ -249,13 +232,20 @@ public class Controlador {
      */
     public java.util.List<String> buscarAnimales(String filtro) {
         java.util.List<String> resultado = new java.util.ArrayList<>();
-        String sql = "SELECT codigo FROM animal WHERE codigo LIKE ? AND estado = 'ACTIVO'";
-        try {
-            PreparedStatement ps = connection.prepareStatement(sql);
-            ps.setString(1, "%" + filtro + "%");
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                resultado.add(rs.getString("codigo"));
+
+        // 1. La consulta ahora es una llamada al procedimiento almacenado.
+        String sql = "{CALL sp_buscar_animales_activos(?)}";
+
+        // 2. Usamos CallableStatement en lugar de PreparedStatement.
+        try (CallableStatement cs = connection.prepareCall(sql)) {
+
+            // 3. El resto del código es prácticamente idéntico.
+            cs.setString(1, "%" + filtro + "%");
+
+            try (ResultSet rs = cs.executeQuery()) {
+                while (rs.next()) {
+                    resultado.add(rs.getString("codigo"));
+                }
             }
         } catch (Exception e) {
             System.out.println("Error al buscar animales: " + e.getMessage());
@@ -267,20 +257,13 @@ public class Controlador {
      * Guarda un nuevo registro de salida de animal
      */
     public void guardarSalida(String animal, String motivo, java.sql.Date fecha) throws SQLException {
-        // Primero actualizamos el estado del animal
-        String updateAnimal = "UPDATE animal SET estado = ? WHERE codigo = ?";
-        PreparedStatement psAnimal = connection.prepareStatement(updateAnimal);
-        psAnimal.setString(1, motivo.equals("MUERTE") ? "MUERTO" : "VENDIDO");
-        psAnimal.setString(2, animal);
-        psAnimal.executeUpdate();
-
-        // Luego registramos la salida
-        String sql = "INSERT INTO salida (fecha, motivo, id_animal) VALUES (?, ?, ?)";
-        PreparedStatement ps = connection.prepareStatement(sql);
-        ps.setDate(1, fecha);
-        ps.setString(2, motivo);
-        ps.setString(3, animal);
-        ps.executeUpdate();
+        String sql = "{CALL sp_guardar_salida(?, ?, ?)}";
+        try (CallableStatement cs = connection.prepareCall(sql)) {
+            cs.setString(1, animal);
+            cs.setString(2, motivo);
+            cs.setDate(3, fecha);
+            cs.executeUpdate();
+        }
     }
 
     /**
@@ -288,10 +271,9 @@ public class Controlador {
      */
     public java.util.List<Object[]> obtenerSalidas() {
         java.util.List<Object[]> lista = new java.util.ArrayList<>();
-        String sql = "SELECT s.id, s.id_animal, s.motivo, s.fecha FROM salida s ORDER BY s.fecha DESC";
-        try {
-            PreparedStatement ps = connection.prepareStatement(sql);
-            ResultSet rs = ps.executeQuery();
+        String sql = "{CALL sp_obtener_salidas()}"; // Llamada al SP
+        try (CallableStatement cs = connection.prepareCall(sql);
+                ResultSet rs = cs.executeQuery()) {
             while (rs.next()) {
                 Object[] fila = new Object[4];
                 fila[0] = rs.getInt("id");
@@ -310,92 +292,98 @@ public class Controlador {
      * Elimina un registro de salida
      */
     public void eliminarSalida(int id) {
-        try {
-            // Primero obtenemos el id_animal y motivo
-            String sqlSelect = "SELECT id_animal, motivo FROM salida WHERE id = ?";
-            PreparedStatement psSelect = connection.prepareStatement(sqlSelect);
-            psSelect.setInt(1, id);
-            ResultSet rs = psSelect.executeQuery();
+        // 1. La consulta ahora es una única llamada al procedimiento almacenado.
+        String sql = "{CALL sp_eliminar_salida(?)}";
 
-            if (rs.next()) {
-                String idAnimal = rs.getString("id_animal");
+        // 2. Usamos CallableStatement. Toda la lógica compleja ha desaparecido de Java.
+        try (CallableStatement cs = connection.prepareCall(sql)) {
 
-                // Reactivamos el animal
-                String updateAnimal = "UPDATE animal SET estado = 'ACTIVO' WHERE codigo = ?";
-                PreparedStatement psAnimal = connection.prepareStatement(updateAnimal);
-                psAnimal.setString(1, idAnimal);
-                psAnimal.executeUpdate();
+            // 3. Asignamos el único parámetro que el procedimiento necesita: el ID de la
+            // salida.
+            cs.setInt(1, id);
 
-                // Eliminamos la salida
-                String sqlDelete = "DELETE FROM salida WHERE id = ?";
-                PreparedStatement psDelete = connection.prepareStatement(sqlDelete);
-                psDelete.setInt(1, id);
-                psDelete.executeUpdate();
+            // 4. Ejecutamos el procedimiento. La base de datos se encarga de la
+            // transacción.
+            cs.executeUpdate();
 
-                JOptionPane.showMessageDialog(null, "Salida eliminada correctamente");
-            }
+            // Si el procedimiento termina sin lanzar un error, significa que el COMMIT fue
+            // exitoso.
+            JOptionPane.showMessageDialog(null, "Salida eliminada y animal reactivado correctamente.");
+
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(null, "Error al eliminar salida: " + e.getMessage());
+            // Si algo falló, el ROLLBACK fue automático en la BD y aquí recibimos el
+            // mensaje de error.
+            JOptionPane.showMessageDialog(null, "Error al eliminar la salida: " + e.getMessage());
         }
     }
 
     /**
      * Edita un registro de salida
      */
-    public void editarSalida(int id) {
-        try {
-            String sql = "SELECT id_animal, motivo, fecha FROM salida WHERE id = ?";
-            PreparedStatement ps = connection.prepareStatement(sql);
-            ps.setInt(1, id);
-            ResultSet rs = ps.executeQuery();
+    public Object[] obtenerDatosSalidaPorId(int id) {
+        // 1. La consulta ahora es una llamada al procedimiento almacenado.
+        String sql = "{CALL sp_obtener_datos_salida_por_id(?)}";
 
-            if (rs.next()) {
-                String idAnimal = rs.getString("id_animal");
-                String motivo = rs.getString("motivo");
-                java.sql.Date fecha = rs.getDate("fecha");
+        try (CallableStatement cs = connection.prepareCall(sql)) {
+            cs.setInt(1, id);
 
-                // Aquí podrías abrir un diálogo de edición con estos datos
-                JOptionPane.showMessageDialog(null,
-                        "Salida ID: " + id + "\n" +
-                                "Animal: " + idAnimal + "\n" +
-                                "Motivo: " + motivo + "\n" +
-                                "Fecha: " + fecha);
+            try (ResultSet rs = cs.executeQuery()) {
+                // 2. Si se encuentra un resultado...
+                if (rs.next()) {
+                    // 3. Creamos un array para guardar los datos.
+                    Object[] datosSalida = new Object[3];
+                    datosSalida[0] = rs.getString("id_animal");
+                    datosSalida[1] = rs.getString("motivo");
+                    datosSalida[2] = rs.getDate("fecha");
+
+                    // 4. Retornamos el array con los datos.
+                    return datosSalida;
+                }
             }
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(null, "Error al editar salida: " + e.getMessage());
+            JOptionPane.showMessageDialog(null, "Error al obtener los datos de la salida: " + e.getMessage());
         }
+
+        // 5. Si no se encontró nada o hubo un error, retornamos null.
+        return null;
     }
 
     public void registrarNuevoLote(String nombre, String etapa, String descripcion) {
+        // 1. La consulta ahora es una llamada al procedimiento almacenado.
+        String sql = "{CALL sp_registrar_nuevo_lote(?, ?, ?)}";
 
-        PreparedStatement ps = null;
-        try {
-            String sql = "INSERT INTO lotes (nombre, etapa, descripcion) VALUES (?, ?, ?)";
-            ps = connection.prepareStatement(sql);
-            ps.setString(1, nombre);
-            ps.setString(2, etapa);
-            ps.setString(3, descripcion);
-            ps.executeUpdate();
+        // 2. Usamos try-with-resources, que cierra automáticamente el
+        // CallableStatement.
+        // Esto elimina la necesidad del bloque 'finally'.
+        try (CallableStatement cs = connection.prepareCall(sql)) {
+
+            // 3. Asignamos los parámetros.
+            cs.setString(1, nombre);
+            cs.setString(2, etapa);
+            cs.setString(3, descripcion);
+
+            // 4. Ejecutamos el procedimiento.
+            cs.executeUpdate();
+
             JOptionPane.showMessageDialog(null, "Lote registrado exitosamente.");
+
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(null, "Error al registrar lote: " + e.getMessage());
-        } finally {
-            try {
-                if (ps != null)
-                    ps.close();
-            } catch (SQLException e) {
-                System.out.println("Error al cerrar PreparedStatement: " + e.getMessage());
-            }
         }
     }
 
     public java.util.List<Object[]> obtenerDetallesTodosLotes() {
         java.util.List<Object[]> lista = new java.util.ArrayList<>();
-        String sql = "SELECT id, nombre, etapa, descripcion FROM lotes";
 
-        try (PreparedStatement ps = connection.prepareStatement(sql);
-                ResultSet rs = ps.executeQuery()) {
+        // 1. La consulta ahora es una llamada al procedimiento almacenado.
+        // No lleva paréntesis porque no tiene parámetros.
+        String sql = "{CALL sp_obtener_detalles_todos_lotes()}";
 
+        // 2. Usamos CallableStatement en lugar de PreparedStatement.
+        try (CallableStatement cs = connection.prepareCall(sql);
+                ResultSet rs = cs.executeQuery()) {
+
+            // 3. El resto del código para procesar el resultado es EXACTAMENTE el mismo.
             while (rs.next()) {
                 Object[] fila = {
                         rs.getInt("id"),
@@ -414,21 +402,21 @@ public class Controlador {
 
     public java.util.List<String> obtenerLotesParaComboBox() {
         java.util.List<String> lotesFormateados = new java.util.ArrayList<>();
-        String sql = "SELECT id, nombre FROM lotes ORDER BY nombre";
 
-        try (PreparedStatement ps = connection.prepareStatement(sql);
-                ResultSet rs = ps.executeQuery()) {
+        // 1. La consulta ahora es la llamada al procedimiento almacenado.
+        String sql = "{CALL sp_obtener_lotes_para_combobox()}";
 
+        // 2. Usamos CallableStatement.
+        try (CallableStatement cs = connection.prepareCall(sql);
+                ResultSet rs = cs.executeQuery()) {
+
+            // 3. La lógica para leer los resultados y formatear la cadena
+            // sigue siendo exactamente la misma. ¡No cambia nada aquí!
             while (rs.next()) {
                 String item = rs.getInt("id") + " - " + rs.getString("nombre");
                 lotesFormateados.add(item);
             }
         } catch (SQLException e) {
-            // ANTES:
-            // JOptionPane.showMessageDialog(null, "Error al obtener lotes para ComboBox: "
-            // + e.getMessage());
-
-            // AHORA:
             System.err.println("Error al obtener lotes para ComboBox: " + e.getMessage());
             e.printStackTrace();
         }
@@ -436,25 +424,25 @@ public class Controlador {
     }
 
     public void modificarLote(int idLote, String nombre, String etapa, String descripcion) {
-        PreparedStatement ps = null;
-        try {
-            String sql = "UPDATE lotes SET nombre = ?, etapa = ?, descripcion = ? WHERE id = ?";
-            ps = connection.prepareStatement(sql);
-            ps.setString(1, nombre);
-            ps.setString(2, etapa);
-            ps.setString(3, descripcion);
-            ps.setInt(4, idLote);
-            ps.executeUpdate();
+        // 1. La consulta ahora es una llamada al procedimiento almacenado.
+        String sql = "{CALL sp_modificar_lote(?, ?, ?, ?)}";
+
+        // 2. Usamos try-with-resources, que elimina la necesidad del bloque 'finally'.
+        try (CallableStatement cs = connection.prepareCall(sql)) {
+
+            // 3. Asignamos los parámetros en el orden en que los definimos en el SP.
+            cs.setInt(1, idLote);
+            cs.setString(2, nombre);
+            cs.setString(3, etapa);
+            cs.setString(4, descripcion);
+
+            // 4. Ejecutamos la actualización.
+            cs.executeUpdate();
+
             JOptionPane.showMessageDialog(null, "Lote modificado exitosamente.");
+
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(null, "Error al modificar lote: " + e.getMessage());
-        } finally {
-            try {
-                if (ps != null)
-                    ps.close();
-            } catch (SQLException e) {
-                System.out.println("Error al cerrar PreparedStatement: " + e.getMessage());
-            }
         }
     }
 
@@ -462,204 +450,131 @@ public class Controlador {
      * Obtiene solo los codigos de todos los animales para llenar el JComboBox.
      * He cambiado el nombre del método para que sea más claro.
      */
-    public ResultSet obtenerCodigosAnimales() {
-        ResultSet rs = null;
-        try {
-            String sql = "SELECT codigo FROM animal ORDER BY codigo";
-            PreparedStatement ps = connection.prepareStatement(sql);
-            rs = ps.executeQuery();
-        } catch (SQLException e) {
-            JOptionPane.showMessageDialog(null, "Error al obtener códigos de animales: " + e.getMessage(),
-                    "Error de Base de Datos", JOptionPane.ERROR_MESSAGE);
-        }
-        return rs;
-    }
+    // public ResultSet obtenerCodigosAnimales() {
+    // ResultSet rs = null;
+    // try {
+    // String sql = "SELECT codigo FROM animal ORDER BY codigo";
+    // PreparedStatement ps = connection.prepareStatement(sql);
+    // rs = ps.executeQuery();
+    // } catch (SQLException e) {
+    // JOptionPane.showMessageDialog(null, "Error al obtener códigos de animales: "
+    // + e.getMessage(),
+    // "Error de Base de Datos", JOptionPane.ERROR_MESSAGE);
+    // }
+    // return rs;
+    // }
 
     /**
      * Obtiene el historial de movimientos simple, sin JOINs.
      */
-    public ResultSet obtenerHistorialMovimientos() {
-        ResultSet rs = null;
-        try {
-            String sql = "SELECT id, id_animal, id_lote_anterior, id_lote_posterior, fecha FROM historial_lote ORDER BY fecha DESC";
-            PreparedStatement ps = connection.prepareStatement(sql);
-            rs = ps.executeQuery();
+    public java.util.List<Object[]> obtenerHistorialMovimientos() {
+        // 1. Preparamos la lista que vamos a devolver.
+        java.util.List<Object[]> historial = new java.util.ArrayList<>();
+
+        // 2. La consulta es la llamada al procedimiento almacenado.
+        String sql = "{CALL sp_obtener_historial_movimientos()}";
+
+        // 3. Usamos try-with-resources para garantizar el cierre automático de
+        // recursos.
+        try (CallableStatement cs = connection.prepareCall(sql);
+                ResultSet rs = cs.executeQuery()) {
+
+            // 4. Iteramos sobre los resultados y los empaquetamos en la lista.
+            while (rs.next()) {
+                // La lógica para construir la fila que antes estaba en la VISTA,
+                // ahora está aquí, en el CONTROLADOR, que es donde debe estar.
+                Object[] fila = {
+                        rs.getInt("id"),
+                        rs.getString("id_animal"),
+                        // El manejo del NULL se hace aquí.
+                        rs.getObject("id_lote_anterior") == null ? "N/A" : rs.getInt("id_lote_anterior"),
+                        rs.getInt("id_lote_posterior"),
+                        rs.getDate("fecha")
+                };
+                historial.add(fila);
+            }
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(null, "Error al obtener el historial de movimientos: " + e.getMessage(),
                     "Error de Base de Datos", JOptionPane.ERROR_MESSAGE);
         }
-        return rs;
+
+        // 5. Retornamos la lista llena de datos, desconectada de la BD.
+        return historial;
     }
 
-    /**
-     * Realiza la lógica de negocio para registrar un nuevo movimiento de animal.
-     * Esto incluye insertar en el historial y actualizar la tabla de animales.
-     * Se usa una transacción para garantizar la integridad de los datos.
-     */
-    /**
-     * Realiza la lógica de negocio para registrar un nuevo movimiento de animal.
-     * Esto incluye insertar en el historial y actualizar la tabla de animales.
-     * Se usa una transacción para garantizar la integridad de los datos.
-     */
     public void registrarMovimientoAnimal(String codigoAnimal, int idLoteDestino, java.sql.Date fecha) {
-        Integer idLoteAnterior = null;
-
-        try {
-            // PASO 1: Iniciar la transacción
-            connection.setAutoCommit(false);
-
-            // PASO 2: Obtener el lote actual del animal (será nuestro lote anterior)
-            String sqlGetLote = "SELECT id_lote_actual FROM animal WHERE codigo = ?";
-            try (PreparedStatement psGetLote = connection.prepareStatement(sqlGetLote)) {
-                psGetLote.setString(1, codigoAnimal);
-                try (ResultSet rs = psGetLote.executeQuery()) {
-                    if (rs.next()) {
-                        idLoteAnterior = (Integer) rs.getObject("id_lote_actual");
-                    } else {
-                        throw new SQLException("El animal con código " + codigoAnimal + " no fue encontrado.");
-                    }
-                }
-            }
-
-            // Validación: No mover un animal al lote en el que ya está.
-            if (idLoteAnterior != null && idLoteAnterior == idLoteDestino) {
-                JOptionPane.showMessageDialog(null, "El animal ya se encuentra en el lote de destino.",
-                        "Movimiento Inválido", JOptionPane.WARNING_MESSAGE);
-                connection.rollback(); // Cancelamos la transacción
-                return;
-            }
-
-            // PASO 3: Insertar el nuevo registro en la tabla de historial
-            String sqlInsertHistorial = "INSERT INTO historial_lote (id_animal, id_lote_anterior, id_lote_posterior, fecha) VALUES (?, ?, ?, ?)";
-            try (PreparedStatement psInsert = connection.prepareStatement(sqlInsertHistorial)) {
-                psInsert.setString(1, codigoAnimal);
-                if (idLoteAnterior != null) {
-                    psInsert.setInt(2, idLoteAnterior);
-                } else {
-                    psInsert.setNull(2, java.sql.Types.INTEGER);
-                }
-                psInsert.setInt(3, idLoteDestino);
-                psInsert.setDate(4, fecha); // Se usa setDate para guardar solo la fecha
-                psInsert.executeUpdate();
-            }
-
-            // PASO 4: Actualizar la ubicación actual del animal en la tabla 'animal'
-            String sqlUpdateAnimal = "UPDATE animal SET id_lote_actual = ? WHERE codigo = ?";
-            try (PreparedStatement psUpdate = connection.prepareStatement(sqlUpdateAnimal)) {
-                psUpdate.setInt(1, idLoteDestino);
-                psUpdate.setString(2, codigoAnimal);
-                psUpdate.executeUpdate();
-            }
-
-            // PASO 5: Si todo fue exitoso, confirmar la transacción
-            connection.commit();
+        String sql = "{CALL sp_registrar_movimiento_animal(?, ?, ?)}";
+        try (CallableStatement cs = connection.prepareCall(sql)) {
+            cs.setString(1, codigoAnimal);
+            cs.setInt(2, idLoteDestino);
+            cs.setDate(3, fecha);
+            cs.executeUpdate();
             JOptionPane.showMessageDialog(null, "Movimiento registrado exitosamente.", "Éxito",
                     JOptionPane.INFORMATION_MESSAGE);
-
         } catch (SQLException e) {
-            // Si ocurre cualquier error, revertimos todos los cambios
-            try {
-                connection.rollback();
-            } catch (SQLException ex) {
-                System.out.println("Error al hacer rollback: " + ex.getMessage());
-            }
+            // El mensaje de error vendrá directamente desde la base de datos si la
+            // validación falla
             JOptionPane.showMessageDialog(null, "Error al registrar el movimiento: " + e.getMessage(),
                     "Error de Transacción", JOptionPane.ERROR_MESSAGE);
-        } finally {
-            // Siempre restauramos el modo auto-commit
-            try {
-                connection.setAutoCommit(true);
-            } catch (SQLException ex) {
-                System.out.println("Error al restaurar auto-commit: " + ex.getMessage());
-            }
         }
     }
 
-    /**
-     * Modifica un registro existente en el historial.
-     * ADVERTENCIA: Esta función modifica datos históricos y no ajusta la ubicación
-     * actual
-     * del animal. Debe usarse para corregir errores de digitación.
-     */
-    /**
-     * Modifica un registro existente en el historial.
-     * ADVERTENCIA: Esta función modifica datos históricos y no ajusta la ubicación
-     * actual
-     * del animal. Debe usarse para corregir errores de digitación.
-     */
-    // REEMPLAZA ESTE MÉTODO EN TU CLASE 'Controlador.java'
-
-    /**
-     * Modifica el último movimiento de un animal de forma segura.
-     * Verifica que sea el último movimiento, actualiza el historial y la ubicación
-     * actual del animal dentro de una transacción.
-     */
-    // REEMPLAZA ESTE MÉTODO EN TU CLASE 'Controlador.java'
-
-    /**
-     * Modifica el último movimiento de un animal de forma segura.
-     * Lanza una SQLException si la verificación falla, para que la vista la maneje.
-     */
     public void modificarUltimoMovimiento(int idMovimiento, String codigoAnimal, int nuevoIdLoteDestino,
             java.sql.Date nuevaFecha) throws SQLException {
-        try {
-            connection.setAutoCommit(false);
 
-            String sqlCheckLast = "SELECT id FROM historial_lote WHERE id_animal = ? ORDER BY fecha DESC, id DESC LIMIT 1";
-            try (PreparedStatement psCheck = connection.prepareStatement(sqlCheckLast)) {
-                psCheck.setString(1, codigoAnimal);
-                try (ResultSet rs = psCheck.executeQuery()) {
-                    if (rs.next()) {
-                        int ultimoMovimientoId = rs.getInt("id");
-                        if (ultimoMovimientoId != idMovimiento) {
-                            // --- CAMBIO CLAVE: Se lanza la excepción en lugar de mostrar un JOptionPane
-                            // ---
-                            throw new SQLException("Solo se puede modificar el movimiento más reciente de un animal.");
-                        }
-                    } else {
-                        throw new SQLException("No se encontraron movimientos para el animal especificado.");
-                    }
-                }
-            }
+        // 1. La consulta es una única llamada a nuestro procedimiento transaccional.
+        String sql = "{CALL sp_modificar_ultimo_movimiento(?, ?, ?, ?)}";
 
-            String sqlUpdateHistorial = "UPDATE historial_lote SET id_lote_posterior = ?, fecha = ? WHERE id = ?";
-            try (PreparedStatement psUpdateHistorial = connection.prepareStatement(sqlUpdateHistorial)) {
-                psUpdateHistorial.setInt(1, nuevoIdLoteDestino);
-                psUpdateHistorial.setDate(2, nuevaFecha);
-                psUpdateHistorial.setInt(3, idMovimiento);
-                psUpdateHistorial.executeUpdate();
-            }
+        // 2. Usamos un simple try-with-resources.
+        // El 'throws SQLException' en la firma del método se encarga de propagar el
+        // error.
+        try (CallableStatement cs = connection.prepareCall(sql)) {
 
-            String sqlUpdateAnimal = "UPDATE animal SET id_lote_actual = ? WHERE codigo = ?";
-            try (PreparedStatement psUpdateAnimal = connection.prepareStatement(sqlUpdateAnimal)) {
-                psUpdateAnimal.setInt(1, nuevoIdLoteDestino);
-                psUpdateAnimal.setString(2, codigoAnimal);
-                psUpdateAnimal.executeUpdate();
-            }
+            // 3. Asignamos los parámetros.
+            cs.setInt(1, idMovimiento);
+            cs.setString(2, codigoAnimal);
+            cs.setInt(3, nuevoIdLoteDestino);
+            cs.setDate(4, nuevaFecha);
 
-            connection.commit();
+            // 4. Ejecutamos. La base de datos se encarga de TODO:
+            // validar, actualizar, y manejar el commit/rollback.
+            cs.executeUpdate();
+
+            // Si llegamos aquí, el COMMIT fue exitoso.
             JOptionPane.showMessageDialog(null, "Último movimiento modificado exitosamente.", "Éxito",
                     JOptionPane.INFORMATION_MESSAGE);
 
         } catch (SQLException e) {
-            connection.rollback();
-            // --- CAMBIO CLAVE: Se re-lanza la excepción para que el panel la reciba ---
+            // Si el procedimiento lanzó un error (SIGNAL), lo recibimos aquí.
+            // Simplemente lo re-lanzamos para que la vista lo maneje.
             throw e;
-        } finally {
-            connection.setAutoCommit(true);
         }
     }
 
     public void modificarRegistroHistorial(int idMovimiento, String nuevoCodigoAnimal, int nuevoIdLoteDestino,
             java.sql.Date nuevaFecha) {
-        String sql = "UPDATE historial_lote SET id_animal = ?, id_lote_posterior = ?, fecha = ? WHERE id = ?";
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setString(1, nuevoCodigoAnimal);
-            ps.setInt(2, nuevoIdLoteDestino);
-            ps.setDate(3, nuevaFecha); // Se usa setDate
-            ps.setInt(4, idMovimiento);
 
-            int filasAfectadas = ps.executeUpdate();
+        // 1. La llamada incluye un '?' adicional para el parámetro de salida (OUT).
+        String sql = "{CALL sp_modificar_registro_historial(?, ?, ?, ?, ?)}";
+
+        try (CallableStatement cs = connection.prepareCall(sql)) {
+            // 2. Asignamos los parámetros de ENTRADA (IN) como siempre.
+            cs.setInt(1, idMovimiento);
+            cs.setString(2, nuevoCodigoAnimal);
+            cs.setInt(3, nuevoIdLoteDestino);
+            cs.setDate(4, nuevaFecha);
+
+            // 3. REGISTRAMOS el parámetro de SALIDA (OUT) antes de ejecutar.
+            // Le decimos a JDBC que el 5º parámetro será un entero que volverá de la BD.
+            cs.registerOutParameter(5, java.sql.Types.INTEGER);
+
+            // 4. Ejecutamos la llamada.
+            cs.executeUpdate();
+
+            // 5. OBTENEMOS el valor del parámetro de salida que la BD nos ha devuelto.
+            int filasAfectadas = cs.getInt(5);
+
+            // 6. La lógica de decisión es exactamente la misma que antes.
             if (filasAfectadas > 0) {
                 JOptionPane.showMessageDialog(null, "Registro de historial modificado exitosamente.", "Éxito",
                         JOptionPane.INFORMATION_MESSAGE);
@@ -673,60 +588,68 @@ public class Controlador {
         }
     }
 
-    /**
-     * Busca códigos de animales que coincidan con un texto de búsqueda.
-     * 
-     * @param busqueda El texto que el usuario está escribiendo.
-     * @return Un ResultSet con los códigos que empiezan con el texto de búsqueda.
-     */
-    public ResultSet buscarCodigosAnimales(String busqueda) {
-        ResultSet rs = null;
-        // Usamos LIKE con el comodín '%' para buscar códigos que COMIENCEN con el
-        // texto.
-        String sql = "SELECT codigo FROM animal WHERE codigo LIKE ? ORDER BY codigo";
-        try {
-            PreparedStatement ps = connection.prepareStatement(sql);
-            ps.setString(1, busqueda + "%"); // Añade el comodín aquí
-            rs = ps.executeQuery();
+    public List<String> buscarCodigosAnimales(String busqueda) {
+        // 1. Preparamos la lista para devolver los resultados.
+        java.util.List<String> codigosEncontrados = new java.util.ArrayList<>();
+
+        // 2. La consulta es la llamada al procedimiento.
+        String sql = "{CALL sp_buscar_codigos_animales_like(?)}";
+
+        // 3. Usamos try-with-resources para garantizar el cierre automático.
+        try (CallableStatement cs = connection.prepareCall(sql)) {
+
+            // 4. Asignamos el parámetro, añadiendo el comodín '%' como antes.
+            cs.setString(1, busqueda + "%");
+
+            try (ResultSet rs = cs.executeQuery()) {
+                // 5. Llenamos nuestra lista de Strings.
+                while (rs.next()) {
+                    codigosEncontrados.add(rs.getString("codigo"));
+                }
+            }
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(null, "Error al buscar animales: " + e.getMessage(), "Error de Base de Datos",
                     JOptionPane.ERROR_MESSAGE);
         }
-        return rs;
+
+        // 6. Retornamos la lista llena y desconectada de la base de datos.
+        return codigosEncontrados;
     }
 
     /* ------------------ Productos ------------------ */
 
     public void guardarProducto(String nombre, String tipo) throws SQLException {
-        String sql = "INSERT INTO productos (producto, tipo) VALUES (?, ?)";
-        PreparedStatement ps = connection.prepareStatement(sql);
-        ps.setString(1, nombre);
-        ps.setString(2, tipo);
-        ps.executeUpdate();
+        String sql = "{CALL sp_guardar_producto(?, ?)}";
+        try (CallableStatement cs = connection.prepareCall(sql)) {
+            cs.setString(1, nombre);
+            cs.setString(2, tipo);
+            cs.executeUpdate();
+        }
     }
 
     public void editarProducto(int id, String nombre, String tipo) throws SQLException {
-        String sql = "UPDATE productos SET producto = ?, tipo = ? WHERE id = ?";
-        PreparedStatement ps = connection.prepareStatement(sql);
-        ps.setString(1, nombre);
-        ps.setString(2, tipo);
-        ps.setInt(3, id);
-        ps.executeUpdate();
+        String sql = "{CALL sp_editar_producto(?, ?, ?)}";
+        try (CallableStatement cs = connection.prepareCall(sql)) {
+            cs.setInt(1, id);
+            cs.setString(2, nombre);
+            cs.setString(3, tipo);
+            cs.executeUpdate();
+        }
     }
 
     public void eliminarProducto(int id) throws SQLException {
-        String sql = "DELETE FROM productos WHERE id = ?";
-        PreparedStatement ps = connection.prepareStatement(sql);
-        ps.setInt(1, id);
-        ps.executeUpdate();
+        String sql = "{CALL sp_eliminar_producto(?)}";
+        try (CallableStatement cs = connection.prepareCall(sql)) {
+            cs.setInt(1, id);
+            cs.executeUpdate();
+        }
     }
 
     public java.util.List<Object[]> obtenerProductos() {
         java.util.List<Object[]> lista = new java.util.ArrayList<>();
-        String sql = "SELECT id, producto, tipo FROM productos ORDER BY id";
-        try {
-            PreparedStatement ps = connection.prepareStatement(sql);
-            ResultSet rs = ps.executeQuery();
+        String sql = "{CALL sp_obtener_productos()}"; // Llamada al SP
+        try (CallableStatement cs = connection.prepareCall(sql);
+                ResultSet rs = cs.executeQuery()) {
             while (rs.next()) {
                 Object[] fila = new Object[3];
                 fila[0] = rs.getInt("id");
@@ -742,61 +665,74 @@ public class Controlador {
 
     public java.util.List<Object[]> obtenerProductosPorTipo(String tipo) {
         java.util.List<Object[]> lista = new java.util.ArrayList<>();
-        String sql = "SELECT id, producto, tipo FROM productos WHERE tipo = ? ORDER BY producto";
-        try {
-            PreparedStatement ps = connection.prepareStatement(sql);
-            ps.setString(1, tipo);
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                Object[] fila = new Object[3];
-                fila[0] = rs.getInt("id");
-                fila[1] = rs.getString("producto");
-                fila[2] = rs.getString("tipo");
-                lista.add(fila);
+        String sql = "{CALL sp_obtener_productos_por_tipo(?)}"; // Llamada al SP
+        try (CallableStatement cs = connection.prepareCall(sql)) {
+            cs.setString(1, tipo);
+            try (ResultSet rs = cs.executeQuery()) {
+                while (rs.next()) {
+                    Object[] fila = new Object[3];
+                    fila[0] = rs.getInt("id");
+                    fila[1] = rs.getString("producto");
+                    fila[2] = rs.getString("tipo");
+                    lista.add(fila);
+                }
             }
         } catch (Exception e) {
             JOptionPane.showMessageDialog(null, "Error al obtener productos por tipo: " + e.getMessage());
         }
         return lista;
     }
-
     /* ------------------ Eventos sanitarios ------------------ */
 
     public void guardarEventoSanitario(java.sql.Timestamp fecha, Integer idProducto, Float dosis, String motivo,
             String diagnostico, String idAnimal, String tipo) throws SQLException {
-        String sql = "INSERT INTO eventos_sanitarios (fecha, id_producto, dosis, motivo, diagnostico, id_animal, tipo) VALUES (?, ?, ?, ?, ?, ?, ?)";
-        PreparedStatement ps = connection.prepareStatement(sql);
-        ps.setTimestamp(1, fecha);
-        if (idProducto != null)
-            ps.setInt(2, idProducto);
-        else
-            ps.setNull(2, java.sql.Types.INTEGER);
-        if (dosis != null)
-            ps.setFloat(3, dosis);
-        else
-            ps.setNull(3, java.sql.Types.FLOAT);
-        ps.setString(4, motivo);
-        ps.setString(5, diagnostico);
-        ps.setString(6, idAnimal);
-        ps.setString(7, tipo);
-        ps.executeUpdate();
+
+        // 1. La consulta ahora es la llamada al procedimiento almacenado.
+        String sql = "{CALL sp_guardar_evento_sanitario(?, ?, ?, ?, ?, ?, ?)}";
+
+        // 2. Usamos try-with-resources con CallableStatement.
+        try (CallableStatement cs = connection.prepareCall(sql)) {
+
+            // 3. La asignación de parámetros es idéntica a la que ya tenías,
+            // incluyendo el manejo correcto de los valores nulos.
+            cs.setTimestamp(1, fecha);
+
+            if (idProducto != null) {
+                cs.setInt(2, idProducto);
+            } else {
+                cs.setNull(2, java.sql.Types.INTEGER);
+            }
+
+            if (dosis != null) {
+                cs.setFloat(3, dosis);
+            } else {
+                cs.setNull(3, java.sql.Types.FLOAT);
+            }
+
+            cs.setString(4, motivo);
+            cs.setString(5, diagnostico);
+            cs.setString(6, idAnimal);
+            cs.setString(7, tipo);
+
+            // 4. Ejecutamos el procedimiento.
+            cs.executeUpdate();
+        }
+        // El 'throws SQLException' en la firma del método se encarga de propagar
+        // cualquier error.
     }
 
     public java.util.List<Object[]> obtenerEventosSanitarios() {
         java.util.List<Object[]> lista = new java.util.ArrayList<>();
-        String sql = "SELECT es.id, es.fecha, es.tipo, es.id_animal, p.producto AS nombre_producto, es.dosis, es.motivo, es.diagnostico "
-                +
-                "FROM eventos_sanitarios es LEFT JOIN productos p ON es.id_producto = p.id " +
-                "ORDER BY es.fecha DESC";
-        try (PreparedStatement ps = connection.prepareStatement(sql);
-                ResultSet rs = ps.executeQuery()) {
+        String sql = "{CALL sp_obtener_eventos_sanitarios()}"; // Llamada al SP
+        try (CallableStatement cs = connection.prepareCall(sql);
+                ResultSet rs = cs.executeQuery()) {
             while (rs.next()) {
                 Object[] fila = new Object[8];
                 fila[0] = rs.getInt("id");
                 fila[1] = rs.getTimestamp("fecha");
                 fila[2] = rs.getString("tipo");
                 fila[3] = rs.getString("id_animal");
-                fila[4] = rs.getString("nombre_producto"); // Ahora obtenemos el nombre directamente
+                fila[4] = rs.getString("nombre_producto");
                 fila[5] = rs.getObject("dosis");
                 fila[6] = rs.getString("motivo");
                 fila[7] = rs.getString("diagnostico");
@@ -810,21 +746,31 @@ public class Controlador {
 
     public java.util.List<Object[]> obtenerEventosSanitariosPorTipo(String tipo) {
         java.util.List<Object[]> lista = new java.util.ArrayList<>();
-        String sql = "SELECT id, fecha, tipo, id_animal, id_producto, dosis, motivo, diagnostico FROM eventos_sanitarios WHERE tipo = ? ORDER BY fecha DESC";
-        try {
-            PreparedStatement ps = connection.prepareStatement(sql);
-            ps.setString(1, tipo);
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                Object[] fila = new Object[7];
-                fila[0] = rs.getInt("id");
-                fila[1] = rs.getTimestamp("fecha");
-                fila[2] = rs.getString("id_animal");
-                fila[3] = rs.getObject("id_producto");
-                fila[4] = rs.getObject("dosis");
-                fila[5] = rs.getString("motivo");
-                fila[6] = rs.getString("diagnostico");
-                lista.add(fila);
+
+        // 1. La consulta ahora es la llamada al procedimiento almacenado.
+        String sql = "{CALL sp_obtener_eventos_sanitarios_por_tipo(?)}";
+
+        // 2. Usamos try-with-resources para gestionar CallableStatement y ResultSet.
+        try (CallableStatement cs = connection.prepareCall(sql)) {
+
+            // 3. Asignamos el parámetro de entrada.
+            cs.setString(1, tipo);
+
+            try (ResultSet rs = cs.executeQuery()) {
+                // 4. La lógica de lectura es la misma, pero ahora corregimos el tamaño del
+                // array.
+                while (rs.next()) {
+                    Object[] fila = new Object[8]; // Tamaño corregido a 8
+                    fila[0] = rs.getInt("id");
+                    fila[1] = rs.getTimestamp("fecha");
+                    fila[2] = rs.getString("tipo"); // Campo 'tipo' añadido
+                    fila[3] = rs.getString("id_animal");
+                    fila[4] = rs.getObject("id_producto");
+                    fila[5] = rs.getObject("dosis");
+                    fila[6] = rs.getString("motivo");
+                    fila[7] = rs.getString("diagnostico");
+                    lista.add(fila);
+                }
             }
         } catch (Exception e) {
             JOptionPane.showMessageDialog(null, "Error al obtener eventos por tipo: " + e.getMessage());
@@ -833,29 +779,44 @@ public class Controlador {
     }
 
     public void eliminarEvento(int id) {
-        try {
-            String sql = "DELETE FROM eventos_sanitarios WHERE id = ?";
-            PreparedStatement ps = connection.prepareStatement(sql);
-            ps.setInt(1, id);
-            ps.executeUpdate();
+        // 1. La consulta ahora es una llamada al procedimiento almacenado.
+        String sql = "{CALL sp_eliminar_evento_sanitario(?)}";
+
+        // 2. Usamos try-with-resources para una gestión de recursos más robusta.
+        try (CallableStatement cs = connection.prepareCall(sql)) {
+
+            // 3. Asignamos el parámetro.
+            cs.setInt(1, id);
+
+            // 4. Ejecutamos el procedimiento.
+            cs.executeUpdate();
+
             JOptionPane.showMessageDialog(null, "Evento eliminado correctamente");
+
         } catch (Exception e) {
             JOptionPane.showMessageDialog(null, "Error al eliminar evento: " + e.getMessage());
         }
     }
 
     public Object[] obtenerEventoSanitarioPorId(int id) {
-        String sql = "SELECT id, fecha, tipo, id_animal, id_producto, dosis, motivo, diagnostico FROM eventos_sanitarios WHERE id = ?";
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setInt(1, id);
-            try (ResultSet rs = ps.executeQuery()) {
+        // 1. La consulta ahora es la llamada al procedimiento almacenado.
+        String sql = "{CALL sp_obtener_evento_sanitario_por_id(?)}";
+
+        // 2. Usamos CallableStatement en lugar de PreparedStatement.
+        try (CallableStatement cs = connection.prepareCall(sql)) {
+
+            cs.setInt(1, id);
+
+            // 3. El resto del código para ejecutar la consulta y procesar el resultado
+            // permanece EXACTAMENTE igual.
+            try (ResultSet rs = cs.executeQuery()) {
                 if (rs.next()) {
                     Object[] fila = new Object[8];
                     fila[0] = rs.getInt("id");
                     fila[1] = rs.getTimestamp("fecha");
                     fila[2] = rs.getString("tipo");
                     fila[3] = rs.getString("id_animal");
-                    fila[4] = rs.getObject("id_producto"); // Devuelve el ID del producto
+                    fila[4] = rs.getObject("id_producto");
                     fila[5] = rs.getObject("dosis");
                     fila[6] = rs.getString("motivo");
                     fila[7] = rs.getString("diagnostico");
@@ -865,7 +826,7 @@ public class Controlador {
         } catch (Exception e) {
             JOptionPane.showMessageDialog(null, "Error al obtener datos del evento: " + e.getMessage());
         }
-        return null; // Retorna null si no se encuentra o hay un error
+        return null;
     }
 
     /**
@@ -873,114 +834,100 @@ public class Controlador {
      */
     public void actualizarEventoSanitario(int idEvento, java.sql.Timestamp fecha, Integer idProducto, Float dosis,
             String idAnimal, String motivo, String diagnostico) throws SQLException {
-        String sql = "UPDATE eventos_sanitarios SET fecha = ?, id_producto = ?, dosis = ?, id_animal = ?, motivo = ?, diagnostico = ? WHERE id = ?";
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setTimestamp(1, fecha);
-            if (idProducto != null)
-                ps.setInt(2, idProducto);
-            else
-                ps.setNull(2, java.sql.Types.INTEGER);
-            if (dosis != null)
-                ps.setFloat(3, dosis);
-            else
-                ps.setNull(3, java.sql.Types.FLOAT);
-            ps.setString(4, idAnimal);
-            ps.setString(5, motivo);
-            ps.setString(6, diagnostico);
-            ps.setInt(7, idEvento);
-            ps.executeUpdate();
+
+        // 1. La consulta ahora es la llamada al procedimiento almacenado.
+        String sql = "{CALL sp_actualizar_evento_sanitario(?, ?, ?, ?, ?, ?, ?)}";
+
+        // 2. Usamos CallableStatement dentro de un try-with-resources.
+        try (CallableStatement cs = connection.prepareCall(sql)) {
+
+            // 3. Asignamos los parámetros en el orden definido en el SP.
+            // La lógica para manejar nulos sigue siendo la misma.
+            cs.setInt(1, idEvento);
+            cs.setTimestamp(2, fecha);
+
+            if (idProducto != null) {
+                cs.setInt(3, idProducto);
+            } else {
+                cs.setNull(3, java.sql.Types.INTEGER);
+            }
+
+            if (dosis != null) {
+                cs.setFloat(4, dosis);
+            } else {
+                cs.setNull(4, java.sql.Types.FLOAT);
+            }
+
+            cs.setString(5, idAnimal);
+            cs.setString(6, motivo);
+            cs.setString(7, diagnostico);
+
+            // 4. Ejecutamos la actualización.
+            cs.executeUpdate();
         }
+        // El 'throws SQLException' se encarga de propagar cualquier error.
     }
 
     public void actualizarSalida(int idSalida, String nuevoMotivo, java.sql.Date nuevaFecha) {
-        String idAnimal = null;
 
-        try {
-            // --- PASO 1: Obtener el código del animal antes de iniciar la transacción ---
-            String sqlSelect = "SELECT id_animal FROM salida WHERE id = ?";
-            try (PreparedStatement psSelect = connection.prepareStatement(sqlSelect)) {
-                psSelect.setInt(1, idSalida);
-                ResultSet rs = psSelect.executeQuery();
-                if (rs.next()) {
-                    idAnimal = rs.getString("id_animal");
-                } else {
-                    // Si no se encuentra la salida, no podemos continuar.
-                    throw new SQLException("No se encontró el registro de salida con ID: " + idSalida);
-                }
-            }
+        // 1. La consulta es una única llamada a nuestro procedimiento transaccional.
+        String sql = "{CALL sp_actualizar_salida(?, ?, ?)}";
 
-            // --- PASO 2: Iniciar la transacción ---
-            connection.setAutoCommit(false);
+        // 2. Usamos un simple try-with-resources.
+        try (CallableStatement cs = connection.prepareCall(sql)) {
 
-            // --- PASO 3: Actualizar el registro en la tabla 'salida' ---
-            String sqlUpdateSalida = "UPDATE salida SET motivo = ?, fecha = ? WHERE id = ?";
-            try (PreparedStatement psSalida = connection.prepareStatement(sqlUpdateSalida)) {
-                psSalida.setString(1, nuevoMotivo);
-                psSalida.setDate(2, nuevaFecha);
-                psSalida.setInt(3, idSalida);
-                psSalida.executeUpdate();
-            }
+            // 3. Asignamos los parámetros de entrada.
+            cs.setInt(1, idSalida);
+            cs.setString(2, nuevoMotivo);
+            cs.setDate(3, nuevaFecha);
 
-            // --- PASO 4: Actualizar el estado correspondiente en la tabla 'animal' ---
-            String nuevoEstado = nuevoMotivo.equals("MUERTE") ? "MUERTO" : "VENDIDO";
-            String sqlUpdateAnimal = "UPDATE animal SET estado = ? WHERE codigo = ?";
-            try (PreparedStatement psAnimal = connection.prepareStatement(sqlUpdateAnimal)) {
-                psAnimal.setString(1, nuevoEstado);
-                psAnimal.setString(2, idAnimal);
-                psAnimal.executeUpdate();
-            }
+            // 4. Ejecutamos. La base de datos se encarga de TODO lo demás.
+            cs.executeUpdate();
 
-            // --- PASO 5: Si todo fue exitoso, confirmar la transacción ---
-            connection.commit();
-            // JOptionPane.showMessageDialog(null, "Salida actualizada correctamente."); //
-            // El panel ya muestra este mensaje
+            // Si no hay excepción, la operación fue un éxito.
+            // El mensaje de éxito ya se muestra en el panel, por lo que no se necesita
+            // aquí.
 
         } catch (SQLException e) {
-            // --- ERROR: Si algo falló, revertir todos los cambios ---
-            try {
-                connection.rollback();
-            } catch (SQLException ex) {
-                System.out.println("Error al intentar hacer rollback: " + ex.getMessage());
-            }
-            // Lanzamos una nueva excepción para que el panel la capture y muestre el
-            // mensaje de error.
-            throw new RuntimeException("Error al actualizar la salida: " + e.getMessage());
-
-        } finally {
-            // --- SIEMPRE: Restaurar el modo auto-commit ---
-            try {
-                connection.setAutoCommit(true);
-            } catch (SQLException ex) {
-                System.out.println("Error al restaurar auto-commit: " + ex.getMessage());
-            }
+            // Si el procedimiento falló, el ROLLBACK fue automático.
+            // Lanzamos una excepción para que el panel la capture y muestre el error.
+            throw new RuntimeException("Error al actualizar la salida: ".concat(e.getMessage()), e);
         }
     }
 
     /**
      * Guarda un nuevo registro de producción de leche en la base de datos.
      */
-    public void guardarProduccionLeche(Date fecha, int litrosMatutinos, int litrosVispertinos, String idAnimal)
+    public void guardarProduccionLeche(java.sql.Date fecha, int litrosMatutinos, int litrosVispertinos, String idAnimal)
             throws SQLException {
-        String sql = "INSERT INTO produccion_leche (fecha, litros_matutinos, litros_vispertinos, id_animal) VALUES (?, ?, ?, ?)";
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setDate(1, fecha);
-            ps.setInt(2, litrosMatutinos);
-            ps.setInt(3, litrosVispertinos);
-            ps.setString(4, idAnimal);
-            ps.executeUpdate();
+
+        // 1. La consulta ahora es la llamada al procedimiento almacenado.
+        String sql = "{CALL sp_guardar_produccion_leche(?, ?, ?, ?)}";
+
+        // 2. Usamos CallableStatement en lugar de PreparedStatement.
+        try (CallableStatement cs = connection.prepareCall(sql)) {
+
+            // 3. La asignación de parámetros es la misma.
+            cs.setDate(1, fecha);
+            cs.setInt(2, litrosMatutinos);
+            cs.setInt(3, litrosVispertinos);
+            cs.setString(4, idAnimal);
+
+            // 4. Ejecutamos el procedimiento.
+            cs.executeUpdate();
         }
+        // El 'throws SQLException' se encarga de propagar cualquier error.
     }
 
     public java.util.List<String> buscarAnimalesHembras(String filtro) {
         java.util.List<String> resultado = new java.util.ArrayList<>();
-        // Añadimos la condición AND sexo = 'F' a la consulta SQL
-        String sql = "SELECT codigo FROM animal WHERE codigo LIKE ? AND estado = 'ACTIVO' AND sexo = 'F'";
-        try {
-            PreparedStatement ps = connection.prepareStatement(sql);
-            ps.setString(1, "%" + filtro + "%");
-            ResultSet rs = ps.executeQuery();
-            while (rs.next()) {
-                resultado.add(rs.getString("codigo"));
+        String sql = "{CALL sp_buscar_animales_hembras(?)}"; // Llamada al SP
+        try (CallableStatement cs = connection.prepareCall(sql)) {
+            cs.setString(1, "%" + filtro + "%");
+            try (ResultSet rs = cs.executeQuery()) {
+                while (rs.next()) {
+                    resultado.add(rs.getString("codigo"));
+                }
             }
         } catch (Exception e) {
             System.out.println("Error al buscar animales hembras: " + e.getMessage());
@@ -997,16 +944,29 @@ public class Controlador {
      * restricciones de clave foránea en la base de datos.
      */
     public void eliminarLote(int idLote) {
-        // Confirmación antes de una acción destructiva
+        // 1. La lógica de confirmación del usuario se mantiene intacta. ¡Esto es
+        // correcto!
         int confirmacion = JOptionPane.showConfirmDialog(null,
                 "¿Está seguro de que desea eliminar este lote?\nEsta acción no se puede deshacer.",
                 "Confirmar Eliminación", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
 
         if (confirmacion == JOptionPane.YES_OPTION) {
-            String sql = "DELETE FROM lotes WHERE id = ?";
-            try (PreparedStatement ps = connection.prepareStatement(sql)) {
-                ps.setInt(1, idLote);
-                int filasAfectadas = ps.executeUpdate();
+            // 2. La consulta ahora llama al SP con un parámetro IN y uno OUT.
+            String sql = "{CALL sp_eliminar_lote(?, ?)}";
+
+            try (CallableStatement cs = connection.prepareCall(sql)) {
+                // 3. Asignamos el parámetro de ENTRADA.
+                cs.setInt(1, idLote);
+
+                // 4. Registramos el parámetro de SALIDA.
+                cs.registerOutParameter(2, java.sql.Types.INTEGER);
+
+                cs.executeUpdate();
+
+                // 5. Obtenemos el resultado que nos devolvió el SP.
+                int filasAfectadas = cs.getInt(2);
+
+                // 6. La lógica para mostrar mensajes basada en el resultado es la misma.
                 if (filasAfectadas > 0) {
                     JOptionPane.showMessageDialog(null, "Lote eliminado exitosamente.", "Éxito",
                             JOptionPane.INFORMATION_MESSAGE);
@@ -1015,7 +975,7 @@ public class Controlador {
                             JOptionPane.WARNING_MESSAGE);
                 }
             } catch (SQLException e) {
-                // Mensaje de error común si hay animales en el lote
+                // 7. El manejo de errores específico se mantiene exactamente igual. ¡Excelente!
                 if (e.getMessage().contains("foreign key constraint fails")) {
                     JOptionPane.showMessageDialog(null,
                             "No se puede eliminar el lote porque contiene animales.\nPor favor, mueva los animales a otro lote antes de eliminarlo.",
@@ -1043,6 +1003,9 @@ public class Controlador {
      * ese animal.
      */
     public void revertirMovimientoHistorial(int idMovimiento, String codigoAnimal, Object idLoteAnteriorObj) {
+        // No necesitamos el diálogo de confirmación aquí si ya se muestra en la vista
+        // (panel).
+        // Si no, puedes mantenerlo.
         int confirmacion = JOptionPane.showConfirmDialog(null,
                 "¿Está seguro de que desea revertir este movimiento?\nEl animal " + codigoAnimal
                         + " volverá a su lote anterior.",
@@ -1052,69 +1015,27 @@ public class Controlador {
             return; // El usuario canceló la operación
         }
 
-        try {
-            // PASO 1: Iniciar la transacción
-            connection.setAutoCommit(false);
+        String sql = "{CALL sp_revertir_ultimo_movimiento(?, ?, ?)}";
+        try (CallableStatement cs = connection.prepareCall(sql)) {
+            cs.setInt(1, idMovimiento);
+            cs.setString(2, codigoAnimal);
 
-            // PASO 2: VERIFICACIÓN CRÍTICA. Asegurarnos de que estamos revirtiendo el
-            // ÚLTIMO movimiento del animal.
-            String sqlCheckLast = "SELECT id FROM historial_lote WHERE id_animal = ? ORDER BY fecha DESC, id DESC LIMIT 1";
-            try (PreparedStatement psCheck = connection.prepareStatement(sqlCheckLast)) {
-                psCheck.setString(1, codigoAnimal);
-                try (ResultSet rs = psCheck.executeQuery()) {
-                    if (rs.next()) {
-                        int ultimoMovimientoId = rs.getInt("id");
-                        if (ultimoMovimientoId != idMovimiento) {
-                            throw new SQLException(
-                                    "No se puede revertir este movimiento. No es el más reciente para este animal.");
-                        }
-                    } else {
-                        throw new SQLException("No se encontraron movimientos para este animal.");
-                    }
-                }
+            // El procedimiento almacenado espera un INT que puede ser NULL.
+            // Debemos manejar el caso en que el lote anterior no existía.
+            if (idLoteAnteriorObj instanceof Integer) {
+                cs.setInt(3, (Integer) idLoteAnteriorObj);
+            } else {
+                cs.setNull(3, java.sql.Types.INTEGER);
             }
 
-            // PASO 3: Actualizar el lote actual del animal en la tabla 'animal'
-            String sqlUpdateAnimal = "UPDATE animal SET id_lote_actual = ? WHERE codigo = ?";
-            try (PreparedStatement psUpdate = connection.prepareStatement(sqlUpdateAnimal)) {
-                // Manejar el caso en que el lote anterior era NULO (primer ingreso del animal)
-                if (idLoteAnteriorObj instanceof Integer) {
-                    psUpdate.setInt(1, (Integer) idLoteAnteriorObj);
-                } else {
-                    psUpdate.setNull(1, java.sql.Types.INTEGER);
-                }
-                psUpdate.setString(2, codigoAnimal);
-                psUpdate.executeUpdate();
-            }
-
-            // PASO 4: Eliminar el registro del historial
-            String sqlDeleteHistorial = "DELETE FROM historial_lote WHERE id = ?";
-            try (PreparedStatement psDelete = connection.prepareStatement(sqlDeleteHistorial)) {
-                psDelete.setInt(1, idMovimiento);
-                psDelete.executeUpdate();
-            }
-
-            // PASO 5: Confirmar la transacción
-            connection.commit();
+            cs.executeUpdate();
             JOptionPane.showMessageDialog(null, "Movimiento revertido exitosamente.", "Éxito",
                     JOptionPane.INFORMATION_MESSAGE);
 
         } catch (SQLException e) {
-            // Si algo falla, revertir todo
-            try {
-                connection.rollback();
-            } catch (SQLException ex) {
-                System.out.println("Error al hacer rollback: " + ex.getMessage());
-            }
+            // El mensaje de error personalizado vendrá de la base de datos
             JOptionPane.showMessageDialog(null, "Error al revertir el movimiento: " + e.getMessage(),
                     "Error de Transacción", JOptionPane.ERROR_MESSAGE);
-        } finally {
-            // Siempre restaurar el modo auto-commit
-            try {
-                connection.setAutoCommit(true);
-            } catch (SQLException ex) {
-                System.out.println("Error al restaurar auto-commit: " + ex.getMessage());
-            }
         }
     }
 
@@ -1125,9 +1046,9 @@ public class Controlador {
      */
     public List<Object[]> obtenerProduccionLeche() {
         List<Object[]> lista = new java.util.ArrayList<>();
-        String sql = "SELECT id, fecha, id_animal, litros_matutinos, litros_vispertinos FROM produccion_leche ORDER BY fecha DESC, id DESC";
-        try (PreparedStatement ps = connection.prepareStatement(sql);
-                ResultSet rs = ps.executeQuery()) {
+        String sql = "{CALL sp_obtener_produccion_leche()}"; // Llamada al SP
+        try (CallableStatement cs = connection.prepareCall(sql);
+                ResultSet rs = cs.executeQuery()) {
             while (rs.next()) {
                 Object[] fila = new Object[5];
                 fila[0] = rs.getInt("id");
@@ -1146,96 +1067,111 @@ public class Controlador {
     /**
      * Actualiza un registro de producción de leche existente.
      */
-    public void actualizarProduccionLeche(int id, Date fecha, int litrosMatutinos, int litrosVispertinos,
+    public void actualizarProduccionLeche(int id, java.sql.Date fecha, int litrosMatutinos, int litrosVispertinos,
             String idAnimal) throws SQLException {
-        String sql = "UPDATE produccion_leche SET fecha = ?, litros_matutinos = ?, litros_vispertinos = ?, id_animal = ? WHERE id = ?";
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setDate(1, fecha);
-            ps.setInt(2, litrosMatutinos);
-            ps.setInt(3, litrosVispertinos);
-            ps.setString(4, idAnimal);
-            ps.setInt(5, id);
-            ps.executeUpdate();
+
+        // 1. La consulta ahora es la llamada al procedimiento almacenado.
+        String sql = "{CALL sp_actualizar_produccion_leche(?, ?, ?, ?, ?)}";
+
+        // 2. Usamos CallableStatement.
+        try (CallableStatement cs = connection.prepareCall(sql)) {
+
+            // 3. Asignamos los parámetros en el orden definido en el SP.
+            // (id, fecha, matutinos, vispertinos, idAnimal)
+            cs.setInt(1, id);
+            cs.setDate(2, fecha);
+            cs.setInt(3, litrosMatutinos);
+            cs.setInt(4, litrosVispertinos);
+            cs.setString(5, idAnimal);
+
+            // 4. Ejecutamos el procedimiento.
+            cs.executeUpdate();
         }
+        // El 'throws SQLException' se encarga de propagar cualquier error.
     }
 
     /**
      * Elimina un registro de producción de leche de la base de datos.
      */
     public void eliminarProduccionLeche(int id) {
-        String sql = "DELETE FROM produccion_leche WHERE id = ?";
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setInt(1, id);
-            ps.executeUpdate();
+        // 1. La consulta ahora es la llamada al procedimiento almacenado.
+        String sql = "{CALL sp_eliminar_produccion_leche(?)}";
+
+        // 2. Usamos CallableStatement en lugar de PreparedStatement.
+        try (CallableStatement cs = connection.prepareCall(sql)) {
+
+            // 3. Asignamos el parámetro.
+            cs.setInt(1, id);
+
+            // 4. Ejecutamos el procedimiento.
+            cs.executeUpdate();
+
             JOptionPane.showMessageDialog(null, "Registro eliminado exitosamente.", "Éxito",
                     JOptionPane.INFORMATION_MESSAGE);
+
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(null, "Error al eliminar el registro: " + e.getMessage());
         }
-
     }
 
     public boolean animalExiste(String codigo) {
-        String sql = "SELECT codigo FROM animal WHERE codigo = ?";
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setString(1, codigo);
-            try (ResultSet rs = ps.executeQuery()) {
-                // Si rs.next() es verdadero, significa que la consulta encontró al menos una
-                // fila.
-                return rs.next();
+        // 1. La consulta ahora es la llamada al procedimiento almacenado.
+        String sql = "{CALL sp_animal_existe(?)}";
+
+        // 2. Usamos CallableStatement en lugar de PreparedStatement.
+        try (CallableStatement cs = connection.prepareCall(sql)) {
+
+            cs.setString(1, codigo);
+
+            // 3. La lógica para ejecutar la consulta y comprobar el resultado
+            // con rs.next() sigue siendo la misma. Es la forma más eficiente.
+            try (ResultSet rs = cs.executeQuery()) {
+                return rs.next(); // Retorna true si el cursor se movió (se encontró una fila), false si no.
             }
         } catch (SQLException e) {
-            // En caso de error, imprimimos el error y asumimos que no existe para ser
-            // seguros.
             System.out.println("Error al verificar la existencia del animal: " + e.getMessage());
+            // Es una buena práctica de seguridad devolver false en caso de error
+            // para prevenir, por ejemplo, la creación de registros duplicados.
             return false;
         }
     }
 
     public boolean existeProduccionLechePorAnimalYFecha(String idAnimal, java.sql.Date fecha) {
-        String sql = "SELECT id FROM produccion_leche WHERE id_animal = ? AND fecha = ?";
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setString(1, idAnimal);
-            ps.setDate(2, fecha);
-            try (ResultSet rs = ps.executeQuery()) {
-                return rs.next(); // Si hay al menos un registro, retorna true
+        // 1. La consulta ahora es la llamada al procedimiento almacenado.
+        String sql = "{CALL sp_existe_produccion_leche_por_animal_y_fecha(?, ?)}";
+
+        // 2. Usamos CallableStatement.
+        try (CallableStatement cs = connection.prepareCall(sql)) {
+
+            // 3. Asignamos los parámetros de entrada.
+            cs.setString(1, idAnimal);
+            cs.setDate(2, fecha);
+
+            // 4. La lógica de comprobación con rs.next() sigue siendo la misma.
+            try (ResultSet rs = cs.executeQuery()) {
+                return rs.next();
             }
         } catch (SQLException e) {
             System.out.println("Error al verificar producción de leche: " + e.getMessage());
-            return false; // En caso de error, asumimos que no existe
+            // Devolver false en caso de error es una práctica segura.
+            return false;
         }
-
     }
 
-    public java.util.List<Object[]> buscarEventosSanitarios(String filtro) {
+    public List<Object[]> buscarEventosSanitarios(String filtro) {
         java.util.List<Object[]> lista = new java.util.ArrayList<>();
-        // Consulta SQL que une eventos_sanitarios con productos para poder buscar por
-        // el nombre del producto
-        String sql = "SELECT es.id, es.fecha, es.tipo, es.id_animal, p.producto, es.dosis, es.motivo, es.diagnostico " +
-                "FROM eventos_sanitarios es LEFT JOIN productos p ON es.id_producto = p.id " +
-                "WHERE es.id_animal LIKE ? OR es.tipo LIKE ? OR es.motivo LIKE ? OR es.diagnostico LIKE ? OR p.producto LIKE ? OR es.dosis LIKE ? OR es.fecha LIKE ? "
-                +
-                "ORDER BY es.fecha DESC";
-
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+        String sql = "{CALL sp_buscar_eventos_sanitarios(?)}"; // Llamada al SP
+        try (CallableStatement cs = connection.prepareCall(sql)) {
             String likeFiltro = "%" + filtro + "%";
-            ps.setString(1, likeFiltro);
-            ps.setString(2, likeFiltro);
-            ps.setString(3, likeFiltro);
-            ps.setString(4, likeFiltro);
-            ps.setString(5, likeFiltro);
-            ps.setString(6, likeFiltro);
-            ps.setString(7, likeFiltro); // Búsqueda por fecha como texto
-
-            try (ResultSet rs = ps.executeQuery()) {
+            cs.setString(1, likeFiltro);
+            try (ResultSet rs = cs.executeQuery()) {
                 while (rs.next()) {
-                    // El resultado debe coincidir con la estructura que espera la tabla
                     Object[] fila = new Object[8];
                     fila[0] = rs.getInt("es.id");
                     fila[1] = rs.getTimestamp("es.fecha");
                     fila[2] = rs.getString("es.tipo");
                     fila[3] = rs.getString("es.id_animal");
-                    fila[4] = rs.getString("p.producto"); // Se obtiene el nombre del producto
+                    fila[4] = rs.getString("p.producto");
                     fila[5] = rs.getObject("es.dosis");
                     fila[6] = rs.getString("es.motivo");
                     fila[7] = rs.getString("es.diagnostico");
@@ -1250,10 +1186,18 @@ public class Controlador {
 
     public java.util.List<Object[]> buscarProductosTratamiento(String filtro) {
         java.util.List<Object[]> lista = new java.util.ArrayList<>();
-        String sql = "SELECT id, producto FROM productos WHERE producto LIKE ? AND (tipo != 'Desparasitante' OR tipo IS NULL) ORDER BY producto";
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setString(1, "%" + filtro + "%");
-            try (ResultSet rs = ps.executeQuery()) {
+
+        // 1. La consulta ahora es la llamada al procedimiento almacenado.
+        String sql = "{CALL sp_buscar_productos_tratamiento(?)}";
+
+        // 2. Usamos CallableStatement.
+        try (CallableStatement cs = connection.prepareCall(sql)) {
+
+            // 3. Asignamos el parámetro, añadiendo los comodines como antes.
+            cs.setString(1, "%" + filtro + "%");
+
+            // 4. El resto del código para procesar el resultado es exactamente el mismo.
+            try (ResultSet rs = cs.executeQuery()) {
                 while (rs.next()) {
                     Object[] fila = new Object[2];
                     fila[0] = rs.getInt("id");
@@ -1268,10 +1212,17 @@ public class Controlador {
     }
 
     public boolean esUltimoMovimiento(int idMovimiento, String codigoAnimal) {
-        String sql = "SELECT id FROM historial_lote WHERE id_animal = ? ORDER BY fecha DESC, id DESC LIMIT 1";
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setString(1, codigoAnimal);
-            try (ResultSet rs = ps.executeQuery()) {
+        // 1. La consulta ahora es la llamada al procedimiento almacenado.
+        String sql = "{CALL sp_obtener_ultimo_movimiento_id(?)}";
+
+        // 2. Usamos CallableStatement.
+        try (CallableStatement cs = connection.prepareCall(sql)) {
+
+            cs.setString(1, codigoAnimal);
+
+            // 3. El resto de la lógica es idéntica: ejecutamos, leemos el resultado
+            // y comparamos los IDs.
+            try (ResultSet rs = cs.executeQuery()) {
                 if (rs.next()) {
                     int ultimoId = rs.getInt("id");
                     return ultimoId == idMovimiento;
@@ -1280,16 +1231,25 @@ public class Controlador {
         } catch (SQLException e) {
             System.out.println("Error al verificar el último movimiento: " + e.getMessage());
         }
-        // Si no se encuentra el animal o hay un error, devolvemos false por seguridad.
+
+        // 4. El retorno por defecto sigue siendo 'false' por seguridad.
         return false;
     }
 
     public java.util.List<Object[]> buscarProductosDesparasitantes(String filtro) {
         java.util.List<Object[]> lista = new java.util.ArrayList<>();
-        String sql = "SELECT id, producto FROM productos WHERE producto LIKE ? AND tipo = 'Desparasitante' ORDER BY producto";
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setString(1, "%" + filtro + "%");
-            try (ResultSet rs = ps.executeQuery()) {
+
+        // 1. La consulta ahora es la llamada al procedimiento almacenado.
+        String sql = "{CALL sp_buscar_productos_desparasitantes(?)}";
+
+        // 2. Usamos CallableStatement.
+        try (CallableStatement cs = connection.prepareCall(sql)) {
+
+            // 3. Asignamos el parámetro, añadiendo los comodines.
+            cs.setString(1, "%" + filtro + "%");
+
+            // 4. El resto del código para procesar el resultado es exactamente el mismo.
+            try (ResultSet rs = cs.executeQuery()) {
                 while (rs.next()) {
                     Object[] fila = new Object[2];
                     fila[0] = rs.getInt("id");
@@ -1311,112 +1271,75 @@ public class Controlador {
 
     public java.util.List<Object[]> buscarLotes(String filtro) {
         java.util.List<Object[]> lista = new java.util.ArrayList<>();
-        
-        // --- LÓGICA MEJORADA ---
-        String sql;
-        boolean esNumero = false;
-        int idFiltro = 0;
-    
-        // 1. Intentamos convertir el filtro a un número entero
-        try {
-            idFiltro = Integer.parseInt(filtro);
-            esNumero = true;
-        } catch (NumberFormatException e) {
-            // Si falla, no es un número, esNumero sigue en false. No hacemos nada.
-        }
-    
-        // 2. Elegimos la consulta SQL adecuada
-        if (esNumero) {
-            // Si es un número, buscamos en los campos de texto O por el ID exacto
-            sql = "SELECT id, nombre, etapa, descripcion FROM lotes " +
-                  "WHERE nombre LIKE ? OR etapa LIKE ? OR descripcion LIKE ? OR id = ?";
-        } else {
-            // Si no es un número, mantenemos la consulta original
-            sql = "SELECT id, nombre, etapa, descripcion FROM lotes " +
-                  "WHERE nombre LIKE ? OR etapa LIKE ? OR descripcion LIKE ?";
-        }
-        
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+        String sql = "{CALL sp_buscar_lotes(?, ?)}"; // Llamada al SP
+
+        try (CallableStatement cs = connection.prepareCall(sql)) {
             String likeFiltro = "%" + filtro + "%";
-            ps.setString(1, likeFiltro);
-            ps.setString(2, likeFiltro);
-            ps.setString(3, likeFiltro);
-            
-            // 3. Si era un número, añadimos el parámetro extra para el ID
-            if (esNumero) {
-                ps.setInt(4, idFiltro);
+            int idFiltro = -1; // Usamos un valor improbable como -1 para indicar que no es un ID válido.
+
+            try {
+                idFiltro = Integer.parseInt(filtro);
+            } catch (NumberFormatException e) {
+                // No es un número, idFiltro se queda en -1
             }
-            
-            try (ResultSet rs = ps.executeQuery()) {
+
+            cs.setString(1, likeFiltro);
+            cs.setInt(2, idFiltro);
+
+            try (ResultSet rs = cs.executeQuery()) {
                 while (rs.next()) {
                     Object[] fila = {
-                        rs.getInt("id"),
-                        rs.getString("nombre"),
-                        rs.getString("etapa"),
-                        rs.getString("descripcion")
+                            rs.getInt("id"),
+                            rs.getString("nombre"),
+                            rs.getString("etapa"),
+                            rs.getString("descripcion")
                     };
                     lista.add(fila);
                 }
             }
         } catch (SQLException e) {
             System.err.println("Error al buscar lotes: " + e.getMessage());
-            e.printStackTrace();
-            JOptionPane.showMessageDialog(null, "Error al realizar la búsqueda de lotes: " + e.getMessage(), "Error de Búsqueda", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null, "Error al realizar la búsqueda de lotes: " + e.getMessage(),
+                    "Error de Búsqueda", JOptionPane.ERROR_MESSAGE);
         }
         return lista;
     }
 
     public java.util.List<Object[]> buscarMovimientosHistorial(String filtro) {
         java.util.List<Object[]> lista = new java.util.ArrayList<>();
-        
-        String sql;
-        boolean esNumero = false;
-        int filtroNumerico = 0;
-    
+
+        // 1. La consulta ahora es una única y simple llamada al SP.
+        String sql = "{CALL sp_buscar_movimientos_historial(?, ?)}";
+
+        // 2. Preparamos los dos parámetros que el SP necesita.
+        String likeFiltro = "%" + filtro + "%";
+        int filtroNumerico;
         try {
             filtroNumerico = Integer.parseInt(filtro);
-            esNumero = true;
         } catch (NumberFormatException e) {
-            // No es un número, se buscará solo como texto
+            // Si no es un número, usamos un valor que no coincidirá con ningún ID.
+            filtroNumerico = -1;
         }
-    
-        if (esNumero) {
-            // Si es número, busca en los campos de texto O en los campos numéricos
-            sql = "SELECT id, id_animal, id_lote_anterior, id_lote_posterior, fecha FROM historial_lote " +
-                  "WHERE id_animal LIKE ? OR CAST(fecha AS CHAR) LIKE ? " +
-                  "OR id = ? OR id_lote_anterior = ? OR id_lote_posterior = ? " +
-                  "ORDER BY fecha DESC";
-        } else {
-            // Si no es número, solo busca en los campos de texto (ID animal y fecha)
-            sql = "SELECT id, id_animal, id_lote_anterior, id_lote_posterior, fecha FROM historial_lote " +
-                  "WHERE id_animal LIKE ? OR CAST(fecha AS CHAR) LIKE ? " +
-                  "ORDER BY fecha DESC";
-        }
-    
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            String likeFiltro = "%" + filtro + "%";
-            ps.setString(1, likeFiltro);
-            ps.setString(2, likeFiltro);
-            
-            if (esNumero) {
-                ps.setInt(3, filtroNumerico);
-                ps.setInt(4, filtroNumerico);
-                ps.setInt(5, filtroNumerico);
-            }
-            
-            try (ResultSet rs = ps.executeQuery()) {
+
+        // 3. Ejecutamos la llamada.
+        try (CallableStatement cs = connection.prepareCall(sql)) {
+            cs.setString(1, likeFiltro);
+            cs.setInt(2, filtroNumerico);
+
+            try (ResultSet rs = cs.executeQuery()) {
+                // 4. La lógica para leer los resultados y formatear la fila
+                // sigue siendo exactamente la misma. ¡No cambia nada aquí!
                 while (rs.next()) {
-                    // IMPORTANTE: La lógica aquí debe ser idéntica a la de cargarHistorialEnTabla()
-                    Object loteAnterior = rs.getObject("id_lote_anterior") == null 
-                                          ? "N/A" 
-                                          : rs.getInt("id_lote_anterior");
-                    
+                    Object loteAnterior = rs.getObject("id_lote_anterior") == null
+                            ? "N/A"
+                            : rs.getInt("id_lote_anterior");
+
                     Object[] fila = {
-                        rs.getInt("id"),
-                        rs.getString("id_animal"),
-                        loteAnterior,
-                        rs.getInt("id_lote_posterior"),
-                        rs.getDate("fecha")
+                            rs.getInt("id"),
+                            rs.getString("id_animal"),
+                            loteAnterior,
+                            rs.getInt("id_lote_posterior"),
+                            rs.getDate("fecha")
                     };
                     lista.add(fila);
                 }
@@ -1427,6 +1350,4 @@ public class Controlador {
         }
         return lista;
     }
-    
-    
 }

@@ -106,6 +106,9 @@ public class panelSalidaAnimales extends JPanel {
         formPanel.add(dcFecha);
 
         btnGuardar = new JButton("Registrar Salida"); // Asignado a la variable de clase
+        btnGuardar.setIcon(new ImageIcon("src/resources/images/icon-guardar.png"));
+        btnGuardar.setHorizontalTextPosition(SwingConstants.LEFT);
+
         btnGuardar.setFont(FONT_BOTON);
         btnGuardar.setBackground(controlador.estilos.COLOR_GUARDAR);
         btnGuardar.setForeground(Color.WHITE);
@@ -118,7 +121,7 @@ public class panelSalidaAnimales extends JPanel {
         JPanel tableContainer = new JPanel(new BorderLayout(0, 8));
         tableContainer.setOpaque(false);
 
-        JPanel searchBarPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
+        JPanel searchBarPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
         searchBarPanel.setOpaque(false);
         JLabel lblBuscarTabla = new JLabel("Buscar en la tabla:");
         lblBuscarTabla.setFont(FONT_LABEL.deriveFont(14f));
@@ -151,7 +154,12 @@ public class panelSalidaAnimales extends JPanel {
         JPanel tableButtonsPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         tableButtonsPanel.setOpaque(false);
         JButton btnEditar = new JButton("Editar");
+        btnEditar.setIcon(new ImageIcon("src/resources/images/icon-editar.png"));
+        btnEditar.setHorizontalTextPosition(SwingConstants.LEFT);
+
         JButton btnEliminar = new JButton("Eliminar");
+        btnEliminar.setIcon(new ImageIcon("src/resources/images/icon-eliminar.png"));
+        btnEliminar.setHorizontalTextPosition(SwingConstants.LEFT);
 
         btnEditar.setFont(FONT_BOTON);
         btnEditar.setBackground(controlador.estilos.COLOR_MODIFICAR);

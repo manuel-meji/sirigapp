@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
 import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -163,12 +164,17 @@ public class panelRegistroAnimales extends JPanel {
         cbEstado.setBounds(col1X + labelW, rowY, col1W - labelW, fieldH);
         card.add(cbEstado);
 
-        JButton btnGuardar = new JButton("Guardar Animal");
+        JButton btnGuardar = new JButton("Guardar animal");
         btnGuardar.setBackground(controlador.estilos.COLOR_GUARDAR); // CAMBIO: Color estandarizado
         btnGuardar.setFont(FONT_BOTON);
+        btnGuardar.setIcon(new ImageIcon("src/resources/images/icon-guardar.png"));
+        btnGuardar.setHorizontalTextPosition(SwingConstants.LEFT);
         btnGuardar.setForeground(Color.WHITE);
         
-        JButton btnLimpiar = new JButton("Limpiar");
+        JButton btnLimpiar = new JButton("Limpiar campos");
+        btnLimpiar.setIcon(new ImageIcon("src/resources/images/icon-limpiar.png"));
+        btnLimpiar.setHorizontalTextPosition(SwingConstants.LEFT);
+
         btnLimpiar.setBackground(controlador.estilos.COLOR_LIMPIAR); // CAMBIO: Color estandarizado
         btnLimpiar.setForeground(Color.WHITE);
         btnLimpiar.setFont(FONT_BOTON);

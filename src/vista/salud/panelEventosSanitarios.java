@@ -152,6 +152,8 @@ public class panelEventosSanitarios extends JPanel {
         form.add(txtBusqueda);
 
         btnGuardar = new JButton("Registrar Evento");
+        btnGuardar.setIcon(new ImageIcon("src/resources/images/icon-guardar.png"));
+        btnGuardar.setHorizontalTextPosition(SwingConstants.LEFT);
         btnGuardar.setBackground(controlador.estilos.COLOR_GUARDAR);
         btnGuardar.setForeground(Color.WHITE);
         btnGuardar.setFont(FONT_BOTON);
@@ -178,10 +180,19 @@ public class panelEventosSanitarios extends JPanel {
 
         JPanel btns = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         btns.setOpaque(false);
+        
         btnLimpiar = new JButton("Limpiar");
+        btnLimpiar.setIcon(new ImageIcon("src/resources/images/icon-limpiar.png"));
+        btnLimpiar.setHorizontalTextPosition(SwingConstants.LEFT);
         
         JButton btnEditar = new JButton("Editar");
+        btnEditar.setIcon(new ImageIcon("src/resources/images/icon-editar.png"));
+        btnEditar.setHorizontalTextPosition(SwingConstants.LEFT);
+
         JButton btnEliminar = new JButton("Eliminar");
+        btnEliminar.setIcon(new ImageIcon("src/resources/images/icon-eliminar.png"));
+        btnEliminar.setHorizontalTextPosition(SwingConstants.LEFT);
+
         btnLimpiar.setBackground(controlador.estilos.COLOR_LIMPIAR);
         btnLimpiar.setForeground(Color.WHITE);
         btnEditar.setBackground(controlador.estilos.COLOR_MODIFICAR);

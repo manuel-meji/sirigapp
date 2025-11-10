@@ -140,6 +140,7 @@ public class panelDesparasitaciones extends JPanel {
         form.add(txtBusqueda);
 
         btnGuardar = new JButton("Registrar");
+        btnGuardar.setIcon(new ImageIcon("src/resources/images/icon-guardar.png"));
         btnGuardar.setBackground(controlador.estilos.COLOR_GUARDAR);
         btnGuardar.setForeground(Color.WHITE);
         btnGuardar.setFont(FONT_BOTON);
@@ -164,10 +165,23 @@ public class panelDesparasitaciones extends JPanel {
 
         JPanel btns = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         btns.setOpaque(false);
+
+
         // --- SE AÑADE EL BOTÓN LIMPIAR ---
+
         btnLimpiar = new JButton("Limpiar");
+        btnLimpiar.setIcon(new ImageIcon("src/resources/images/icon-limpiar.png"));
+        btnLimpiar.setHorizontalTextPosition(SwingConstants.LEFT);
+        
         JButton btnEditar = new JButton("Editar");
+        btnEditar.setIcon(new ImageIcon("src/resources/images/icon-editar.png"));
+        btnEditar.setHorizontalTextPosition(SwingConstants.LEFT);
+
         JButton btnEliminar = new JButton("Eliminar");
+        btnEliminar.setIcon(new ImageIcon("src/resources/images/icon-eliminar.png"));
+        btnEliminar.setHorizontalTextPosition(SwingConstants.LEFT);
+
+
         btnLimpiar.setBackground(controlador.estilos.COLOR_LIMPIAR);
         btnLimpiar.setForeground(Color.WHITE);
         btnLimpiar.setFont(FONT_BOTON);
@@ -386,11 +400,21 @@ public class panelDesparasitaciones extends JPanel {
         for (Object[] r : rows) {
             Date fecha = (Date) r[1];
             String fechaFormateada = (fecha != null) ? sdf.format(fecha) : "";
-
-            String nombreProducto = obtenerNombreProductoPorId((Integer) r[3]);
-
-            model.addRow(new Object[]{r[0], fechaFormateada, r[2], nombreProducto, r[4]});
+    
+            // CORRECCIÓN 1: El ID del producto está en el índice 4, no en el 3.
+            String nombreProducto = obtenerNombreProductoPorId((Integer) r[4]);
+    
+            // CORRECCIÓN 2: El ID del animal está en el índice 3 y la dosis en el 5.
+            // El modelo de la tabla es: {"ID", "Fecha", "Animal", "Producto", "Dosis"}
+            model.addRow(new Object[]{
+                r[0],             // ID (índice 0) -> Correcto
+                fechaFormateada,  // Fecha (del índice 1) -> Correcto
+                r[3],             // Animal (índice 3, era r[2]) -> CORREGIDO
+                nombreProducto,   // Producto (del índice 4) -> CORREGIDO
+                r[5]              // Dosis (índice 5, era r[4]) -> CORREGIDO
+            });
         }
+    
     }
 
     private void filtrarAnimales(String filtro) {
