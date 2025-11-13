@@ -1454,4 +1454,24 @@ public class Controlador {
         // El 'throws SQLException' en la firma del método se encargará de notificar al
         // panel si algo sale mal.
     }
+
+
+/**
+ * Guarda un evento sanitario para todos los animales activos de un lote específico.
+ * Llama al procedimiento almacenado sp_guardar_evento_sanitario_lote.
+ */
+public void guardarEventoSanitarioPorLote(java.sql.Timestamp fecha, Integer idProducto, Float dosis, String motivo, String diagnostico, int idLote, String tipo) throws SQLException {
+    String sql = "{CALL sp_guardar_evento_sanitario_lote(?, ?, ?, ?, ?, ?, ?)}";
+    try (CallableStatement cs = connection.prepareCall(sql)) {
+        cs.setTimestamp(1, fecha);
+        if (idProducto != null) cs.setInt(2, idProducto); else cs.setNull(2, java.sql.Types.INTEGER);
+        if (dosis != null) cs.setFloat(3, dosis); else cs.setNull(3, java.sql.Types.FLOAT);
+        cs.setString(4, motivo);
+        cs.setString(5, diagnostico);
+        cs.setInt(6, idLote);
+        cs.setString(7, tipo);
+        cs.executeUpdate();
+    }
+}
+
 }

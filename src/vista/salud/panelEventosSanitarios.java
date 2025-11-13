@@ -13,6 +13,7 @@ import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -20,306 +21,274 @@ import java.util.List;
 
 public class panelEventosSanitarios extends JPanel {
 
-    private Controlador controlador;
-    private JTable table;
-    private DefaultTableModel model;
-    private TableRowSorter<DefaultTableModel> sorter;
-    private JDateChooser dcFecha;
-    private JComboBox<String> cbAnimal;
-    private JComboBox<ProductoItem> cbProducto;
-    private JTextField txtMotivo;
-    private JTextField txtDiagnostico;
-    private JTextField txtDosis;
-    private JTextField txtBusqueda;
+	private Controlador controlador;
+	private JTable table;
+	private DefaultTableModel model;
+	private TableRowSorter<DefaultTableModel> sorter;
+	private JDateChooser dcFecha;
+    private JComboBox<Object> cbAnimalLote; // ComboBox unificado para Animales y Lotes
+	private JComboBox<ProductoItem> cbProducto;
+	private JTextField txtMotivo;
+	private JTextField txtDiagnostico;
+	private JTextField txtDosis;
+	private JTextField txtBusqueda;
     private JButton btnGuardar;
     private JButton btnLimpiar;
+    private JButton btnEditar;
+    private JButton btnEliminar;
+    private JCheckBox chkAplicarLote;
+    private JLabel lblAnimalLote;
     private Integer idEventoEditando = null;
 
-    private final Font FONT_SUBTITULO = FontLoader.loadFont("/resources/fonts/Montserrat-Bold.ttf", 24f);
-    private final Font FONT_LABEL = FontLoader.loadFont("/resources/fonts/Montserrat-SemiBold.ttf", 16f);
-    private final Font FONT_INPUT = FontLoader.loadFont("/resources/fonts/Montserrat-Light.ttf", 16f);
-    private final Font FONT_BOTON = FontLoader.loadFont("/resources/fonts/Montserrat-SemiBold.ttf", 14f);
-    private final SimpleDateFormat sdfTimestamp = new SimpleDateFormat("yyyy-MM-dd");
+	private final Font FONT_SUBTITULO = FontLoader.loadFont("/resources/fonts/Montserrat-Bold.ttf", 24f);
+	private final Font FONT_LABEL = FontLoader.loadFont("/resources/fonts/Montserrat-SemiBold.ttf", 16f);
+	private final Font FONT_INPUT = FontLoader.loadFont("/resources/fonts/Montserrat-Light.ttf", 16f);
+	private final Font FONT_BOTON = FontLoader.loadFont("/resources/fonts/Montserrat-SemiBold.ttf", 14f);
+	private final SimpleDateFormat sdfTimestamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
-    private final String PLACEHOLDER_ANIMAL = "Escriba para buscar un animal";
-    private final String PLACEHOLDER_PRODUCTO = "Escriba para buscar un producto";
+	private final String PLACEHOLDER_ANIMAL = "Escriba para buscar un animal";
+	private final String PLACEHOLDER_PRODUCTO = "Escriba para buscar un producto";
 
-    private static class ProductoItem {
+	private static class ProductoItem {
+		private final int id;
+		private final String nombre;
+		public ProductoItem(int id, String nombre) { this.id = id; this.nombre = nombre; }
+		public int getId() { return id; }
+		@Override public String toString() { return nombre; }
+	}
 
-        private final int id;
-        private final String nombre;
+	public panelEventosSanitarios(Controlador controlador) {
+		this.controlador = controlador;
+		setLayout(new BorderLayout());
+		add(createContentPanel(), BorderLayout.CENTER);
+	}
 
-        public ProductoItem(int id, String nombre) {
-            this.id = id;
-            this.nombre = nombre;
-        }
-
-        public int getId() {
-            return id;
-        }
-
-        @Override
-        public String toString() {
-            return nombre;
-        }
-    }
-
-    public panelEventosSanitarios(Controlador controlador) {
-        this.controlador = controlador;
-        setLayout(new BorderLayout());
-        add(createContentPanel(), BorderLayout.CENTER);
-    }
-
-    public JPanel createContentPanel() {
-        JPanel content = new JPanel(new BorderLayout());
-        content.setBackground(new Color(245, 246, 248));
-        JLabel title = new JLabel("Eventos Sanitarios");
-        title.setFont(FONT_SUBTITULO);
-        title.setBorder(new EmptyBorder(20, 24, 8, 24));
-        content.add(title, BorderLayout.NORTH);
-        JPanel card = new JPanel(new BorderLayout());
-        card.setBackground(Color.WHITE);
-        card.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(new Color(220, 223, 230), 1), new EmptyBorder(16, 16, 16, 16)));
-        JPanel form = new JPanel(null);
-        form.setOpaque(false);
-        form.setPreferredSize(new Dimension(0, 230));
-
-        JLabel lblAnimal = new JLabel("ID Animal:");
-        lblAnimal.setFont(FONT_LABEL);
-        lblAnimal.setBounds(10, 10, 150, 30);
-        form.add(lblAnimal);
-        cbAnimal = new JComboBox<>();
-        cbAnimal.setEditable(true);
-        cbAnimal.setFont(FONT_INPUT);
-        cbAnimal.setBounds(170, 10, 250, 30);
-        form.add(cbAnimal);
-
+	public JPanel createContentPanel() {
+		JPanel content = new JPanel(new BorderLayout());
+		content.setBackground(new Color(245, 246, 248));
+		JLabel title = new JLabel("Eventos Sanitarios");
+		title.setFont(FONT_SUBTITULO);
+		title.setBorder(new EmptyBorder(20, 24, 8, 24));
+		content.add(title, BorderLayout.NORTH);
+		JPanel card = new JPanel(new BorderLayout());
+		card.setBackground(Color.WHITE);
+		card.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(new Color(220, 223, 230), 1), new EmptyBorder(16, 16, 16, 16)));
+		JPanel form = new JPanel(null);
+		form.setOpaque(false);
+		form.setPreferredSize(new Dimension(0, 230));
+		
+        lblAnimalLote = new JLabel("ID Animal:");
+		lblAnimalLote.setFont(FONT_LABEL);
+		lblAnimalLote.setBounds(10, 10, 150, 30);
+		form.add(lblAnimalLote);
+		
+        cbAnimalLote = new JComboBox<>();
+		cbAnimalLote.setFont(FONT_INPUT);
+		cbAnimalLote.setBounds(170, 10, 250, 30);
+		form.add(cbAnimalLote);
+		
+        chkAplicarLote = new JCheckBox("Aplicar a Lote");
+        chkAplicarLote.setFont(FONT_LABEL.deriveFont(14f));
+        chkAplicarLote.setOpaque(false);
+        chkAplicarLote.setBounds(430, 10, 150, 30);
+        form.add(chkAplicarLote);
+		
         JLabel lblProducto = new JLabel("Producto:");
-        lblProducto.setFont(FONT_LABEL);
-        lblProducto.setBounds(10, 50, 150, 30);
-        form.add(lblProducto);
-        cbProducto = new JComboBox<>();
-        cbProducto.setEditable(true);
-        cbProducto.setFont(FONT_INPUT);
-        cbProducto.setBounds(170, 50, 250, 30);
-        form.add(cbProducto);
-
+		lblProducto.setFont(FONT_LABEL);
+		lblProducto.setBounds(10, 50, 150, 30);
+		form.add(lblProducto);
+		cbProducto = new JComboBox<>();
+		cbProducto.setEditable(true);
+		cbProducto.setFont(FONT_INPUT);
+		cbProducto.setBounds(170, 50, 250, 30);
+		form.add(cbProducto);
+		
         JLabel lblDosis = new JLabel("Dosis:");
-        lblDosis.setFont(FONT_LABEL);
-        lblDosis.setBounds(450, 10, 100, 30);
-        form.add(lblDosis);
-        txtDosis = new JTextField();
-        txtDosis.setFont(FONT_INPUT);
-        txtDosis.setBounds(560, 10, 250, 30);
-        form.add(txtDosis);
-
+		lblDosis.setFont(FONT_LABEL);
+		lblDosis.setBounds(600, 10, 100, 30);
+		form.add(lblDosis);
+		txtDosis = new JTextField();
+		txtDosis.setFont(FONT_INPUT);
+		txtDosis.setBounds(710, 10, 250, 30);
+		form.add(txtDosis);
+		
         JLabel lblFecha = new JLabel("Fecha:");
-        lblFecha.setFont(FONT_LABEL);
-        lblFecha.setBounds(450, 50, 100, 30);
-        form.add(lblFecha);
-        dcFecha = new JDateChooser();
-        dcFecha.setDate(new Date());
-        dcFecha.setDateFormatString("yyyy-MM-dd");
-        dcFecha.setFont(FONT_INPUT);
-        dcFecha.setBounds(560, 50, 250, 30);
-        form.add(dcFecha);
-
+		lblFecha.setFont(FONT_LABEL);
+		lblFecha.setBounds(600, 50, 100, 30);
+		form.add(lblFecha);
+		dcFecha = new JDateChooser();
+		dcFecha.setDate(new Date());
+		dcFecha.setDateFormatString("yyyy-MM-dd");
+		dcFecha.setFont(FONT_INPUT);
+		dcFecha.setBounds(710, 50, 250, 30);
+		form.add(dcFecha);
+		
         JLabel lblMotivo = new JLabel("Motivo:");
-        lblMotivo.setFont(FONT_LABEL);
-        lblMotivo.setBounds(10, 90, 150, 30);
-        form.add(lblMotivo);
-        txtMotivo = new JTextField();
-        txtMotivo.setFont(FONT_INPUT);
-        txtMotivo.setBounds(170, 90, 640, 30);
-        form.add(txtMotivo);
-
+		lblMotivo.setFont(FONT_LABEL);
+		lblMotivo.setBounds(10, 90, 150, 30);
+		form.add(lblMotivo);
+		txtMotivo = new JTextField();
+		txtMotivo.setFont(FONT_INPUT);
+		txtMotivo.setBounds(170, 90, 790, 30);
+		form.add(txtMotivo);
+		
         JLabel lblDiagnostico = new JLabel("Diagnóstico:");
-        lblDiagnostico.setFont(FONT_LABEL);
-        lblDiagnostico.setBounds(10, 130, 150, 30);
-        form.add(lblDiagnostico);
-        txtDiagnostico = new JTextField();
-        txtDiagnostico.setFont(FONT_INPUT);
-        txtDiagnostico.setBounds(170, 130, 640, 30);
-        form.add(txtDiagnostico);
-
+		lblDiagnostico.setFont(FONT_LABEL);
+		lblDiagnostico.setBounds(10, 130, 150, 30);
+		form.add(lblDiagnostico);
+		txtDiagnostico = new JTextField();
+		txtDiagnostico.setFont(FONT_INPUT);
+		txtDiagnostico.setBounds(170, 130, 790, 30);
+		form.add(txtDiagnostico);
+		
         JLabel lblBusqueda = new JLabel("Buscar en tabla:");
-        lblBusqueda.setFont(FONT_LABEL);
-        lblBusqueda.setBounds(10, 175, 150, 30);
-        form.add(lblBusqueda);
-        txtBusqueda = new JTextField();
-        txtBusqueda.setFont(FONT_INPUT);
-        txtBusqueda.setBounds(170, 175, 380, 30);
-        form.add(txtBusqueda);
-
+		lblBusqueda.setFont(FONT_LABEL);
+		lblBusqueda.setBounds(10, 175, 150, 30);
+		form.add(lblBusqueda);
+		txtBusqueda = new JTextField();
+		txtBusqueda.setFont(FONT_INPUT);
+		txtBusqueda.setBounds(170, 175, 380, 30);
+		form.add(txtBusqueda);
+		
         btnGuardar = new JButton("Registrar Evento");
-        btnGuardar.setIcon(new ImageIcon("src/resources/images/icon-guardar.png"));
-        btnGuardar.setHorizontalTextPosition(SwingConstants.LEFT);
-        btnGuardar.setBackground(controlador.estilos.COLOR_GUARDAR);
-        btnGuardar.setForeground(Color.WHITE);
-        btnGuardar.setFont(FONT_BOTON);
-        btnGuardar.setBounds(560, 175, 250, 40);
-        form.add(btnGuardar);
-
+		btnGuardar.setBackground(controlador.estilos.COLOR_GUARDAR);
+		btnGuardar.setForeground(Color.WHITE);
+		btnGuardar.setFont(FONT_BOTON);
+		btnGuardar.setBounds(710, 175, 250, 40);
+		form.add(btnGuardar);
+		
         card.add(form, BorderLayout.NORTH);
 
-        String[] cols = {"ID", "Fecha", "Tipo", "Animal", "Producto", "Dosis", "Motivo", "Diagnóstico"};
-        model = new DefaultTableModel(cols, 0) {
-            public boolean isCellEditable(int r, int c) {
-                return false;
-            }
-        };
-        table = new JTable(model);
-        sorter = new TableRowSorter<>(model);
-        table.setRowSorter(sorter);
-        table.setRowHeight(28);
-        table.setFont(FONT_INPUT.deriveFont(14f));
-        table.getTableHeader().setFont(FONT_LABEL.deriveFont(14f));
-        JScrollPane sp = new JScrollPane(table);
-        sp.setBorder(new EmptyBorder(8, 0, 0, 0));
-        card.add(sp, BorderLayout.CENTER);
-
+		String[] cols = { "ID", "Fecha", "Tipo", "Animal", "Producto", "Dosis", "Motivo", "Diagnóstico" };
+		model = new DefaultTableModel(cols, 0) { public boolean isCellEditable(int r, int c) { return false; }};
+		table = new JTable(model);
+		sorter = new TableRowSorter<>(model);
+		table.setRowSorter(sorter);
+		table.setRowHeight(28);
+		table.setFont(FONT_INPUT.deriveFont(14f));
+		table.getTableHeader().setFont(FONT_LABEL.deriveFont(14f));
+		JScrollPane sp = new JScrollPane(table);
+		sp.setBorder(new EmptyBorder(8, 0, 0, 0));
+		card.add(sp, BorderLayout.CENTER);
+		
         JPanel btns = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        btns.setOpaque(false);
-        
-        btnLimpiar = new JButton("Limpiar");
-        btnLimpiar.setIcon(new ImageIcon("src/resources/images/icon-limpiar.png"));
-        btnLimpiar.setHorizontalTextPosition(SwingConstants.LEFT);
-        
-        JButton btnEditar = new JButton("Editar");
-        btnEditar.setIcon(new ImageIcon("src/resources/images/icon-editar.png"));
-        btnEditar.setHorizontalTextPosition(SwingConstants.LEFT);
-
-        JButton btnEliminar = new JButton("Eliminar");
-        btnEliminar.setIcon(new ImageIcon("src/resources/images/icon-eliminar.png"));
-        btnEliminar.setHorizontalTextPosition(SwingConstants.LEFT);
-
-        btnLimpiar.setBackground(controlador.estilos.COLOR_LIMPIAR);
-        btnLimpiar.setForeground(Color.WHITE);
-        btnEditar.setBackground(controlador.estilos.COLOR_MODIFICAR);
-        btnEditar.setForeground(Color.WHITE);
-        btnEditar.setFont(FONT_BOTON);
-        btnEliminar.setBackground(controlador.estilos.COLOR_ELIMINAR);
-        btnEliminar.setForeground(Color.WHITE);
-        btnEliminar.setFont(FONT_BOTON);
+		btns.setOpaque(false);
+		btnLimpiar = new JButton("Limpiar");
+		btnEditar = new JButton("Editar");
+		btnEliminar = new JButton("Eliminar");
+		btnEditar.setBackground(controlador.estilos.COLOR_MODIFICAR);
+		btnEditar.setForeground(Color.WHITE);
+		btnEditar.setFont(FONT_BOTON);
+		btnEliminar.setBackground(controlador.estilos.COLOR_ELIMINAR);
+		btnEliminar.setForeground(Color.WHITE);
+		btnEliminar.setFont(FONT_BOTON);
         btnLimpiar.setFont(FONT_BOTON);
-        btns.add(btnLimpiar);
-        btns.add(btnEditar);
-        btns.add(btnEliminar);
-        card.add(btns, BorderLayout.SOUTH);
-
+		btns.add(btnLimpiar);
+		btns.add(btnEditar);
+		btns.add(btnEliminar);
+		card.add(btns, BorderLayout.SOUTH);
+		
         content.add(card, BorderLayout.CENTER);
-
-        // Listeners para ComboBoxes
-        JTextField editorAnimal = (JTextField) cbAnimal.getEditor().getEditorComponent();
-        editorAnimal.addKeyListener(new KeyAdapter() {
-            public void keyReleased(KeyEvent e) {
-                if (e.getKeyCode() != KeyEvent.VK_UP && e.getKeyCode() != KeyEvent.VK_DOWN) {
-                    filtrarAnimales(editorAnimal.getText());
-                }
-            }
-        });
-        editorAnimal.addFocusListener(new FocusAdapter() {
-            public void focusGained(FocusEvent e) {
-                if (editorAnimal.getText().equals(PLACEHOLDER_ANIMAL)) {
-                    editorAnimal.setText("");
-                    editorAnimal.setForeground(Color.BLACK);
-                    if (cbAnimal.getItemCount() == 0) {
-                        filtrarAnimales("");
-                
-                    }}
-            }
-
-            public void focusLost(FocusEvent e) {
-                if (editorAnimal.getText().trim().isEmpty()) {
-                    setPlaceholder(cbAnimal, PLACEHOLDER_ANIMAL);
-                }
-            }
-        });
-
-        JTextField editorProducto = (JTextField) cbProducto.getEditor().getEditorComponent();
-        editorProducto.addKeyListener(new KeyAdapter() {
-            public void keyReleased(KeyEvent e) {
-                if (e.getKeyCode() != KeyEvent.VK_UP && e.getKeyCode() != KeyEvent.VK_DOWN) {
-                    filtrarProductos(editorProducto.getText());
-                }
-            }
-        });
-        editorProducto.addFocusListener(new FocusAdapter() {
-            public void focusGained(FocusEvent e) {
-                if (editorProducto.getText().equals(PLACEHOLDER_PRODUCTO)) {
-                    editorProducto.setText("");
-                    editorProducto.setForeground(Color.BLACK);
-                    if (cbProducto.getItemCount() == 0) {
-                        filtrarProductos("");
-                
-                    }}
-            }
-
-            public void focusLost(FocusEvent e) {
-                if (editorProducto.getText().trim().isEmpty()) {
-                    setPlaceholder(cbProducto, PLACEHOLDER_PRODUCTO);
-                }
-            }
-        });
-
-        btnGuardar.addActionListener(_ -> guardarOActualizarEvento());
-        btnEliminar.addActionListener(_ -> eliminarEvento());
-        btnEditar.addActionListener(_ -> prepararEdicion());
+        
+        setupComboBoxListeners();
+		btnGuardar.addActionListener(_ -> guardarOActualizarEvento());
+		btnEliminar.addActionListener(_ -> eliminarEvento());
+		btnEditar.addActionListener(_ -> prepararEdicion());
         btnLimpiar.addActionListener(_ -> limpiarFormulario());
-        txtBusqueda.addKeyListener(new KeyAdapter() {
-            @Override
+		txtBusqueda.addKeyListener(new KeyAdapter() { @Override public void keyReleased(KeyEvent e) { filtrarTabla(); }});
+        chkAplicarLote.addActionListener(e -> actualizarModoFormulario());
+
+		cargarEventos();
+        actualizarModoFormulario();
+
+		return content;
+	}
+
+    private void actualizarModoFormulario() {
+        if (chkAplicarLote.isSelected()) {
+            lblAnimalLote.setText("Seleccione Lote:");
+            cbAnimalLote.setEditable(false);
+            cargarLotesEnCombo();
+            btnEditar.setEnabled(false);
+            btnGuardar.setText("Aplicar a Lote");
+        } else {
+            lblAnimalLote.setText("ID Animal:");
+            cbAnimalLote.setEditable(true);
+            setPlaceholder(cbAnimalLote, PLACEHOLDER_ANIMAL);
+            btnEditar.setEnabled(true);
+            btnGuardar.setText(idEventoEditando == null ? "Registrar Evento" : "Actualizar Evento");
+        }
+    }
+
+    private void setupComboBoxListeners() {
+        // Listener para el ComboBox unificado
+        JTextField editorAnimalLote = (JTextField) cbAnimalLote.getEditor().getEditorComponent();
+        editorAnimalLote.addKeyListener(new KeyAdapter() {
             public void keyReleased(KeyEvent e) {
-                filtrarTabla();
+                if (cbAnimalLote.isEditable()) { // Solo busca si está en modo Animal
+                    if (e.getKeyCode() != KeyEvent.VK_UP && e.getKeyCode() != KeyEvent.VK_DOWN) {
+                        filtrarAnimales(editorAnimalLote.getText());
+                    }
+                }
+            }
+        });
+        editorAnimalLote.addFocusListener(new FocusAdapter() {
+            public void focusGained(FocusEvent e) {
+                if (cbAnimalLote.isEditable() && editorAnimalLote.getText().equals(PLACEHOLDER_ANIMAL)) {
+                    editorAnimalLote.setText("");
+                    editorAnimalLote.setForeground(Color.BLACK);
+                    if (cbAnimalLote.getItemCount() == 0) filtrarAnimales("");
+                }
+            }
+            public void focusLost(FocusEvent e) {
+                if (cbAnimalLote.isEditable() && editorAnimalLote.getText().trim().isEmpty()) {
+                    setPlaceholder(cbAnimalLote, PLACEHOLDER_ANIMAL);
+                }
             }
         });
 
-        cargarEventos();
-        setPlaceholder(cbAnimal, PLACEHOLDER_ANIMAL);
+        // Listener para Productos (sin cambios)
+        JTextField editorProducto = (JTextField) cbProducto.getEditor().getEditorComponent();
+        editorProducto.addKeyListener(new KeyAdapter() { public void keyReleased(KeyEvent e) { if (e.getKeyCode() != KeyEvent.VK_UP && e.getKeyCode() != KeyEvent.VK_DOWN) { filtrarProductos(editorProducto.getText()); } } });
+        editorProducto.addFocusListener(new FocusAdapter() { public void focusGained(FocusEvent e) { if (editorProducto.getText().equals(PLACEHOLDER_PRODUCTO)) { editorProducto.setText(""); editorProducto.setForeground(Color.BLACK); if (cbProducto.getItemCount() == 0) filtrarProductos(""); } } public void focusLost(FocusEvent e) { if (editorProducto.getText().trim().isEmpty()) { setPlaceholder(cbProducto, PLACEHOLDER_PRODUCTO); } } });
+
         setPlaceholder(cbProducto, PLACEHOLDER_PRODUCTO);
-
-        return content;
     }
-
-    private <T> void setPlaceholder(JComboBox<T> comboBox, String text) {
-        JTextField editor = (JTextField) comboBox.getEditor().getEditorComponent();
-        comboBox.removeAllItems();
-        editor.setForeground(Color.GRAY);
-        editor.setText(text);
-    }
-
-    private void guardarOActualizarEvento() {
+    
+	private void guardarOActualizarEvento() {
         try {
-            Object animalItem = cbAnimal.getSelectedItem();
-            String animal = (animalItem == null) ? ((JTextField) cbAnimal.getEditor().getEditorComponent()).getText() : animalItem.toString();
-            if (animal.trim().isEmpty() || animal.equals(PLACEHOLDER_ANIMAL)) {
-                JOptionPane.showMessageDialog(this, "Debe seleccionar un animal válido.", "Error", JOptionPane.WARNING_MESSAGE);
-                return;
-            }
-
             Object productoItem = cbProducto.getSelectedItem();
-            if (productoItem == null || !(productoItem instanceof ProductoItem)) {
-                JOptionPane.showMessageDialog(this, "Debe seleccionar un producto válido.", "Error", JOptionPane.WARNING_MESSAGE);
-                return;
-            }
+            if (productoItem == null || !(productoItem instanceof ProductoItem)) { JOptionPane.showMessageDialog(this, "Debe seleccionar un producto válido.", "Error", JOptionPane.WARNING_MESSAGE); return; }
             int idProducto = ((ProductoItem) productoItem).getId();
 
             String dosisStr = txtDosis.getText().trim();
             Float dosis = dosisStr.isEmpty() ? null : Float.parseFloat(dosisStr);
-            if (dosis != null && dosis <= 0) {
-                JOptionPane.showMessageDialog(this, "La dosis debe ser un número positivo.", "Error", JOptionPane.WARNING_MESSAGE);
-                return;
-            }
-
+            if (dosis != null && dosis <= 0) { JOptionPane.showMessageDialog(this, "La dosis debe ser un número positivo.", "Error", JOptionPane.WARNING_MESSAGE); return; }
+            
             String motivo = txtMotivo.getText().trim();
             String diag = txtDiagnostico.getText().trim();
             java.sql.Timestamp fecha = new java.sql.Timestamp(dcFecha.getDate().getTime());
-
-            if (idEventoEditando == null) {
-                controlador.guardarEventoSanitario(fecha, idProducto, dosis, motivo, diag, animal, "TRATAMIENTO");
-                JOptionPane.showMessageDialog(this, "Evento sanitario registrado exitosamente.");
+            
+            if (chkAplicarLote.isSelected()) {
+                String loteSeleccionado = (String) cbAnimalLote.getSelectedItem();
+                if (loteSeleccionado == null || loteSeleccionado.equals("Seleccione un lote...")) {
+                    JOptionPane.showMessageDialog(this, "Debe seleccionar un lote.", "Error", JOptionPane.WARNING_MESSAGE); return;
+                }
+                int idLote = Integer.parseInt(loteSeleccionado.split(" - ")[0]);
+                controlador.guardarEventoSanitarioPorLote(fecha, idProducto, dosis, motivo, diag, idLote, "TRATAMIENTO");
+                JOptionPane.showMessageDialog(this, "Evento aplicado al lote exitosamente.");
             } else {
-                controlador.actualizarEventoSanitario(idEventoEditando, fecha, idProducto, dosis, animal, motivo, diag);
-                JOptionPane.showMessageDialog(this, "Evento sanitario actualizado exitosamente.");
+                String animal = ((JTextField) cbAnimalLote.getEditor().getEditorComponent()).getText();
+                if (animal.trim().isEmpty() || animal.equals(PLACEHOLDER_ANIMAL)) {
+                    JOptionPane.showMessageDialog(this, "Debe seleccionar un animal válido.", "Error", JOptionPane.WARNING_MESSAGE); return;
+                }
+                if (idEventoEditando == null) {
+                    controlador.guardarEventoSanitario(fecha, idProducto, dosis, motivo, diag, animal, "TRATAMIENTO");
+                    JOptionPane.showMessageDialog(this, "Evento sanitario registrado exitosamente.");
+                } else {
+                    controlador.actualizarEventoSanitario(idEventoEditando, fecha, idProducto, dosis, animal, motivo, diag);
+                    JOptionPane.showMessageDialog(this, "Evento sanitario actualizado exitosamente.");
+                }
             }
             cargarEventos();
             limpiarFormulario();
@@ -330,22 +299,16 @@ public class panelEventosSanitarios extends JPanel {
             ex.printStackTrace();
         }
     }
-
+    
     private void prepararEdicion() {
+        if (chkAplicarLote.isSelected()) return; // No se puede editar en modo lote
         int filaVista = table.getSelectedRow();
-        if (filaVista == -1) {
-            JOptionPane.showMessageDialog(this, "Seleccione un evento para editar.", "Aviso", JOptionPane.WARNING_MESSAGE);
-            return;
-        }
+        if (filaVista == -1) { JOptionPane.showMessageDialog(this, "Seleccione un evento para editar.", "Aviso", JOptionPane.WARNING_MESSAGE); return; }
         int filaModelo = table.convertRowIndexToModel(filaVista);
         int id = (int) model.getValueAt(filaModelo, 0);
-
         Object[] datos = controlador.obtenerEventoSanitarioPorId(id);
-        if (datos == null) {
-            JOptionPane.showMessageDialog(this, "No se encontraron los datos del evento.", "Error", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-
+        if (datos == null) { JOptionPane.showMessageDialog(this, "No se encontraron los datos del evento.", "Error", JOptionPane.ERROR_MESSAGE); return; }
+        
         idEventoEditando = id;
         Date fecha = (Date) datos[1];
         String animal = (String) datos[3];
@@ -359,10 +322,10 @@ public class panelEventosSanitarios extends JPanel {
         txtMotivo.setText(motivo);
         txtDiagnostico.setText(diagnostico);
 
-        JTextField editorAnimal = (JTextField) cbAnimal.getEditor().getEditorComponent();
+        JTextField editorAnimal = (JTextField) cbAnimalLote.getEditor().getEditorComponent();
         editorAnimal.setForeground(Color.BLACK);
         editorAnimal.setText(animal);
-
+        
         filtrarProductos("");
         if (idProducto != null) {
             for (int i = 0; i < cbProducto.getItemCount(); i++) {
@@ -373,15 +336,16 @@ public class panelEventosSanitarios extends JPanel {
                 }
             }
         }
-
+        
         btnGuardar.setText("Actualizar Evento");
         btnLimpiar.setText("Cancelar Edición");
-        cbAnimal.setEnabled(false);
+        cbAnimalLote.setEnabled(false);
+        chkAplicarLote.setEnabled(false);
     }
-
+    
     private void limpiarFormulario() {
         idEventoEditando = null;
-        setPlaceholder(cbAnimal, PLACEHOLDER_ANIMAL);
+        actualizarModoFormulario(); // Usa este método para resetear el ComboBox correcto
         setPlaceholder(cbProducto, PLACEHOLDER_PRODUCTO);
         txtDosis.setText("");
         txtMotivo.setText("");
@@ -389,26 +353,23 @@ public class panelEventosSanitarios extends JPanel {
         dcFecha.setDate(new Date());
         btnGuardar.setText("Registrar Evento");
         btnLimpiar.setText("Limpiar");
-        cbAnimal.setEnabled(true);
+        cbAnimalLote.setEnabled(true);
+        chkAplicarLote.setEnabled(true);
         table.clearSelection();
     }
 
-    private void eliminarEvento() {
+	private void eliminarEvento() {
+        if (chkAplicarLote.isSelected()) return;
         int filaVista = table.getSelectedRow();
-        if (filaVista == -1) {
-            JOptionPane.showMessageDialog(this, "Seleccione un evento para eliminar.", "Aviso", JOptionPane.WARNING_MESSAGE);
-            return;
-        }
-        if (JOptionPane.showConfirmDialog(this, "¿Está seguro de que desea eliminar el evento seleccionado?", "Confirmar Eliminación", JOptionPane.YES_NO_OPTION) != JOptionPane.YES_OPTION) {
-            return;
-        }
+        if (filaVista == -1) { JOptionPane.showMessageDialog(this, "Seleccione un evento para eliminar.", "Aviso", JOptionPane.WARNING_MESSAGE); return; }
+        if (JOptionPane.showConfirmDialog(this, "¿Está seguro de que desea eliminar el evento seleccionado?", "Confirmar Eliminación", JOptionPane.YES_NO_OPTION) != JOptionPane.YES_OPTION) { return; }
         int filaModelo = table.convertRowIndexToModel(filaVista);
         int id = (int) model.getValueAt(filaModelo, 0);
         controlador.eliminarEvento(id);
         cargarEventos();
     }
 
-    private void filtrarTabla() {
+	private void filtrarTabla() {
         String texto = txtBusqueda.getText();
         sorter.setRowFilter(texto.trim().isEmpty() ? null : RowFilter.regexFilter("(?i)" + texto));
     }
@@ -419,31 +380,30 @@ public class panelEventosSanitarios extends JPanel {
         for (Object[] r : rows) {
             if (r[2] != null && !r[2].toString().equalsIgnoreCase("DESPARASITACION")) {
                 Date fecha = (Date) r[1];
-                String fechaFormateada = (fecha != null) ? sdfTimestamp.format(fecha) : "";
-                Object[] filaFormateada = {r[0], fechaFormateada, r[2], r[3], r[4], r[5], r[6], r[7]};
+                String fechaFormateada = (fecha != null) ? new java.text.SimpleDateFormat("yyyy-MM-dd").format(fecha) : "";
+                Object[] filaFormateada = { r[0], fechaFormateada, r[2], r[3], r[4], r[5], r[6], r[7] };
                 model.addRow(filaFormateada);
             }
         }
     }
 
     public void cargarProductos() {
+        
         filtrarProductos("");
     }
 
-    private void filtrarAnimales(String filtro) {
+	private void filtrarAnimales(String filtro) {
         List<String> animales = controlador.buscarAnimales(filtro);
-        DefaultComboBoxModel<String> model = (DefaultComboBoxModel<String>) cbAnimal.getModel();
+        DefaultComboBoxModel<Object> model = (DefaultComboBoxModel<Object>) cbAnimalLote.getModel();
         model.removeAllElements();
-        animales.forEach(model::addElement);
-        ((JTextField) cbAnimal.getEditor().getEditorComponent()).setText(filtro);
-        if (!animales.isEmpty() && !filtro.isEmpty()) {
-            cbAnimal.showPopup();
-        } else {
-            cbAnimal.hidePopup();
+        for (String animal : animales) {
+            model.addElement(animal);
         }
+        ((JTextField) cbAnimalLote.getEditor().getEditorComponent()).setText(filtro);
+        if (!animales.isEmpty() && !filtro.isEmpty()) { cbAnimalLote.showPopup(); } else { cbAnimalLote.hidePopup(); }
     }
 
-    private void filtrarProductos(String filtro) {
+	private void filtrarProductos(String filtro) {
         List<Object[]> productos = controlador.buscarProductosTratamiento(filtro);
         DefaultComboBoxModel<ProductoItem> model = (DefaultComboBoxModel<ProductoItem>) cbProducto.getModel();
         model.removeAllElements();
@@ -451,10 +411,23 @@ public class panelEventosSanitarios extends JPanel {
             model.addElement(new ProductoItem((int) p[0], (String) p[1]));
         }
         ((JTextField) cbProducto.getEditor().getEditorComponent()).setText(filtro);
-        if (!productos.isEmpty() && !filtro.isEmpty()) {
-            cbProducto.showPopup();
-        } else {
-            cbProducto.hidePopup();
+        if (!productos.isEmpty() && !filtro.isEmpty()) { cbProducto.showPopup(); } else { cbProducto.hidePopup(); }
+    }
+    
+    private void cargarLotesEnCombo() {
+        DefaultComboBoxModel<Object> model = (DefaultComboBoxModel<Object>) cbAnimalLote.getModel();
+        model.removeAllElements();
+        model.addElement("Seleccione un lote...");
+        List<String> lotes = controlador.obtenerLotesParaComboBox();
+        for (String lote : lotes) {
+            model.addElement(lote);
         }
+    }
+
+    private <T> void setPlaceholder(JComboBox<T> comboBox, String text) {
+        JTextField editor = (JTextField) comboBox.getEditor().getEditorComponent();
+        comboBox.setModel(new DefaultComboBoxModel<>()); // Limpia y resetea el modelo
+        editor.setForeground(Color.GRAY);
+        editor.setText(text);
     }
 }
