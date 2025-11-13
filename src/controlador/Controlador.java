@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import javax.swing.JOptionPane;
 import vista.SiriGAppLogin;
 import vista.animales.AnimalesFrame;
@@ -1458,7 +1457,6 @@ public class Controlador {
         // panel si algo sale mal.
     }
 
-<<<<<<< HEAD
 
 /**
  * Guarda un evento sanitario para todos los animales activos de un lote específico.
@@ -1478,7 +1476,6 @@ public void guardarEventoSanitarioPorLote(java.sql.Timestamp fecha, Integer idPr
     }
 }
 
-=======
     public Map<String, Object> obtenerDatosParaInformeIndividual(String idAnimal) {
         Map<String, Object> informeData = new HashMap<>();
 
@@ -1692,5 +1689,4 @@ public void guardarEventoSanitarioPorLote(java.sql.Timestamp fecha, Integer idPr
 
     // return informeData;
     // }
->>>>>>> 8dcea7d493d6077cf5fb4fa3d2d62dd3f9451813
 }
