@@ -1,10 +1,14 @@
 package controlador;
 
 import java.sql.*;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.Period;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
 import javax.swing.JOptionPane;
 import vista.SiriGAppLogin;
 import vista.animales.AnimalesFrame;
@@ -1045,7 +1049,7 @@ public class Controlador {
      * 
      * @return Una lista de arrays de objetos, donde cada array representa una fila.
      */
-    public List <Object[]> obtenerProduccionLeche() {
+    public List<Object[]> obtenerProduccionLeche() {
         List<Object[]> lista = new java.util.ArrayList<>();
         String sql = "{CALL sp_obtener_produccion_leche()}"; // Llamada al SP
         try (CallableStatement cs = connection.prepareCall(sql);
@@ -1158,7 +1162,6 @@ public class Controlador {
             return false;
         }
     }
-
 
     public List<Object[]> buscarEventosSanitarios(String filtro) {
         List<Object[]> lista = new ArrayList<>();
@@ -1307,7 +1310,7 @@ public class Controlador {
         return lista;
     }
 
-    public List <Object[]> buscarMovimientosHistorial(String filtro) {
+    public List<Object[]> buscarMovimientosHistorial(String filtro) {
         List<Object[]> lista = new ArrayList<>();
 
         // 1. La consulta ahora es una única y simple llamada al SP.
@@ -1454,4 +1457,218 @@ public class Controlador {
         // El 'throws SQLException' en la firma del método se encargará de notificar al
         // panel si algo sale mal.
     }
+
+    public Map<String, Object> obtenerDatosParaInformeIndividual(String idAnimal) {
+        Map<String, Object> informeData = new HashMap<>();
+
+        // 1. Obtener Datos Básicos
+        try (CallableStatement cst = connection.prepareCall("{CALL sp_informe_datos_basicos(?)}")) {
+            cst.setString(1, idAnimal);
+            ResultSet rs = cst.executeQuery();
+            if (rs.next()) {
+                Map<String, String> datosBasicos = new HashMap<>();
+                datosBasicos.put("Código / ID", rs.getString("codigo"));
+                String sexo = rs.getString("sexo");
+                datosBasicos.put("Sexo", sexo);
+                datosBasicos.put("Raza", rs.getString("raza"));
+                datosBasicos.put("Fecha de Nacimiento",
+                        new SimpleDateFormat("dd/MM/yyyy").format(rs.getDate("fecha_nacimiento")));
+                datosBasicos.put("Estado Actual", rs.getString("estado"));
+                informeData.put("datosBasicos", datosBasicos);
+
+                // Si es hembra, buscar producción y crías
+                if ("F".equalsIgnoreCase(sexo)) {
+                    // 2. Obtener Resumen de Producción
+                    try (CallableStatement cstProd = connection.prepareCall("{CALL sp_informe_produccion_total(?)}")) {
+                        cstProd.setString(1, idAnimal);
+                        ResultSet rsProd = cstProd.executeQuery();
+                        if (rsProd.next()) {
+                            Map<String, Object> datosProduccion = new HashMap<>();
+                            datosProduccion.put("totalLitros", rsProd.getDouble("total_litros"));
+                            datosProduccion.put("diasEnProduccion", rsProd.getInt("dias_en_produccion"));
+                            informeData.put("produccion", datosProduccion);
+                        }
+                    }
+
+                    // 4. Contar Crías
+                    try (CallableStatement cstCrias = connection.prepareCall("{CALL sp_informe_conteo_crias(?)}")) {
+                        cstCrias.setString(1, idAnimal);
+                        ResultSet rsCrias = cstCrias.executeQuery();
+                        if (rsCrias.next()) {
+                            Map<String, Integer> datosReproductivos = new HashMap<>();
+                            datosReproductivos.put("cantidadCrias", rsCrias.getInt("cantidad_crias"));
+                            informeData.put("reproductivo", datosReproductivos);
+                        }
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Error al obtener datos básicos: " + e.getMessage());
+            return null;
+        }
+
+        // 3. Obtener Historial de Salud
+        List<Map<String, String>> eventosSalud = new ArrayList<>();
+        try (CallableStatement cst = connection.prepareCall("{CALL sp_informe_historial_salud(?)}")) {
+            cst.setString(1, idAnimal);
+            ResultSet rs = cst.executeQuery();
+            while (rs.next()) {
+                Map<String, String> evento = new HashMap<>();
+                evento.put("fecha", new SimpleDateFormat("dd/MM/yyyy").format(rs.getTimestamp("fecha")));
+                evento.put("tipo", rs.getString("tipo"));
+                evento.put("producto", rs.getString("nombre_producto"));
+                // Manejar dosis nula
+                String dosis = rs.getString("dosis");
+                evento.put("dosis", dosis == null ? "N/A" : dosis);
+                eventosSalud.add(evento);
+            }
+            informeData.put("eventosSalud", eventosSalud);
+        } catch (SQLException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Error al obtener historial de salud: " + e.getMessage());
+        }
+
+        return informeData;
+    }
+
+    // public Map<String, Object> obtenerDatosParaInformeIndividual(String idAnimal)
+    // {
+    // // Cuando tengas tu procedimiento almacenado, esta será la única parte que
+    // // cambiarás.
+    // // El resto de la lógica en el panel funcionará igual.
+
+    // Map<String, Object> informeData = new HashMap<>();
+
+    // // 1. Datos Básicos del Animal
+    // Map<String, String> datosBasicos = new HashMap<>();
+    // datosBasicos.put("Código / ID", idAnimal);
+    // datosBasicos.put("Sexo", "F"); // Ejemplo
+    // datosBasicos.put("Raza", "Holstein");
+    // datosBasicos.put("Fecha de Nacimiento", "2022-01-15");
+    // datosBasicos.put("Estado Actual", "ACTIVO");
+    // informeData.put("datosBasicos", datosBasicos);
+
+    // // 2. Datos de Producción (solo si es hembra)
+    // if ("F".equals(datosBasicos.get("Sexo"))) {
+    // Map<String, Object> datosProduccion = new HashMap<>();
+    // datosProduccion.put("totalLitros", 12540.5); // Ejemplo
+    // datosProduccion.put("diasEnProduccion", 305);
+    // informeData.put("produccion", datosProduccion);
+    // }
+
+    // // 3. Datos de Salud (Historial)
+    // List<Map<String, String>> eventosSalud = new ArrayList<>();
+    // eventosSalud.add(new HashMap<String, String>() {
+    // {
+    // put("fecha", "2023-11-20");
+    // put("tipo", "VACUNACION");
+    // put("producto", "Bovisan");
+    // put("dosis", "5 ml");
+    // }
+    // });
+    // eventosSalud.add(new HashMap<String, String>() {
+    // {
+    // put("fecha", "2024-03-10");
+    // put("tipo", "DESPARASITACION");
+    // put("producto", "Ivermectina");
+    // put("dosis", "10 ml");
+    // }
+    // });
+    // eventosSalud.add(new HashMap<String, String>() {
+    // {
+    // put("fecha", "2024-05-02");
+    // put("tipo", "TRATAMIENTO");
+    // put("producto", "Antibiótico X");
+    // put("dosis", "20 ml");
+    // }
+    // });
+    // informeData.put("eventosSalud", eventosSalud);
+
+    // // 4. Datos Reproductivos
+    // Map<String, Integer> datosReproductivos = new HashMap<>();
+    // datosReproductivos.put("cantidadCrias", 2); // Ejemplo
+    // informeData.put("reproductivo", datosReproductivos);
+
+    // return informeData;
+    // }
+
+    public Map<String, Object> obtenerDatosParaInformeGeneral(java.util.Date fechaDesde, java.util.Date fechaHasta) {
+        Map<String, Object> informeData = new HashMap<>();
+
+        try (CallableStatement cst = connection.prepareCall("{CALL sp_informe_general_hato(?, ?)}")) {
+            // Convertir java.util.Date a java.sql.Date
+            cst.setDate(1, new java.sql.Date(fechaDesde.getTime()));
+            cst.setDate(2, new java.sql.Date(fechaHasta.getTime()));
+
+            ResultSet rs = cst.executeQuery();
+            if (rs.next()) {
+                // Resumen Inventario
+                Map<String, Integer> inventario = new HashMap<>();
+                inventario.put("Total Animales Activos", rs.getInt("total_animales_activos"));
+                inventario.put("Hembras", rs.getInt("total_hembras"));
+                inventario.put("Machos", rs.getInt("total_machos"));
+                informeData.put("resumenInventario", inventario);
+
+                // Resumen Producción
+                Map<String, Object> produccion = new HashMap<>();
+                produccion.put("totalLitrosPeriodo", rs.getDouble("total_litros_periodo"));
+                informeData.put("resumenProduccion", produccion);
+
+                // Resumen Salud
+                Map<String, Integer> salud = new HashMap<>();
+                salud.put("Vacunaciones", rs.getInt("total_vacunaciones"));
+                salud.put("Desparasitaciones", rs.getInt("total_desparasitaciones"));
+                salud.put("Tratamientos", rs.getInt("total_tratamientos"));
+                informeData.put("resumenSalud", salud);
+
+                // Resumen Salidas
+                Map<String, Integer> salidas = new HashMap<>();
+                salidas.put("Ventas", rs.getInt("total_ventas"));
+                salidas.put("Muertes", rs.getInt("total_muertes"));
+                informeData.put("resumenSalidas", salidas);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Error al generar informe general: " + e.getMessage());
+            return null;
+        }
+
+        return informeData;
+    }
+    // public Map<String, Object> obtenerDatosParaInformeGeneral(java.util.Date
+    // fechaDesde, java.util.Date fechaHasta) {
+    // // Cuando tengas tus procedimientos, aquí llamarás a la base de datos
+    // // pasando las fechas como parámetros.
+
+    // Map<String, Object> informeData = new HashMap<>();
+
+    // // 1. Resumen del Inventario
+    // Map<String, Integer> resumenInventario = new HashMap<>();
+    // resumenInventario.put("Total Animales Activos", 152);
+    // resumenInventario.put("Hembras", 120);
+    // resumenInventario.put("Machos", 32);
+    // informeData.put("resumenInventario", resumenInventario);
+
+    // // 2. Resumen de Producción en el Periodo
+    // Map<String, Object> resumenProduccion = new HashMap<>();
+    // resumenProduccion.put("totalLitrosPeriodo", 45870.5);
+    // resumenProduccion.put("promedioDiarioPorVaca", 18.2);
+    // informeData.put("resumenProduccion", resumenProduccion);
+
+    // // 3. Resumen de Salud en el Periodo
+    // Map<String, Integer> resumenSalud = new HashMap<>();
+    // resumenSalud.put("Vacunaciones", 85);
+    // resumenSalud.put("Desparasitaciones", 152);
+    // resumenSalud.put("Tratamientos", 23);
+    // informeData.put("resumenSalud", resumenSalud);
+
+    // // 4. Resumen de Salidas en el Periodo
+    // Map<String, Integer> resumenSalidas = new HashMap<>();
+    // resumenSalidas.put("Ventas", 12);
+    // resumenSalidas.put("Muertes", 3);
+    // informeData.put("resumenSalidas", resumenSalidas);
+
+    // return informeData;
+    // }
 }

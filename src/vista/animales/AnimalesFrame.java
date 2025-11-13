@@ -2,6 +2,7 @@ package vista.animales;
 
 import controlador.Controlador;
 import vista.SiriGAppLogin;
+import vista.informes.panelInformes;
 import vista.lotes.VistaLotes;
 import vista.produccion.panelProduccionLeche;
 import vista.salud.vistaSalud;
@@ -25,6 +26,7 @@ public class AnimalesFrame extends JFrame {
     public panelSalidaAnimales pSalida;
     public VistaLotes pLotes;
     public vistaSalud pSalud;
+    public panelInformes pInformes;
     public panelProduccionLeche pProduccionLeche;
     
 
@@ -68,6 +70,7 @@ public class AnimalesFrame extends JFrame {
         pSalud = new vistaSalud(controlador);
         pProduccionLeche = new panelProduccionLeche(controlador);
         pRegistro = new panelRegistroAnimales(controlador);
+        pInformes = new panelInformes(controlador);
 
         // 1. Panel del Menú Lateral
         JPanel menuPanel = createMenuPanel();
@@ -172,6 +175,13 @@ public class AnimalesFrame extends JFrame {
         });
     
         JButton btnGeneracionInformes = createMenuButton("Generación de Informes", COLOR_BOTON_NORMAL, new ImageIcon("src/resources/images/icon-informe.png"));
+        btnGeneracionInformes.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                // Aquí iría la lógica para mostrar la generación de informes
+                cambiarPanelContenido(pInformes.createContentPanel());
+                System.out.println("Generación de Informes");
+            }
+        });
         JButton btnLotes = createMenuButton("Administración de Lotes", COLOR_BOTON_NORMAL, new ImageIcon("src/resources/images/icon-lotes.png"));
         btnLotes.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
