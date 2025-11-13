@@ -150,11 +150,13 @@ public class panelEventosSanitarios extends JPanel {
 		txtBusqueda.setBounds(170, 175, 380, 30);
 		form.add(txtBusqueda);
 		
-        btnGuardar = new JButton("Registrar Evento");
+        btnGuardar = new JButton("Registrar");
+        btnGuardar.setHorizontalTextPosition(SwingConstants.LEFT);
+        btnGuardar.setIcon(new ImageIcon("src/resources/images/icon-guardar.png"));
 		btnGuardar.setBackground(controlador.estilos.COLOR_GUARDAR);
 		btnGuardar.setForeground(Color.WHITE);
 		btnGuardar.setFont(FONT_BOTON);
-		btnGuardar.setBounds(710, 175, 250, 40);
+		btnGuardar.setBounds(760, 175, 200, 40);
 		form.add(btnGuardar);
 		
         card.add(form, BorderLayout.NORTH);
@@ -174,8 +176,16 @@ public class panelEventosSanitarios extends JPanel {
         JPanel btns = new JPanel(new FlowLayout(FlowLayout.RIGHT));
 		btns.setOpaque(false);
 		btnLimpiar = new JButton("Limpiar");
+        btnLimpiar.setBackground(controlador.estilos.COLOR_LIMPIAR);
+        btnLimpiar.setForeground(Color.WHITE);
+        btnLimpiar.setHorizontalTextPosition(SwingConstants.LEFT);
+        btnLimpiar.setIcon(new ImageIcon("src/resources/images/icon-limpiar.png"));
 		btnEditar = new JButton("Editar");
+        btnEditar.setHorizontalTextPosition(SwingConstants.LEFT);
+        btnEditar.setIcon(new ImageIcon("src/resources/images/icon-editar.png"));
 		btnEliminar = new JButton("Eliminar");
+        btnEliminar.setHorizontalTextPosition(SwingConstants.LEFT);
+        btnEliminar.setIcon(new ImageIcon("src/resources/images/icon-eliminar.png"));
 		btnEditar.setBackground(controlador.estilos.COLOR_MODIFICAR);
 		btnEditar.setForeground(Color.WHITE);
 		btnEditar.setFont(FONT_BOTON);
@@ -216,7 +226,7 @@ public class panelEventosSanitarios extends JPanel {
             cbAnimalLote.setEditable(true);
             setPlaceholder(cbAnimalLote, PLACEHOLDER_ANIMAL);
             btnEditar.setEnabled(true);
-            btnGuardar.setText(idEventoEditando == null ? "Registrar Evento" : "Actualizar Evento");
+            btnGuardar.setText(idEventoEditando == null ? "Registrar" : "Actualizar Evento");
         }
     }
 
@@ -337,7 +347,7 @@ public class panelEventosSanitarios extends JPanel {
             }
         }
         
-        btnGuardar.setText("Actualizar Evento");
+        btnGuardar.setText("Actualizar");
         btnLimpiar.setText("Cancelar Edición");
         cbAnimalLote.setEnabled(false);
         chkAplicarLote.setEnabled(false);
@@ -351,7 +361,7 @@ public class panelEventosSanitarios extends JPanel {
         txtMotivo.setText("");
         txtDiagnostico.setText("");
         dcFecha.setDate(new Date());
-        btnGuardar.setText("Registrar Evento");
+        btnGuardar.setText("Registrar");
         btnLimpiar.setText("Limpiar");
         cbAnimalLote.setEnabled(true);
         chkAplicarLote.setEnabled(true);

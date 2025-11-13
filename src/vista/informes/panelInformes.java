@@ -60,7 +60,7 @@ public class panelInformes extends JPanel {
         content.setBackground(new Color(245, 246, 248));
 
         JLabel title = new JLabel("Generación de Informes");
-        title.setFont(FONT_SUBTITULO);
+        title.setFont(controlador.estilos.FONT_TITULO.deriveFont(Font.BOLD, 26f));
         title.setBorder(new EmptyBorder(20, 24, 8, 24));
         content.add(title, BorderLayout.NORTH);
 
@@ -81,8 +81,9 @@ public class panelInformes extends JPanel {
         JPanel generateButtonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         generateButtonPanel.setOpaque(false);
         JButton btnGenerar = new JButton("Generar PDF");
+        btnGenerar.setIcon(new ImageIcon("src/resources/images/icon-pdf.png"));
         btnGenerar.setFont(FONT_BOTON);
-        btnGenerar.setBackground(new Color(67, 160, 71));
+        btnGenerar.setBackground(controlador.estilos.COLOR_GUARDAR);
         btnGenerar.setForeground(Color.WHITE);
         btnGenerar.setPreferredSize(new Dimension(220, 45));
         generateButtonPanel.add(btnGenerar);
