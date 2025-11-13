@@ -2,7 +2,6 @@ package vista.lotes;
 
 import controlador.Controlador;
 import controlador.FontLoader; // Asegúrate de tener la importación del FontLoader
-
 import java.awt.*;
 import java.util.List;
 import javax.swing.*;
@@ -302,6 +301,7 @@ public class panelRegistroLotes extends JPanel {
         String etapa = cmbEtapa.getSelectedItem().toString();
         String descripcion = areaDescripcion.getText().trim();
         controlador.registrarNuevoLote(nombre, etapa, descripcion);
+        VistaLotes.panelHistorial.actualizarComboLotes();
         cargarLotesEnTabla();
         limpiarCampos();
     }
@@ -311,6 +311,7 @@ public class panelRegistroLotes extends JPanel {
         String etapa = cmbEtapa.getSelectedItem().toString();
         String descripcion = areaDescripcion.getText().trim();
         controlador.modificarLote(idLoteSeleccionado, nombre, etapa, descripcion);
+        VistaLotes.panelHistorial.actualizarComboLotes();
         cargarLotesEnTabla();
         salirModoEdicion();
     }

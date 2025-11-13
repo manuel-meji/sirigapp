@@ -451,4 +451,32 @@ private void filtrarComboAnimales(String busqueda) {
         dateChooser.setDate(new Date());
         tablaHistorial.clearSelection();
     }
+
+    // ...existing code...
+
+public void actualizarComboAnimales() {
+    comboModelAnimales.removeAllElements();
+    try {
+        
+        List<String> animales = controlador.buscarAnimales(""); // Sin filtro = todos
+        for (String codigo : animales) {
+            comboModelAnimales.addElement(codigo);
+        }
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+}
+
+public void actualizarComboLotes() {
+    cmbLotesDestinoId.removeAllItems();
+    try {
+       
+        List<String> lotes = controlador.obtenerLotesParaComboBox();
+        for (String lote : lotes) {
+            cmbLotesDestinoId.addItem(lote);
+        }
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+}
 }
