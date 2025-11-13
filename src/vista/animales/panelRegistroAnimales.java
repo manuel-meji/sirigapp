@@ -16,6 +16,7 @@ import javax.swing.border.EmptyBorder;
 import com.toedter.calendar.JDateChooser;
 import controlador.Controlador;
 import controlador.FontLoader;
+import java.sql.Date;
 
 public class panelRegistroAnimales extends JPanel {
 
@@ -177,7 +178,7 @@ public class panelRegistroAnimales extends JPanel {
         btnGuardar.setHorizontalTextPosition(SwingConstants.LEFT);
         btnGuardar.setForeground(Color.WHITE);
         
-        JButton btnLimpiar = new JButton("Limpiar campos");
+        JButton btnLimpiar = new JButton("Limpiar");
         btnLimpiar.setIcon(new ImageIcon("src/resources/images/icon-limpiar.png"));
         btnLimpiar.setHorizontalTextPosition(SwingConstants.LEFT);
 
@@ -279,7 +280,7 @@ public class panelRegistroAnimales extends JPanel {
                 // Si no, llamamos al método original para guardar un nuevo animal
                 controlador.guardarAnimal(
                    codigo,
-                   new java.sql.Date(fecha.getTime()),
+                   new Date(fecha.getTime()),
                    sexo,
                    raza,
                    pesoNacimiento,
