@@ -1045,7 +1045,7 @@ public class Controlador {
      * 
      * @return Una lista de arrays de objetos, donde cada array representa una fila.
      */
-    public List<Object[]> obtenerProduccionLeche() {
+    public List <Object[]> obtenerProduccionLeche() {
         List<Object[]> lista = new java.util.ArrayList<>();
         String sql = "{CALL sp_obtener_produccion_leche()}"; // Llamada al SP
         try (CallableStatement cs = connection.prepareCall(sql);
@@ -1068,7 +1068,7 @@ public class Controlador {
     /**
      * Actualiza un registro de producción de leche existente.
      */
-    public void actualizarProduccionLeche(int id, java.sql.Date fecha, int litrosMatutinos, int litrosVispertinos,
+    public void actualizarProduccionLeche(int id, Date fecha, int litrosMatutinos, int litrosVispertinos,
             String idAnimal) throws SQLException {
 
         // 1. La consulta ahora es la llamada al procedimiento almacenado.
@@ -1159,8 +1159,9 @@ public class Controlador {
         }
     }
 
+
     public List<Object[]> buscarEventosSanitarios(String filtro) {
-        java.util.List<Object[]> lista = new java.util.ArrayList<>();
+        List<Object[]> lista = new ArrayList<>();
         String sql = "{CALL sp_buscar_eventos_sanitarios(?)}"; // Llamada al SP
         try (CallableStatement cs = connection.prepareCall(sql)) {
             String likeFiltro = "%" + filtro + "%";
@@ -1185,8 +1186,8 @@ public class Controlador {
         return lista;
     }
 
-    public java.util.List<Object[]> buscarProductosTratamiento(String filtro) {
-        java.util.List<Object[]> lista = new java.util.ArrayList<>();
+    public List<Object[]> buscarProductosTratamiento(String filtro) {
+        List<Object[]> lista = new ArrayList<>();
 
         // 1. La consulta ahora es la llamada al procedimiento almacenado.
         String sql = "{CALL sp_buscar_productos_tratamiento(?)}";
@@ -1237,8 +1238,8 @@ public class Controlador {
         return false;
     }
 
-    public java.util.List<Object[]> buscarProductosDesparasitantes(String filtro) {
-        java.util.List<Object[]> lista = new java.util.ArrayList<>();
+    public List<Object[]> buscarProductosDesparasitantes(String filtro) {
+        List<Object[]> lista = new ArrayList<>();
 
         // 1. La consulta ahora es la llamada al procedimiento almacenado.
         String sql = "{CALL sp_buscar_productos_desparasitantes(?)}";
@@ -1270,8 +1271,8 @@ public class Controlador {
         this.actualizarEventoSanitario(idEvento, fecha, idProducto, dosis, idAnimal, "DESPARASITANTE", "");
     }
 
-    public java.util.List<Object[]> buscarLotes(String filtro) {
-        java.util.List<Object[]> lista = new java.util.ArrayList<>();
+    public List<Object[]> buscarLotes(String filtro) {
+        List<Object[]> lista = new ArrayList<>();
         String sql = "{CALL sp_buscar_lotes(?, ?)}"; // Llamada al SP
 
         try (CallableStatement cs = connection.prepareCall(sql)) {
@@ -1306,8 +1307,8 @@ public class Controlador {
         return lista;
     }
 
-    public java.util.List<Object[]> buscarMovimientosHistorial(String filtro) {
-        java.util.List<Object[]> lista = new java.util.ArrayList<>();
+    public List <Object[]> buscarMovimientosHistorial(String filtro) {
+        List<Object[]> lista = new ArrayList<>();
 
         // 1. La consulta ahora es una única y simple llamada al SP.
         String sql = "{CALL sp_buscar_movimientos_historial(?, ?)}";
@@ -1352,45 +1353,46 @@ public class Controlador {
         return lista;
     }
 
-
     // Otros métodos del controlador...
     public void iniciarEdicionAnimal(String codigo) {
         // 1. Obtener todos los datos del animal desde la base de datos
-        //    (Necesitarás crear este método que haga un "SELECT * FROM animales WHERE codigo = ?")
-        Object[] datosAnimal =obtenerDatosCompletosAnimal(codigo); // Esto es un ejemplo
+        // (Necesitarás crear este método que haga un "SELECT * FROM animales WHERE
+        // codigo = ?")
+        Object[] datosAnimal = obtenerDatosCompletosAnimal(codigo); // Esto es un ejemplo
 
         if (datosAnimal != null) {
 
-             // 3. Cambiar al panel de registro para que el usuario pueda editar
+            // 3. Cambiar al panel de registro para que el usuario pueda editar
             animalesFrame.cambiarPanelContenido(animalesFrame.pRegistro.createContentPanel());
 
             // 2. Cargar los datos en el panel de registro
-            //    Asegúrate que `animalesFrame.pRegistro` sea la instancia persistente del panel
+            // Asegúrate que `animalesFrame.pRegistro` sea la instancia persistente del
+            // panel
             animalesFrame.pRegistro.cargarDatosParaEdicion(
-                (String) datosAnimal[0],        // codigo
-                (java.sql.Date) datosAnimal[1], // fecha_nacimiento
-                (String) datosAnimal[2],        // sexo
-                (String) datosAnimal[3],        // raza
-                (String) datosAnimal[4],        // peso_nacimiento
-                (String) datosAnimal[5],        // peso_actual
-                (String) datosAnimal[6],        // id_madre
-                (String) datosAnimal[7],        // id_padre
-                (String) datosAnimal[8]         // estado
+                    (String) datosAnimal[0], // codigo
+                    (java.sql.Date) datosAnimal[1], // fecha_nacimiento
+                    (String) datosAnimal[2], // sexo
+                    (String) datosAnimal[3], // raza
+                    (String) datosAnimal[4], // peso_nacimiento
+                    (String) datosAnimal[5], // peso_actual
+                    (String) datosAnimal[6], // id_madre
+                    (String) datosAnimal[7], // id_padre
+                    (String) datosAnimal[8] // estado
             );
 
-           
         } else {
-            JOptionPane.showMessageDialog(null, "No se encontraron los datos del animal seleccionado.", "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null, "No se encontraron los datos del animal seleccionado.", "Error",
+                    JOptionPane.ERROR_MESSAGE);
         }
     }
-    
+
     /**
      * Método para obtener todos los datos de un animal por su código.
      * DEBES IMPLEMENTAR ESTO con tu lógica de base de datos.
      */
     public Object[] obtenerDatosCompletosAnimal(String codigo) {
-        
-       String sql = "{CALL sp_buscar_animales_completos(?)}"; // Llamada al SP
+
+        String sql = "{CALL sp_buscar_animales_completos(?)}"; // Llamada al SP
         Object[] datosAnimal = null;
         try (CallableStatement cs = connection.prepareCall(sql)) {
             cs.setString(1, codigo);
@@ -1413,44 +1415,43 @@ public class Controlador {
             JOptionPane.showMessageDialog(null, "Error al obtener datos del animal: " + e.getMessage());
         }
 
-
-        
         return datosAnimal; // Devuelve null si no lo encuentras
     }
-
 
     /**
      * Actualiza un animal existente en la base de datos.
      * Es llamado desde panelRegistroAnimales cuando está en modo edición.
      * DEBES IMPLEMENTAR ESTO.
      */
-    public void actualizarAnimal(String codigoOriginal, java.sql.Timestamp fecha, String sexo, String raza, 
-                                 String pesoNac, String peso, String idMadre, String idPadre, String estado) throws SQLException {
-     
-     String sql = "{CALL sp_actualizar_animal(?, ?, ?, ?, ?, ?, ?, ?, ?)}";
+    public void actualizarAnimal(String codigoOriginal, java.sql.Timestamp fecha, String sexo, String raza,
+            String pesoNac, String peso, String idMadre, String idPadre, String estado) throws SQLException {
 
-    // 2. Usamos try-with-resources para asegurar que el CallableStatement se cierre solo.
-    try (CallableStatement cs = connection.prepareCall(sql)) {
+        String sql = "{CALL sp_actualizar_animal(?, ?, ?, ?, ?, ?, ?, ?, ?)}";
 
-        // 3. Asignamos los parámetros en el orden correcto.
-        cs.setString(1, codigoOriginal);
-        cs.setTimestamp(2, fecha); // Usamos setTimestamp para el tipo DATETIME
-        cs.setString(3, sexo);
-        cs.setString(4, raza);
+        // 2. Usamos try-with-resources para asegurar que el CallableStatement se cierre
+        // solo.
+        try (CallableStatement cs = connection.prepareCall(sql)) {
 
-        // Los pesos se pasan como String. Si el campo está vacío, enviamos NULL.
-        cs.setString(5, pesoNac.trim().isEmpty() ? null : pesoNac.trim());
-        cs.setString(6, peso.trim().isEmpty() ? null : peso.trim());
+            // 3. Asignamos los parámetros en el orden correcto.
+            cs.setString(1, codigoOriginal);
+            cs.setTimestamp(2, fecha); // Usamos setTimestamp para el tipo DATETIME
+            cs.setString(3, sexo);
+            cs.setString(4, raza);
 
-        // Hacemos lo mismo para los IDs de los padres.
-        cs.setString(7, idMadre.trim().isEmpty() ? null : idMadre.trim());
-        cs.setString(8, idPadre.trim().isEmpty() ? null : idPadre.trim());
+            // Los pesos se pasan como String. Si el campo está vacío, enviamos NULL.
+            cs.setString(5, pesoNac.trim().isEmpty() ? null : pesoNac.trim());
+            cs.setString(6, peso.trim().isEmpty() ? null : peso.trim());
 
-        cs.setString(9, estado);
+            // Hacemos lo mismo para los IDs de los padres.
+            cs.setString(7, idMadre.trim().isEmpty() ? null : idMadre.trim());
+            cs.setString(8, idPadre.trim().isEmpty() ? null : idPadre.trim());
 
-        // 4. Ejecutamos el procedimiento.
-        cs.executeUpdate();
-    }
-    // El 'throws SQLException' en la firma del método se encargará de notificar al panel si algo sale mal.
+            cs.setString(9, estado);
+
+            // 4. Ejecutamos el procedimiento.
+            cs.executeUpdate();
+        }
+        // El 'throws SQLException' en la firma del método se encargará de notificar al
+        // panel si algo sale mal.
     }
 }
