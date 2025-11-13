@@ -17,6 +17,7 @@ import com.toedter.calendar.JDateChooser;
 import controlador.Controlador;
 import controlador.FontLoader;
 import java.sql.Date;
+import vista.lotes.VistaLotes;
 
 public class panelRegistroAnimales extends JPanel {
 
@@ -275,6 +276,7 @@ public class panelRegistroAnimales extends JPanel {
                     idPadre,
                     estado
                 );
+                VistaLotes.panelHistorial.actualizarComboAnimales();
                 JOptionPane.showMessageDialog(this, "Animal actualizado correctamente", "Éxito", JOptionPane.INFORMATION_MESSAGE);
             } else {
                 // Si no, llamamos al método original para guardar un nuevo animal
@@ -289,6 +291,7 @@ public class panelRegistroAnimales extends JPanel {
                    idPadre,
                    estado
                 );
+                VistaLotes.panelHistorial.actualizarComboAnimales();
                 JOptionPane.showMessageDialog(this, "Animal registrado correctamente", "Éxito", JOptionPane.INFORMATION_MESSAGE);
             }
             limpiarFormulario();
