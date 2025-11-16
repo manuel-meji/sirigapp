@@ -299,7 +299,6 @@ public class panelInformes extends JPanel {
         }
     }
 
-    // En panelInformes.java, REEMPLAZA este método completo:
 
     private void generarInformeGeneral(Date fechaDesde, Date fechaHasta, String rutaDestino) {
         try {
@@ -362,8 +361,6 @@ public class panelInformes extends JPanel {
                 pProdTotal.add(new Phrase(produccion.get("totalLitrosPeriodo").toString() + " L", fontNormal));
                 document.add(pProdTotal);
 
-                // LÍNEA PROBLEMÁTICA ELIMINADA - El promedio no se calculaba en el SP.
-
                 addEmptyLine(document, 1);
             }
 
@@ -386,7 +383,6 @@ public class panelInformes extends JPanel {
                 addEmptyLine(document, 1);
             }
 
-            // <<<--- SECCIÓN AÑADIDA Y CORREGIDA ---
             // --- 4. Sección de Salidas ---
             Map<String, Integer> salidas = (Map<String, Integer>) datos.get("resumenSalidas");
             if (salidas != null) {

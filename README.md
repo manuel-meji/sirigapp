@@ -7,7 +7,9 @@ Welcome to the VS Code Java world. Here is a guideline to help you get started t
 The workspace contains two folders by default, where:
 
 - `src`: the folder to maintain sources
-- `lib`: the folder to maintain dependencies
+- -> dentro de src, se encuentra la carpeta resources, que contiene fuentes e imagenes necesarias para el diseño. 
+
+- `lib`: the folder to maintain dependencies , y librerías necesarias como jCalendar, flatlaf, MySQL Connector y itextpdf.
 
 Meanwhile, the compiled output files will be generated in the `bin` folder by default.
 

@@ -80,7 +80,6 @@ public class Controlador {
             String idMadre,
             String idPadre,
             String estado) throws SQLException {
-        // 1. Llamada al nuevo procedimiento almacenado
         String sql = "{CALL sp_guardar_animal(?, ?, ?, ?, ?, ?, ?, ?, ?)}";
         // 2. Uso de CallableStatement dentro de un try-with-resources
         try (CallableStatement cs = connection.prepareCall(sql)) {
@@ -99,11 +98,7 @@ public class Controlador {
         }
     }
 
-    /**
-     * Obtiene todos los animales de la base de datos.
-     * 
-     * @return Lista de Object[] con los datos de cada animal.
-     */
+   // Obtiene todos los animales de la base de datos.
     public java.util.List<Object[]> obtenerAnimales() {
         java.util.List<Object[]> lista = new java.util.ArrayList<>();
         String sql = "{CALL sp_obtener_animales()}"; // Llamada al SP
@@ -138,11 +133,6 @@ public class Controlador {
     /**
      * Busca animales (filas completas) que coincidan con el filtro en el código,
      * raza o nombre del lote. Devuelve la misma estructura que obtenerAnimales()
-     * (10 columnas).
-     *
-     * @param filtro texto a buscar (se usa LIKE %filtro%).
-     * @return lista de filas con 10 columnas: Codigo, Edad, Sexo, Raza, Peso Nac.,
-     *         Peso, Madre, Padre, Lote, Estado
      */
     public java.util.List<Object[]> buscarAnimalesCompletos(String filtro) {
         java.util.List<Object[]> lista = new java.util.ArrayList<>();
@@ -178,13 +168,7 @@ public class Controlador {
         return lista;
     }
 
-    /**
-     * Calcula la edad (años/meses/días) a partir de una fecha de nacimiento.
-     *
-     * @param fechaNacimiento java.sql.Date o null
-     * @return String con la edad formateada, por ejemplo "2 años 3 meses" o "5
-     *         meses" o "10 días".
-     */
+  
     private String calcularEdad(java.sql.Date fechaNacimiento) {
         if (fechaNacimiento == null)
             return "";
@@ -207,9 +191,7 @@ public class Controlador {
         }
     }
 
-    /**
-     * Elimina un animal por su código.
-     */
+   //Elimina un animal por su código.
     public void eliminarAnimal(Object codigo) {
         String sql = "{CALL sp_eliminar_animal(?)}";
         try (CallableStatement cs = connection.prepareCall(sql)) {
@@ -221,29 +203,14 @@ public class Controlador {
         }
     }
 
-    /**
-     * Edita los datos de un animal. Aquí solo muestra un mensaje, pero puedes abrir
-     * un panel de edición.
-     */
-    public void editarAnimal(Object codigo) {
-        // Aquí deberías abrir un panel de edición o retornar los datos del animal para
-        // editar.
-        JOptionPane.showMessageDialog(null, "Funcionalidad de edición para el animal con código: " + codigo);
-    }
-
-    /**
-     * Busca animales que coincidan con el filtro proporcionado
-     */
+ 
     public java.util.List<String> buscarAnimales(String filtro) {
         java.util.List<String> resultado = new java.util.ArrayList<>();
 
-        // 1. La consulta ahora es una llamada al procedimiento almacenado.
         String sql = "{CALL sp_buscar_animales_activos(?)}";
 
-        // 2. Usamos CallableStatement en lugar de PreparedStatement.
         try (CallableStatement cs = connection.prepareCall(sql)) {
 
-            // 3. El resto del código es prácticamente idéntico.
             cs.setString(1, "%" + filtro + "%");
 
             try (ResultSet rs = cs.executeQuery()) {
@@ -257,9 +224,7 @@ public class Controlador {
         return resultado;
     }
 
-    /**
-     * Guarda un nuevo registro de salida de animal
-     */
+ 
     public void guardarSalida(String animal, String motivo, java.sql.Date fecha) throws SQLException {
         String sql = "{CALL sp_guardar_salida(?, ?, ?)}";
         try (CallableStatement cs = connection.prepareCall(sql)) {
@@ -270,10 +235,7 @@ public class Controlador {
         }
     }
 
-    /**
-     * Obtiene todas las salidas registradas
-     */
-    public java.util.List<Object[]> obtenerSalidas() {
+    public List<Object[]> obtenerSalidas() {
         java.util.List<Object[]> lista = new java.util.ArrayList<>();
         String sql = "{CALL sp_obtener_salidas()}"; // Llamada al SP
         try (CallableStatement cs = connection.prepareCall(sql);
@@ -296,51 +258,32 @@ public class Controlador {
      * Elimina un registro de salida
      */
     public void eliminarSalida(int id) {
-        // 1. La consulta ahora es una única llamada al procedimiento almacenado.
+
         String sql = "{CALL sp_eliminar_salida(?)}";
 
-        // 2. Usamos CallableStatement. Toda la lógica compleja ha desaparecido de Java.
         try (CallableStatement cs = connection.prepareCall(sql)) {
 
-            // 3. Asignamos el único parámetro que el procedimiento necesita: el ID de la
-            // salida.
             cs.setInt(1, id);
-
-            // 4. Ejecutamos el procedimiento. La base de datos se encarga de la
-            // transacción.
             cs.executeUpdate();
-
-            // Si el procedimiento termina sin lanzar un error, significa que el COMMIT fue
-            // exitoso.
             JOptionPane.showMessageDialog(null, "Salida eliminada y animal reactivado correctamente.");
 
         } catch (Exception e) {
-            // Si algo falló, el ROLLBACK fue automático en la BD y aquí recibimos el
-            // mensaje de error.
             JOptionPane.showMessageDialog(null, "Error al eliminar la salida: " + e.getMessage());
         }
     }
 
-    /**
-     * Edita un registro de salida
-     */
     public Object[] obtenerDatosSalidaPorId(int id) {
-        // 1. La consulta ahora es una llamada al procedimiento almacenado.
         String sql = "{CALL sp_obtener_datos_salida_por_id(?)}";
 
         try (CallableStatement cs = connection.prepareCall(sql)) {
             cs.setInt(1, id);
 
             try (ResultSet rs = cs.executeQuery()) {
-                // 2. Si se encuentra un resultado...
                 if (rs.next()) {
-                    // 3. Creamos un array para guardar los datos.
                     Object[] datosSalida = new Object[3];
                     datosSalida[0] = rs.getString("id_animal");
                     datosSalida[1] = rs.getString("motivo");
                     datosSalida[2] = rs.getDate("fecha");
-
-                    // 4. Retornamos el array con los datos.
                     return datosSalida;
                 }
             }
@@ -348,17 +291,12 @@ public class Controlador {
             JOptionPane.showMessageDialog(null, "Error al obtener los datos de la salida: " + e.getMessage());
         }
 
-        // 5. Si no se encontró nada o hubo un error, retornamos null.
         return null;
     }
 
     public void registrarNuevoLote(String nombre, String etapa, String descripcion) {
-        // 1. La consulta ahora es una llamada al procedimiento almacenado.
         String sql = "{CALL sp_registrar_nuevo_lote(?, ?, ?)}";
 
-        // 2. Usamos try-with-resources, que cierra automáticamente el
-        // CallableStatement.
-        // Esto elimina la necesidad del bloque 'finally'.
         try (CallableStatement cs = connection.prepareCall(sql)) {
 
             // 3. Asignamos los parámetros.
@@ -376,18 +314,13 @@ public class Controlador {
         }
     }
 
-    public java.util.List<Object[]> obtenerDetallesTodosLotes() {
+    public List<Object[]> obtenerDetallesTodosLotes() {
         java.util.List<Object[]> lista = new java.util.ArrayList<>();
-
-        // 1. La consulta ahora es una llamada al procedimiento almacenado.
-        // No lleva paréntesis porque no tiene parámetros.
         String sql = "{CALL sp_obtener_detalles_todos_lotes()}";
 
-        // 2. Usamos CallableStatement en lugar de PreparedStatement.
         try (CallableStatement cs = connection.prepareCall(sql);
                 ResultSet rs = cs.executeQuery()) {
 
-            // 3. El resto del código para procesar el resultado es EXACTAMENTE el mismo.
             while (rs.next()) {
                 Object[] fila = {
                         rs.getInt("id"),
@@ -404,18 +337,15 @@ public class Controlador {
         return lista;
     }
 
-    public java.util.List<String> obtenerLotesParaComboBox() {
+    public List<String> obtenerLotesParaComboBox() {
         java.util.List<String> lotesFormateados = new java.util.ArrayList<>();
 
-        // 1. La consulta ahora es la llamada al procedimiento almacenado.
         String sql = "{CALL sp_obtener_lotes_para_combobox()}";
 
-        // 2. Usamos CallableStatement.
+
         try (CallableStatement cs = connection.prepareCall(sql);
                 ResultSet rs = cs.executeQuery()) {
 
-            // 3. La lógica para leer los resultados y formatear la cadena
-            // sigue siendo exactamente la misma. ¡No cambia nada aquí!
             while (rs.next()) {
                 String item = rs.getInt("id") + " - " + rs.getString("nombre");
                 lotesFormateados.add(item);
@@ -428,19 +358,15 @@ public class Controlador {
     }
 
     public void modificarLote(int idLote, String nombre, String etapa, String descripcion) {
-        // 1. La consulta ahora es una llamada al procedimiento almacenado.
         String sql = "{CALL sp_modificar_lote(?, ?, ?, ?)}";
 
-        // 2. Usamos try-with-resources, que elimina la necesidad del bloque 'finally'.
         try (CallableStatement cs = connection.prepareCall(sql)) {
 
-            // 3. Asignamos los parámetros en el orden en que los definimos en el SP.
             cs.setInt(1, idLote);
             cs.setString(2, nombre);
             cs.setString(3, etapa);
             cs.setString(4, descripcion);
 
-            // 4. Ejecutamos la actualización.
             cs.executeUpdate();
 
             JOptionPane.showMessageDialog(null, "Lote modificado exitosamente.");
@@ -450,43 +376,16 @@ public class Controlador {
         }
     }
 
-    /**
-     * Obtiene solo los codigos de todos los animales para llenar el JComboBox.
-     * He cambiado el nombre del método para que sea más claro.
-     */
-    // public ResultSet obtenerCodigosAnimales() {
-    // ResultSet rs = null;
-    // try {
-    // String sql = "SELECT codigo FROM animal ORDER BY codigo";
-    // PreparedStatement ps = connection.prepareStatement(sql);
-    // rs = ps.executeQuery();
-    // } catch (SQLException e) {
-    // JOptionPane.showMessageDialog(null, "Error al obtener códigos de animales: "
-    // + e.getMessage(),
-    // "Error de Base de Datos", JOptionPane.ERROR_MESSAGE);
-    // }
-    // return rs;
-    // }
-
-    /**
-     * Obtiene el historial de movimientos simple, sin JOINs.
-     */
-    public java.util.List<Object[]> obtenerHistorialMovimientos() {
-        // 1. Preparamos la lista que vamos a devolver.
+    // Obtiene el historial de movimientos simple.
+    public List<Object[]> obtenerHistorialMovimientos() {
         java.util.List<Object[]> historial = new java.util.ArrayList<>();
 
-        // 2. La consulta es la llamada al procedimiento almacenado.
         String sql = "{CALL sp_obtener_historial_movimientos()}";
 
-        // 3. Usamos try-with-resources para garantizar el cierre automático de
-        // recursos.
         try (CallableStatement cs = connection.prepareCall(sql);
                 ResultSet rs = cs.executeQuery()) {
 
-            // 4. Iteramos sobre los resultados y los empaquetamos en la lista.
             while (rs.next()) {
-                // La lógica para construir la fila que antes estaba en la VISTA,
-                // ahora está aquí, en el CONTROLADOR, que es donde debe estar.
                 Object[] fila = {
                         rs.getInt("id"),
                         rs.getString("id_animal"),
@@ -502,7 +401,6 @@ public class Controlador {
                     "Error de Base de Datos", JOptionPane.ERROR_MESSAGE);
         }
 
-        // 5. Retornamos la lista llena de datos, desconectada de la BD.
         return historial;
     }
 
@@ -516,8 +414,6 @@ public class Controlador {
             JOptionPane.showMessageDialog(null, "Movimiento registrado exitosamente.", "Éxito",
                     JOptionPane.INFORMATION_MESSAGE);
         } catch (SQLException e) {
-            // El mensaje de error vendrá directamente desde la base de datos si la
-            // validación falla
             JOptionPane.showMessageDialog(null, "Error al registrar el movimiento: " + e.getMessage(),
                     "Error de Transacción", JOptionPane.ERROR_MESSAGE);
         }
@@ -526,12 +422,7 @@ public class Controlador {
     public void modificarUltimoMovimiento(int idMovimiento, String codigoAnimal, int nuevoIdLoteDestino,
             java.sql.Date nuevaFecha) throws SQLException {
 
-        // 1. La consulta es una única llamada a nuestro procedimiento transaccional.
         String sql = "{CALL sp_modificar_ultimo_movimiento(?, ?, ?, ?)}";
-
-        // 2. Usamos un simple try-with-resources.
-        // El 'throws SQLException' en la firma del método se encarga de propagar el
-        // error.
         try (CallableStatement cs = connection.prepareCall(sql)) {
 
             // 3. Asignamos los parámetros.
@@ -544,13 +435,11 @@ public class Controlador {
             // validar, actualizar, y manejar el commit/rollback.
             cs.executeUpdate();
 
-            // Si llegamos aquí, el COMMIT fue exitoso.
             JOptionPane.showMessageDialog(null, "Último movimiento modificado exitosamente.", "Éxito",
                     JOptionPane.INFORMATION_MESSAGE);
 
         } catch (SQLException e) {
             // Si el procedimiento lanzó un error (SIGNAL), lo recibimos aquí.
-            // Simplemente lo re-lanzamos para que la vista lo maneje.
             throw e;
         }
     }
@@ -697,8 +586,6 @@ public class Controlador {
         // 2. Usamos try-with-resources con CallableStatement.
         try (CallableStatement cs = connection.prepareCall(sql)) {
 
-            // 3. La asignación de parámetros es idéntica a la que ya tenías,
-            // incluyendo el manejo correcto de los valores nulos.
             cs.setTimestamp(1, fecha);
 
             if (idProducto != null) {
@@ -721,8 +608,7 @@ public class Controlador {
             // 4. Ejecutamos el procedimiento.
             cs.executeUpdate();
         }
-        // El 'throws SQLException' en la firma del método se encarga de propagar
-        // cualquier error.
+   
     }
 
     public java.util.List<Object[]> obtenerEventosSanitarios() {
@@ -751,23 +637,20 @@ public class Controlador {
     public java.util.List<Object[]> obtenerEventosSanitariosPorTipo(String tipo) {
         java.util.List<Object[]> lista = new java.util.ArrayList<>();
 
-        // 1. La consulta ahora es la llamada al procedimiento almacenado.
         String sql = "{CALL sp_obtener_eventos_sanitarios_por_tipo(?)}";
 
-        // 2. Usamos try-with-resources para gestionar CallableStatement y ResultSet.
         try (CallableStatement cs = connection.prepareCall(sql)) {
 
             // 3. Asignamos el parámetro de entrada.
             cs.setString(1, tipo);
 
             try (ResultSet rs = cs.executeQuery()) {
-                // 4. La lógica de lectura es la misma, pero ahora corregimos el tamaño del
-                // array.
+
                 while (rs.next()) {
-                    Object[] fila = new Object[8]; // Tamaño corregido a 8
+                    Object[] fila = new Object[8]; 
                     fila[0] = rs.getInt("id");
                     fila[1] = rs.getTimestamp("fecha");
-                    fila[2] = rs.getString("tipo"); // Campo 'tipo' añadido
+                    fila[2] = rs.getString("tipo"); // 
                     fila[3] = rs.getString("id_animal");
                     fila[4] = rs.getObject("id_producto");
                     fila[5] = rs.getObject("dosis");
@@ -833,9 +716,8 @@ public class Controlador {
         return null;
     }
 
-    /**
-     * Actualiza un registro de evento sanitario existente en la base de datos.
-     */
+    //Actualiza un registro de evento sanitario existente en la base de datos.
+    
     public void actualizarEventoSanitario(int idEvento, java.sql.Timestamp fecha, Integer idProducto, Float dosis,
             String idAnimal, String motivo, String diagnostico) throws SQLException {
 
@@ -869,7 +751,6 @@ public class Controlador {
             // 4. Ejecutamos la actualización.
             cs.executeUpdate();
         }
-        // El 'throws SQLException' se encarga de propagar cualquier error.
     }
 
     public void actualizarSalida(int idSalida, String nuevoMotivo, java.sql.Date nuevaFecha) {
@@ -888,10 +769,6 @@ public class Controlador {
             // 4. Ejecutamos. La base de datos se encarga de TODO lo demás.
             cs.executeUpdate();
 
-            // Si no hay excepción, la operación fue un éxito.
-            // El mensaje de éxito ya se muestra en el panel, por lo que no se necesita
-            // aquí.
-
         } catch (SQLException e) {
             // Si el procedimiento falló, el ROLLBACK fue automático.
             // Lanzamos una excepción para que el panel la capture y muestre el error.
@@ -899,9 +776,7 @@ public class Controlador {
         }
     }
 
-    /**
-     * Guarda un nuevo registro de producción de leche en la base de datos.
-     */
+    //Guarda un nuevo registro de producción de leche en la base de datos.
     public void guardarProduccionLeche(java.sql.Date fecha, int litrosMatutinos, int litrosVispertinos, String idAnimal)
             throws SQLException {
 
@@ -920,7 +795,6 @@ public class Controlador {
             // 4. Ejecutamos el procedimiento.
             cs.executeUpdate();
         }
-        // El 'throws SQLException' se encarga de propagar cualquier error.
     }
 
     public java.util.List<String> buscarAnimalesHembras(String filtro) {
@@ -939,14 +813,7 @@ public class Controlador {
         return resultado;
     }
 
-    // --- MÉTODOS A AÑADIR EN TU CONTROLADOR ---
-
-    /**
-     * Elimina un lote de la base de datos por su ID.
-     * ADVERTENCIA: Esto puede fallar si hay animales asignados a este lote y
-     * existen
-     * restricciones de clave foránea en la base de datos.
-     */
+     //Elimina un lote de la base de datos por su ID.  
     public void eliminarLote(int idLote) {
         // 1. La lógica de confirmación del usuario se mantiene intacta. ¡Esto es
         // correcto!
@@ -992,24 +859,13 @@ public class Controlador {
         }
     }
 
-    /**
-     * Elimina un registro del historial de movimientos.
-     * Nota: Esta acción solo elimina el registro histórico, no revierte el estado
-     * actual del animal en la tabla 'animal'. Sirve para corregir errores de
-     * registro.
-     */
-    // REEMPLAZA ESTE MÉTODO EN TU CLASE 'Controlador.java'
+    // Revierte un movimiento de historial.
+    // Elimina el registro del historial y actualiza la ubicación actual del animal
+    // a su lote anterior, siempre y cuando sea el último movimiento registrado para
+    // ese animal.
 
-    /**
-     * Revierte un movimiento de historial.
-     * Elimina el registro del historial y actualiza la ubicación actual del animal
-     * a su lote anterior, siempre y cuando sea el último movimiento registrado para
-     * ese animal.
-     */
     public void revertirMovimientoHistorial(int idMovimiento, String codigoAnimal, Object idLoteAnteriorObj) {
-        // No necesitamos el diálogo de confirmación aquí si ya se muestra en la vista
-        // (panel).
-        // Si no, puedes mantenerlo.
+
         int confirmacion = JOptionPane.showConfirmDialog(null,
                 "¿Está seguro de que desea revertir este movimiento?\nEl animal " + codigoAnimal
                         + " volverá a su lote anterior.",
@@ -1037,17 +893,14 @@ public class Controlador {
                     JOptionPane.INFORMATION_MESSAGE);
 
         } catch (SQLException e) {
-            // El mensaje de error personalizado vendrá de la base de datos
+
             JOptionPane.showMessageDialog(null, "Error al revertir el movimiento: " + e.getMessage(),
                     "Error de Transacción", JOptionPane.ERROR_MESSAGE);
         }
     }
 
-    /**
-     * Obtiene todos los registros de producción de leche de la base de datos.
-     * 
-     * @return Una lista de arrays de objetos, donde cada array representa una fila.
-     */
+    // Obtiene todos los registros de producción de leche de la base de datos.
+
     public List<Object[]> obtenerProduccionLeche() {
         List<Object[]> lista = new java.util.ArrayList<>();
         String sql = "{CALL sp_obtener_produccion_leche()}"; // Llamada al SP
@@ -1068,9 +921,7 @@ public class Controlador {
         return lista;
     }
 
-    /**
-     * Actualiza un registro de producción de leche existente.
-     */
+    // Actualiza un registro de producción de leche existente.
     public void actualizarProduccionLeche(int id, Date fecha, int litrosMatutinos, int litrosVispertinos,
             String idAnimal) throws SQLException {
 
@@ -1080,8 +931,6 @@ public class Controlador {
         // 2. Usamos CallableStatement.
         try (CallableStatement cs = connection.prepareCall(sql)) {
 
-            // 3. Asignamos los parámetros en el orden definido en el SP.
-            // (id, fecha, matutinos, vispertinos, idAnimal)
             cs.setInt(1, id);
             cs.setDate(2, fecha);
             cs.setInt(3, litrosMatutinos);
@@ -1091,17 +940,11 @@ public class Controlador {
             // 4. Ejecutamos el procedimiento.
             cs.executeUpdate();
         }
-        // El 'throws SQLException' se encarga de propagar cualquier error.
     }
 
-    /**
-     * Elimina un registro de producción de leche de la base de datos.
-     */
+    // Elimina un registro de producción de leche de la base de datos.
     public void eliminarProduccionLeche(int id) {
-        // 1. La consulta ahora es la llamada al procedimiento almacenado.
         String sql = "{CALL sp_eliminar_produccion_leche(?)}";
-
-        // 2. Usamos CallableStatement en lugar de PreparedStatement.
         try (CallableStatement cs = connection.prepareCall(sql)) {
 
             // 3. Asignamos el parámetro.
@@ -1119,29 +962,22 @@ public class Controlador {
     }
 
     public boolean animalExiste(String codigo) {
-        // 1. La consulta ahora es la llamada al procedimiento almacenado.
         String sql = "{CALL sp_animal_existe(?)}";
 
-        // 2. Usamos CallableStatement en lugar de PreparedStatement.
         try (CallableStatement cs = connection.prepareCall(sql)) {
 
             cs.setString(1, codigo);
 
-            // 3. La lógica para ejecutar la consulta y comprobar el resultado
-            // con rs.next() sigue siendo la misma. Es la forma más eficiente.
             try (ResultSet rs = cs.executeQuery()) {
-                return rs.next(); // Retorna true si el cursor se movió (se encontró una fila), false si no.
+                return rs.next();
             }
         } catch (SQLException e) {
             System.out.println("Error al verificar la existencia del animal: " + e.getMessage());
-            // Es una buena práctica de seguridad devolver false en caso de error
-            // para prevenir, por ejemplo, la creación de registros duplicados.
             return false;
         }
     }
 
     public boolean existeProduccionLechePorAnimalYFecha(String idAnimal, java.sql.Date fecha) {
-        // 1. La consulta ahora es la llamada al procedimiento almacenado.
         String sql = "{CALL sp_existe_produccion_leche_por_animal_y_fecha(?, ?)}";
 
         // 2. Usamos CallableStatement.
@@ -1151,13 +987,11 @@ public class Controlador {
             cs.setString(1, idAnimal);
             cs.setDate(2, fecha);
 
-            // 4. La lógica de comprobación con rs.next() sigue siendo la misma.
             try (ResultSet rs = cs.executeQuery()) {
                 return rs.next();
             }
         } catch (SQLException e) {
             System.out.println("Error al verificar producción de leche: " + e.getMessage());
-            // Devolver false en caso de error es una práctica segura.
             return false;
         }
     }
@@ -1191,16 +1025,10 @@ public class Controlador {
     public List<Object[]> buscarProductosTratamiento(String filtro) {
         List<Object[]> lista = new ArrayList<>();
 
-        // 1. La consulta ahora es la llamada al procedimiento almacenado.
         String sql = "{CALL sp_buscar_productos_tratamiento(?)}";
 
-        // 2. Usamos CallableStatement.
         try (CallableStatement cs = connection.prepareCall(sql)) {
-
-            // 3. Asignamos el parámetro, añadiendo los comodines como antes.
             cs.setString(1, "%" + filtro + "%");
-
-            // 4. El resto del código para procesar el resultado es exactamente el mismo.
             try (ResultSet rs = cs.executeQuery()) {
                 while (rs.next()) {
                     Object[] fila = new Object[2];
@@ -1216,16 +1044,10 @@ public class Controlador {
     }
 
     public boolean esUltimoMovimiento(int idMovimiento, String codigoAnimal) {
-        // 1. La consulta ahora es la llamada al procedimiento almacenado.
         String sql = "{CALL sp_obtener_ultimo_movimiento_id(?)}";
-
-        // 2. Usamos CallableStatement.
         try (CallableStatement cs = connection.prepareCall(sql)) {
 
             cs.setString(1, codigoAnimal);
-
-            // 3. El resto de la lógica es idéntica: ejecutamos, leemos el resultado
-            // y comparamos los IDs.
             try (ResultSet rs = cs.executeQuery()) {
                 if (rs.next()) {
                     int ultimoId = rs.getInt("id");
@@ -1235,24 +1057,16 @@ public class Controlador {
         } catch (SQLException e) {
             System.out.println("Error al verificar el último movimiento: " + e.getMessage());
         }
-
-        // 4. El retorno por defecto sigue siendo 'false' por seguridad.
         return false;
     }
 
     public List<Object[]> buscarProductosDesparasitantes(String filtro) {
         List<Object[]> lista = new ArrayList<>();
 
-        // 1. La consulta ahora es la llamada al procedimiento almacenado.
         String sql = "{CALL sp_buscar_productos_desparasitantes(?)}";
-
-        // 2. Usamos CallableStatement.
         try (CallableStatement cs = connection.prepareCall(sql)) {
 
-            // 3. Asignamos el parámetro, añadiendo los comodines.
             cs.setString(1, "%" + filtro + "%");
-
-            // 4. El resto del código para procesar el resultado es exactamente el mismo.
             try (ResultSet rs = cs.executeQuery()) {
                 while (rs.next()) {
                     Object[] fila = new Object[2];
@@ -1269,7 +1083,6 @@ public class Controlador {
 
     public void actualizarEventoSanitario(int idEvento, java.sql.Timestamp fecha, Integer idProducto, Float dosis,
             String idAnimal) throws SQLException {
-        // Reutilizamos el método existente, pasando los valores implícitos
         this.actualizarEventoSanitario(idEvento, fecha, idProducto, dosis, idAnimal, "DESPARASITANTE", "");
     }
 
@@ -1279,7 +1092,7 @@ public class Controlador {
 
         try (CallableStatement cs = connection.prepareCall(sql)) {
             String likeFiltro = "%" + filtro + "%";
-            int idFiltro = -1; // Usamos un valor improbable como -1 para indicar que no es un ID válido.
+            int idFiltro = -1;
 
             try {
                 idFiltro = Integer.parseInt(filtro);
@@ -1311,28 +1124,20 @@ public class Controlador {
 
     public List<Object[]> buscarMovimientosHistorial(String filtro) {
         List<Object[]> lista = new ArrayList<>();
-
-        // 1. La consulta ahora es una única y simple llamada al SP.
         String sql = "{CALL sp_buscar_movimientos_historial(?, ?)}";
-
-        // 2. Preparamos los dos parámetros que el SP necesita.
         String likeFiltro = "%" + filtro + "%";
         int filtroNumerico;
         try {
             filtroNumerico = Integer.parseInt(filtro);
         } catch (NumberFormatException e) {
-            // Si no es un número, usamos un valor que no coincidirá con ningún ID.
             filtroNumerico = -1;
         }
 
-        // 3. Ejecutamos la llamada.
         try (CallableStatement cs = connection.prepareCall(sql)) {
             cs.setString(1, likeFiltro);
             cs.setInt(2, filtroNumerico);
 
             try (ResultSet rs = cs.executeQuery()) {
-                // 4. La lógica para leer los resultados y formatear la fila
-                // sigue siendo exactamente la misma. ¡No cambia nada aquí!
                 while (rs.next()) {
                     Object loteAnterior = rs.getObject("id_lote_anterior") == null
                             ? "N/A"
@@ -1355,21 +1160,13 @@ public class Controlador {
         return lista;
     }
 
-    // Otros métodos del controlador...
     public void iniciarEdicionAnimal(String codigo) {
-        // 1. Obtener todos los datos del animal desde la base de datos
-        // (Necesitarás crear este método que haga un "SELECT * FROM animales WHERE
-        // codigo = ?")
-        Object[] datosAnimal = obtenerDatosCompletosAnimal(codigo); // Esto es un ejemplo
+        Object[] datosAnimal = obtenerDatosCompletosAnimal(codigo);
 
         if (datosAnimal != null) {
 
-            // 3. Cambiar al panel de registro para que el usuario pueda editar
             animalesFrame.cambiarPanelContenido(animalesFrame.pRegistro.createContentPanel());
 
-            // 2. Cargar los datos en el panel de registro
-            // Asegúrate que `animalesFrame.pRegistro` sea la instancia persistente del
-            // panel
             animalesFrame.pRegistro.cargarDatosParaEdicion(
                     (String) datosAnimal[0], // codigo
                     (java.sql.Date) datosAnimal[1], // fecha_nacimiento
@@ -1388,10 +1185,6 @@ public class Controlador {
         }
     }
 
-    /**
-     * Método para obtener todos los datos de un animal por su código.
-     * DEBES IMPLEMENTAR ESTO con tu lógica de base de datos.
-     */
     public Object[] obtenerDatosCompletosAnimal(String codigo) {
 
         String sql = "{CALL sp_buscar_animales_completos(?)}"; // Llamada al SP
@@ -1420,61 +1213,55 @@ public class Controlador {
         return datosAnimal; // Devuelve null si no lo encuentras
     }
 
-    /**
-     * Actualiza un animal existente en la base de datos.
-     * Es llamado desde panelRegistroAnimales cuando está en modo edición.
-     * DEBES IMPLEMENTAR ESTO.
-     */
+    // Actualiza un animal existente en la base de datos.
+    // Es llamado desde panelRegistroAnimales cuando está en modo edición.
+
     public void actualizarAnimal(String codigoOriginal, java.sql.Timestamp fecha, String sexo, String raza,
             String pesoNac, String peso, String idMadre, String idPadre, String estado) throws SQLException {
 
         String sql = "{CALL sp_actualizar_animal(?, ?, ?, ?, ?, ?, ?, ?, ?)}";
 
-        // 2. Usamos try-with-resources para asegurar que el CallableStatement se cierre
-        // solo.
         try (CallableStatement cs = connection.prepareCall(sql)) {
 
-            // 3. Asignamos los parámetros en el orden correcto.
             cs.setString(1, codigoOriginal);
-            cs.setTimestamp(2, fecha); // Usamos setTimestamp para el tipo DATETIME
+            cs.setTimestamp(2, fecha); 
             cs.setString(3, sexo);
             cs.setString(4, raza);
 
-            // Los pesos se pasan como String. Si el campo está vacío, enviamos NULL.
             cs.setString(5, pesoNac.trim().isEmpty() ? null : pesoNac.trim());
             cs.setString(6, peso.trim().isEmpty() ? null : peso.trim());
 
-            // Hacemos lo mismo para los IDs de los padres.
             cs.setString(7, idMadre.trim().isEmpty() ? null : idMadre.trim());
             cs.setString(8, idPadre.trim().isEmpty() ? null : idPadre.trim());
 
             cs.setString(9, estado);
 
-            // 4. Ejecutamos el procedimiento.
             cs.executeUpdate();
         }
-        // El 'throws SQLException' en la firma del método se encargará de notificar al
-        // panel si algo sale mal.
+  
     }
 
 
-/**
- * Guarda un evento sanitario para todos los animales activos de un lote específico.
- * Llama al procedimiento almacenado sp_guardar_evento_sanitario_lote.
- */
-public void guardarEventoSanitarioPorLote(java.sql.Timestamp fecha, Integer idProducto, Float dosis, String motivo, String diagnostico, int idLote, String tipo) throws SQLException {
-    String sql = "{CALL sp_guardar_evento_sanitario_lote(?, ?, ?, ?, ?, ?, ?)}";
-    try (CallableStatement cs = connection.prepareCall(sql)) {
-        cs.setTimestamp(1, fecha);
-        if (idProducto != null) cs.setInt(2, idProducto); else cs.setNull(2, java.sql.Types.INTEGER);
-        if (dosis != null) cs.setFloat(3, dosis); else cs.setNull(3, java.sql.Types.FLOAT);
-        cs.setString(4, motivo);
-        cs.setString(5, diagnostico);
-        cs.setInt(6, idLote);
-        cs.setString(7, tipo);
-        cs.executeUpdate();
+    public void guardarEventoSanitarioPorLote(java.sql.Timestamp fecha, Integer idProducto, Float dosis, String motivo,
+            String diagnostico, int idLote, String tipo) throws SQLException {
+        String sql = "{CALL sp_guardar_evento_sanitario_lote(?, ?, ?, ?, ?, ?, ?)}";
+        try (CallableStatement cs = connection.prepareCall(sql)) {
+            cs.setTimestamp(1, fecha);
+            if (idProducto != null)
+                cs.setInt(2, idProducto);
+            else
+                cs.setNull(2, java.sql.Types.INTEGER);
+            if (dosis != null)
+                cs.setFloat(3, dosis);
+            else
+                cs.setNull(3, java.sql.Types.FLOAT);
+            cs.setString(4, motivo);
+            cs.setString(5, diagnostico);
+            cs.setInt(6, idLote);
+            cs.setString(7, tipo);
+            cs.executeUpdate();
+        }
     }
-}
 
     public Map<String, Object> obtenerDatosParaInformeIndividual(String idAnimal) {
         Map<String, Object> informeData = new HashMap<>();
@@ -1550,66 +1337,6 @@ public void guardarEventoSanitarioPorLote(java.sql.Timestamp fecha, Integer idPr
         return informeData;
     }
 
-    // public Map<String, Object> obtenerDatosParaInformeIndividual(String idAnimal)
-    // {
-    // // Cuando tengas tu procedimiento almacenado, esta será la única parte que
-    // // cambiarás.
-    // // El resto de la lógica en el panel funcionará igual.
-
-    // Map<String, Object> informeData = new HashMap<>();
-
-    // // 1. Datos Básicos del Animal
-    // Map<String, String> datosBasicos = new HashMap<>();
-    // datosBasicos.put("Código / ID", idAnimal);
-    // datosBasicos.put("Sexo", "F"); // Ejemplo
-    // datosBasicos.put("Raza", "Holstein");
-    // datosBasicos.put("Fecha de Nacimiento", "2022-01-15");
-    // datosBasicos.put("Estado Actual", "ACTIVO");
-    // informeData.put("datosBasicos", datosBasicos);
-
-    // // 2. Datos de Producción (solo si es hembra)
-    // if ("F".equals(datosBasicos.get("Sexo"))) {
-    // Map<String, Object> datosProduccion = new HashMap<>();
-    // datosProduccion.put("totalLitros", 12540.5); // Ejemplo
-    // datosProduccion.put("diasEnProduccion", 305);
-    // informeData.put("produccion", datosProduccion);
-    // }
-
-    // // 3. Datos de Salud (Historial)
-    // List<Map<String, String>> eventosSalud = new ArrayList<>();
-    // eventosSalud.add(new HashMap<String, String>() {
-    // {
-    // put("fecha", "2023-11-20");
-    // put("tipo", "VACUNACION");
-    // put("producto", "Bovisan");
-    // put("dosis", "5 ml");
-    // }
-    // });
-    // eventosSalud.add(new HashMap<String, String>() {
-    // {
-    // put("fecha", "2024-03-10");
-    // put("tipo", "DESPARASITACION");
-    // put("producto", "Ivermectina");
-    // put("dosis", "10 ml");
-    // }
-    // });
-    // eventosSalud.add(new HashMap<String, String>() {
-    // {
-    // put("fecha", "2024-05-02");
-    // put("tipo", "TRATAMIENTO");
-    // put("producto", "Antibiótico X");
-    // put("dosis", "20 ml");
-    // }
-    // });
-    // informeData.put("eventosSalud", eventosSalud);
-
-    // // 4. Datos Reproductivos
-    // Map<String, Integer> datosReproductivos = new HashMap<>();
-    // datosReproductivos.put("cantidadCrias", 2); // Ejemplo
-    // informeData.put("reproductivo", datosReproductivos);
-
-    // return informeData;
-    // }
 
     public Map<String, Object> obtenerDatosParaInformeGeneral(java.util.Date fechaDesde, java.util.Date fechaHasta) {
         Map<String, Object> informeData = new HashMap<>();
@@ -1654,39 +1381,5 @@ public void guardarEventoSanitarioPorLote(java.sql.Timestamp fecha, Integer idPr
 
         return informeData;
     }
-    // public Map<String, Object> obtenerDatosParaInformeGeneral(java.util.Date
-    // fechaDesde, java.util.Date fechaHasta) {
-    // // Cuando tengas tus procedimientos, aquí llamarás a la base de datos
-    // // pasando las fechas como parámetros.
 
-    // Map<String, Object> informeData = new HashMap<>();
-
-    // // 1. Resumen del Inventario
-    // Map<String, Integer> resumenInventario = new HashMap<>();
-    // resumenInventario.put("Total Animales Activos", 152);
-    // resumenInventario.put("Hembras", 120);
-    // resumenInventario.put("Machos", 32);
-    // informeData.put("resumenInventario", resumenInventario);
-
-    // // 2. Resumen de Producción en el Periodo
-    // Map<String, Object> resumenProduccion = new HashMap<>();
-    // resumenProduccion.put("totalLitrosPeriodo", 45870.5);
-    // resumenProduccion.put("promedioDiarioPorVaca", 18.2);
-    // informeData.put("resumenProduccion", resumenProduccion);
-
-    // // 3. Resumen de Salud en el Periodo
-    // Map<String, Integer> resumenSalud = new HashMap<>();
-    // resumenSalud.put("Vacunaciones", 85);
-    // resumenSalud.put("Desparasitaciones", 152);
-    // resumenSalud.put("Tratamientos", 23);
-    // informeData.put("resumenSalud", resumenSalud);
-
-    // // 4. Resumen de Salidas en el Periodo
-    // Map<String, Integer> resumenSalidas = new HashMap<>();
-    // resumenSalidas.put("Ventas", 12);
-    // resumenSalidas.put("Muertes", 3);
-    // informeData.put("resumenSalidas", resumenSalidas);
-
-    // return informeData;
-    // }
 }

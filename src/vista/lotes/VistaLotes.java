@@ -12,10 +12,8 @@ public class VistaLotes extends JPanel {
     public static  panelHistorialLotes panelHistorial;
 
     public VistaLotes(Controlador controlador) {
-        // System.out.println("1. [DEBUG] Entrando al constructor de VistaLotes...");
         this.controlador = controlador;
         initComponents();
-       //  System.out.println("7. [DEBUG] Fin del constructor de VistaLotes. Panel creado con éxito.");
     }
 
     private void initComponents() {
@@ -24,12 +22,8 @@ public class VistaLotes extends JPanel {
         title.setFont(controlador.estilos.FONT_TITULO.deriveFont(Font.BOLD, 28f));
         title.setBorder(BorderFactory.createEmptyBorder(20, 24, 8, 24));
         add(title, BorderLayout.NORTH);
-        //System.out.println("2. [DEBUG] Creando panelRegistroLotes...");
         panelRegistro = new panelRegistroLotes(controlador);
-        //System.out.println("4. [DEBUG] panelRegistroLotes CREADO. Creando panelHistorialLotes...");
         panelHistorial = new panelHistorialLotes(controlador);
-        //System.out.println("6. [DEBUG] panelHistorialLotes CREADO. Añadiendo pestañas...");
-
 
         tabbedPane = new JTabbedPane();
         tabbedPane.setFont(controlador.estilos.FONT_TITLE_TAB.deriveFont(Font.PLAIN, 16f));

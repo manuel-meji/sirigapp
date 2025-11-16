@@ -5,10 +5,10 @@ import controlador.FontLoader;
 import java.awt.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.util.List; // <-- Import necesario para el filtro
+import java.util.List;
 import javax.swing.*;
-import javax.swing.border.EmptyBorder; // <-- Import necesario para el filtro
-import javax.swing.table.DefaultTableModel; // <-- Import necesario para el filtro
+import javax.swing.border.EmptyBorder;
+import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableRowSorter;
 
 public class panelProductos extends JPanel {
@@ -17,10 +17,10 @@ public class panelProductos extends JPanel {
 	private JComboBox<String> cbTipo;
 	private JTable tablaProductos;
 	private DefaultTableModel modeloTabla;
-    private TableRowSorter<DefaultTableModel> sorter; // <-- Sorter para la tabla
+	private TableRowSorter<DefaultTableModel> sorter;
 	private JButton btnGuardar;
-    // --- NUEVO: btnLimpiar ahora es una variable de clase ---
-    private JButton btnLimpiar;
+	// --- NUEVO: btnLimpiar ahora es una variable de clase ---
+	private JButton btnLimpiar;
 	private Integer editandoId = null;
 
 	private final Font FONT_SUBTITULO = FontLoader.loadFont("/resources/fonts/Montserrat-Bold.ttf", 24f);
@@ -31,7 +31,7 @@ public class panelProductos extends JPanel {
 	public panelProductos(Controlador controlador) {
 		this.controlador = controlador;
 		setLayout(new BorderLayout());
-        // El panel se crea y se añade en la clase que lo contiene (vistaSalud)
+		// El panel se crea y se añade en la clase que lo contiene (vistaSalud)
 	}
 
 	public JPanel createContentPanel() {
@@ -47,8 +47,7 @@ public class panelProductos extends JPanel {
 		card.setBackground(Color.WHITE);
 		card.setBorder(BorderFactory.createCompoundBorder(
 				BorderFactory.createLineBorder(new Color(220, 223, 230), 1),
-				new EmptyBorder(16, 16, 16, 16)
-		));
+				new EmptyBorder(16, 16, 16, 16)));
 
 		JPanel formPanel = new JPanel(null);
 		formPanel.setOpaque(false);
@@ -69,7 +68,7 @@ public class panelProductos extends JPanel {
 		lblTipo.setBounds(450, 10, 100, 30);
 		formPanel.add(lblTipo);
 
-		cbTipo = new JComboBox<>(new String[]{"Medicamento", "Desparasitante", "Vacuna", "Otro"});
+		cbTipo = new JComboBox<>(new String[] { "Medicamento", "Desparasitante", "Vacuna", "Otro" });
 		cbTipo.setFont(FONT_INPUT);
 		cbTipo.setBounds(560, 10, 250, 30);
 		formPanel.add(cbTipo);
@@ -79,73 +78,66 @@ public class panelProductos extends JPanel {
 		btnGuardar.setBackground(controlador.estilos.COLOR_GUARDAR);
 		btnGuardar.setForeground(Color.WHITE);
 		btnGuardar.setIcon(new ImageIcon("src/resources/images/icon-guardar.png"));
-        btnGuardar.setHorizontalTextPosition(SwingConstants.LEFT);
+		btnGuardar.setHorizontalTextPosition(SwingConstants.LEFT);
 		btnGuardar.setBounds(560, 60, 250, 40);
 		formPanel.add(btnGuardar);
-        
-        // --- NUEVO: Se añade el botón de limpiar al formulario ---
-       // btnLimpiar = new JButton("Limpiar");
-       // btnLimpiar.setFont(FONT_BOTON);
-       // btnLimpiar.setBounds(300, 60, 250, 40);
-       // formPanel.add(btnLimpiar);
 
 		card.add(formPanel, BorderLayout.NORTH);
-        
-        // --- Panel para la tabla y la búsqueda ---
-        JPanel tableContainer = new JPanel(new BorderLayout(0, 8));
-        tableContainer.setOpaque(false);
-        tableContainer.setBorder(new EmptyBorder(10,0,0,0));
 
-        // --- NUEVO: Barra de búsqueda ---
-        JPanel searchBarPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
-        searchBarPanel.setOpaque(false);
-        JLabel lblBuscar = new JLabel("Buscar en registros:");
-        lblBuscar.setFont(FONT_LABEL.deriveFont(14f));
-        JTextField txtBusqueda = new JTextField(25);
-        txtBusqueda.setFont(FONT_INPUT.deriveFont(14f));
-        searchBarPanel.add(lblBuscar);
-        searchBarPanel.add(Box.createHorizontalStrut(10));
-        searchBarPanel.add(txtBusqueda);
-        tableContainer.add(searchBarPanel, BorderLayout.NORTH);
+		// --- Panel para la tabla y la búsqueda ---
+		JPanel tableContainer = new JPanel(new BorderLayout(0, 8));
+		tableContainer.setOpaque(false);
+		tableContainer.setBorder(new EmptyBorder(10, 0, 0, 0));
 
-		String[] columnas = {"ID", "Producto", "Tipo"};
+		// --- NUEVO: Barra de búsqueda ---
+		JPanel searchBarPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+		searchBarPanel.setOpaque(false);
+		JLabel lblBuscar = new JLabel("Buscar en registros:");
+		lblBuscar.setFont(FONT_LABEL.deriveFont(14f));
+		JTextField txtBusqueda = new JTextField(25);
+		txtBusqueda.setFont(FONT_INPUT.deriveFont(14f));
+		searchBarPanel.add(lblBuscar);
+		searchBarPanel.add(Box.createHorizontalStrut(10));
+		searchBarPanel.add(txtBusqueda);
+		tableContainer.add(searchBarPanel, BorderLayout.NORTH);
+
+		String[] columnas = { "ID", "Producto", "Tipo" };
 		modeloTabla = new DefaultTableModel(columnas, 0) {
 			@Override
-			public boolean isCellEditable(int row, int column) { return false; }
+			public boolean isCellEditable(int row, int column) {
+				return false;
+			}
 		};
 		tablaProductos = new JTable(modeloTabla);
-        sorter = new TableRowSorter<>(modeloTabla);
-        tablaProductos.setRowSorter(sorter);
+		sorter = new TableRowSorter<>(modeloTabla);
+		tablaProductos.setRowSorter(sorter);
 		tablaProductos.setRowHeight(28);
 		tablaProductos.setFont(FONT_INPUT.deriveFont(14f));
 		tablaProductos.getTableHeader().setFont(FONT_LABEL.deriveFont(14f));
 		JScrollPane scrollPane = new JScrollPane(tablaProductos);
 		scrollPane.setBorder(new EmptyBorder(8, 0, 0, 0));
 		tableContainer.add(scrollPane, BorderLayout.CENTER);
-        
-        card.add(tableContainer, BorderLayout.CENTER);
-		
+
+		card.add(tableContainer, BorderLayout.CENTER);
+
 		JPanel tableButtonsPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
 		tableButtonsPanel.setOpaque(false);
 
-		
-
 		btnLimpiar = new JButton("Limpiar");
 		btnLimpiar.setIcon(new ImageIcon("src/resources/images/icon-limpiar.png"));
-        btnLimpiar.setHorizontalTextPosition(SwingConstants.LEFT);
+		btnLimpiar.setHorizontalTextPosition(SwingConstants.LEFT);
 		btnLimpiar.setFont(FONT_BOTON);
 		btnLimpiar.setBackground(controlador.estilos.COLOR_LIMPIAR);
 		btnLimpiar.setForeground(Color.WHITE);
 
-
 		JButton btnEditar = new JButton("Editar");
 		btnEditar.setIcon(new ImageIcon("src/resources/images/icon-editar.png"));
-        btnEditar.setHorizontalTextPosition(SwingConstants.LEFT);
+		btnEditar.setHorizontalTextPosition(SwingConstants.LEFT);
 
 		JButton btnEliminar = new JButton("Eliminar");
 		btnEliminar.setIcon(new ImageIcon("src/resources/images/icon-eliminar.png"));
-        btnEliminar.setHorizontalTextPosition(SwingConstants.LEFT);
-		
+		btnEliminar.setHorizontalTextPosition(SwingConstants.LEFT);
+
 		btnEditar.setFont(FONT_BOTON);
 		btnEditar.setBackground(controlador.estilos.COLOR_MODIFICAR);
 		btnEditar.setForeground(Color.WHITE);
@@ -161,71 +153,77 @@ public class panelProductos extends JPanel {
 
 		// --- LISTENERS CON LÓGICA MEJORADA ---
 		btnGuardar.addActionListener(_ -> guardarOActualizar());
-        btnLimpiar.addActionListener(_ -> limpiarFormulario());
+		btnLimpiar.addActionListener(_ -> limpiarFormulario());
 		btnEditar.addActionListener(_ -> prepararEdicion());
 		btnEliminar.addActionListener(_ -> eliminarProducto());
-        
-        txtBusqueda.addKeyListener(new KeyAdapter() {
-            @Override
-            public void keyReleased(KeyEvent e) {
-                filtrarTabla(txtBusqueda.getText());
-            }
-        });
+
+		txtBusqueda.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyReleased(KeyEvent e) {
+				filtrarTabla(txtBusqueda.getText());
+			}
+		});
 
 		actualizarTabla();
 		return content;
 	}
 
-    private void guardarOActualizar() {
-        String producto = txtProducto.getText().trim();
-        String tipo = (String) cbTipo.getSelectedItem();
+	private void guardarOActualizar() {
+		String producto = txtProducto.getText().trim();
+		String tipo = (String) cbTipo.getSelectedItem();
 
-        if (producto.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "El nombre del producto es requerido.", "Error", JOptionPane.WARNING_MESSAGE);
-            return;
-        }
+		if (producto.isEmpty()) {
+			JOptionPane.showMessageDialog(this, "El nombre del producto es requerido.", "Error",
+					JOptionPane.WARNING_MESSAGE);
+			return;
+		}
 
-        try {
-            if (editandoId == null) {
-                controlador.guardarProducto(producto, tipo);
-                JOptionPane.showMessageDialog(this, "Producto guardado exitosamente.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
-            } else {
-                controlador.editarProducto(editandoId, producto, tipo);
-                JOptionPane.showMessageDialog(this, "Producto actualizado exitosamente.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
-            }
-            limpiarFormulario();
-            actualizarTabla();
-            
-            // Forzar actualización de los otros paneles que usan productos
-            controlador.animalesFrame.pSalud.actualizarPanelesInternos();
+		try {
+			if (editandoId == null) {
+				controlador.guardarProducto(producto, tipo);
+				JOptionPane.showMessageDialog(this, "Producto guardado exitosamente.", "Éxito",
+						JOptionPane.INFORMATION_MESSAGE);
+			} else {
+				controlador.editarProducto(editandoId, producto, tipo);
+				JOptionPane.showMessageDialog(this, "Producto actualizado exitosamente.", "Éxito",
+						JOptionPane.INFORMATION_MESSAGE);
+			}
+			limpiarFormulario();
+			actualizarTabla();
 
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Error al guardar el producto: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-        }
-    }
-    
+			// Forzar actualización de los otros paneles que usan productos
+			controlador.animalesFrame.pSalud.actualizarPanelesInternos();
+
+		} catch (Exception ex) {
+			JOptionPane.showMessageDialog(this, "Error al guardar el producto: " + ex.getMessage(), "Error",
+					JOptionPane.ERROR_MESSAGE);
+		}
+	}
+
 	private void prepararEdicion() {
 		int filaSeleccionada = tablaProductos.getSelectedRow();
 		if (filaSeleccionada == -1) {
-			JOptionPane.showMessageDialog(this, "Por favor, seleccione un producto para editar.", "Aviso", JOptionPane.WARNING_MESSAGE);
+			JOptionPane.showMessageDialog(this, "Por favor, seleccione un producto para editar.", "Aviso",
+					JOptionPane.WARNING_MESSAGE);
 			return;
 		}
-        int filaModelo = tablaProductos.convertRowIndexToModel(filaSeleccionada);
+		int filaModelo = tablaProductos.convertRowIndexToModel(filaSeleccionada);
 
 		editandoId = (Integer) modeloTabla.getValueAt(filaModelo, 0);
 		txtProducto.setText((String) modeloTabla.getValueAt(filaModelo, 1));
 		cbTipo.setSelectedItem(modeloTabla.getValueAt(filaModelo, 2).toString());
-		
-        // --- LÓGICA DE MODO EDICIÓN ---
-        btnGuardar.setText("Actualizar");
-        btnLimpiar.setText("Cancelar Edición");
+
+		// --- LÓGICA DE MODO EDICIÓN ---
+		btnGuardar.setText("Actualizar");
+		btnLimpiar.setText("Cancelar Edición");
 		txtProducto.requestFocus();
 	}
 
 	private void eliminarProducto() {
 		int filaSeleccionada = tablaProductos.getSelectedRow();
 		if (filaSeleccionada == -1) {
-			JOptionPane.showMessageDialog(this, "Por favor, seleccione un producto para eliminar.", "Aviso", JOptionPane.WARNING_MESSAGE);
+			JOptionPane.showMessageDialog(this, "Por favor, seleccione un producto para eliminar.", "Aviso",
+					JOptionPane.WARNING_MESSAGE);
 			return;
 		}
 
@@ -234,16 +232,18 @@ public class panelProductos extends JPanel {
 
 		if (confirmacion == JOptionPane.YES_OPTION) {
 			try {
-                int filaModelo = tablaProductos.convertRowIndexToModel(filaSeleccionada);
+				int filaModelo = tablaProductos.convertRowIndexToModel(filaSeleccionada);
 				Integer idProducto = (Integer) modeloTabla.getValueAt(filaModelo, 0);
 				controlador.eliminarProducto(idProducto);
 				actualizarTabla();
 				limpiarFormulario();
-				JOptionPane.showMessageDialog(this, "Producto eliminado exitosamente.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
-                // Forzar actualización de los otros paneles que usan productos
+				JOptionPane.showMessageDialog(this, "Producto eliminado exitosamente.", "Éxito",
+						JOptionPane.INFORMATION_MESSAGE);
+				// Forzar actualización de los otros paneles que usan productos
 				controlador.animalesFrame.pSalud.actualizarPanelesInternos();
 			} catch (Exception ex) {
-				JOptionPane.showMessageDialog(this, "Error al eliminar el producto: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+				JOptionPane.showMessageDialog(this, "Error al eliminar el producto: " + ex.getMessage(), "Error",
+						JOptionPane.ERROR_MESSAGE);
 			}
 		}
 	}
@@ -253,10 +253,10 @@ public class panelProductos extends JPanel {
 		cbTipo.setSelectedIndex(0);
 		editandoId = null;
 		tablaProductos.clearSelection();
-        
-        // --- LÓGICA DE MODO EDICIÓN ---
-        btnGuardar.setText("Guardar");
-        btnLimpiar.setText("Limpiar");
+
+		// --- LÓGICA DE MODO EDICIÓN ---
+		btnGuardar.setText("Guardar");
+		btnLimpiar.setText("Limpiar");
 	}
 
 	private void actualizarTabla() {
@@ -266,13 +266,13 @@ public class panelProductos extends JPanel {
 			modeloTabla.addRow(producto);
 		}
 	}
-    
-    private void filtrarTabla(String texto) {
-        if (texto.trim().length() == 0) {
-            sorter.setRowFilter(null);
-        } else {
-            // "(?i)" hace que la búsqueda no distinga mayúsculas de minúsculas
-            sorter.setRowFilter(RowFilter.regexFilter("(?i)" + texto));
-        }
-    }
+
+	private void filtrarTabla(String texto) {
+		if (texto.trim().length() == 0) {
+			sorter.setRowFilter(null);
+		} else {
+			// "(?i)" hace que la búsqueda no distinga mayúsculas de minúsculas
+			sorter.setRowFilter(RowFilter.regexFilter("(?i)" + texto));
+		}
+	}
 }

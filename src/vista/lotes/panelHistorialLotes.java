@@ -166,9 +166,6 @@ public class panelHistorialLotes extends JPanel {
         card.add(tableButtonsPanel, BorderLayout.SOUTH);
         content.add(card, BorderLayout.CENTER);
 
-        // --- LISTENERS ---
-        
-        // >>> INICIO: LÓGICA DE BÚSQUEDA DINÁMICA <<<
         txtBuscar.getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) {
@@ -183,7 +180,6 @@ public class panelHistorialLotes extends JPanel {
                 filtrarTabla();
             }
         });
-        // >>> FIN: LÓGICA DE BÚSQUEDA DINÁMICA <<<
 
         JTextField editor = (JTextField) cmbAnimalesId.getEditor().getEditorComponent();
         editor.addKeyListener(new KeyAdapter() {
@@ -261,7 +257,6 @@ public class panelHistorialLotes extends JPanel {
         return content;
     }
 
-    // --- NUEVO MÉTODO PARA CENTRALIZAR LA LÓGICA DE FILTRADO ---
     private void filtrarTabla() {
         String textoBusqueda = txtBuscar.getText().trim();
         if (textoBusqueda.isEmpty()) {
@@ -273,7 +268,7 @@ public class panelHistorialLotes extends JPanel {
         }
     }
     
-    // --- NUEVO MÉTODO PARA ACTUALIZAR LA TABLA ---
+    // ---  MÉTODO PARA ACTUALIZAR LA TABLA ---
     private void actualizarTablaConNuevosDatos(List<Object[]> movimientos) {
         modeloTablaHistorial.setRowCount(0); // Limpia la tabla
         for (Object[] fila : movimientos) {
@@ -397,11 +392,8 @@ public void cargarHistorialEnTabla() {
     // 1. Limpiamos la tabla como antes.
     modeloTablaHistorial.setRowCount(0);
     
-    // 2. Obtenemos la lista de datos ya procesada desde el controlador.
     java.util.List<Object[]> historial = controlador.obtenerHistorialMovimientos();
     
-    // 3. Simplemente iteramos sobre la lista y añadimos cada fila al modelo.
-    //    ¡No hay ResultSet, no hay try-catch, no hay SQLException!
     for (Object[] fila : historial) {
         modeloTablaHistorial.addRow(fila);
     }
@@ -412,22 +404,17 @@ private void filtrarComboAnimales(String busqueda) {
         return;
     }
     
-    // 1. Obtenemos la lista de Strings. ¡No hay try-catch ni SQLException aquí!
-    java.util.List<String> codigos = controlador.buscarCodigosAnimales(busqueda);
     
-    // 2. Guardamos el texto actual que el usuario ha escrito.
+    List<String> codigos = controlador.buscarCodigosAnimales(busqueda);
+ 
     String textoActual = ((JTextField) cmbAnimalesId.getEditor().getEditorComponent()).getText();
     
-    // 3. Limpiamos el modelo del ComboBox.
     comboModelAnimales.removeAllElements();
     
-    // 4. Llenamos el modelo con los resultados de la lista.
     for (String codigo : codigos) {
         comboModelAnimales.addElement(codigo);
     }
     
-    // 5. Restauramos el texto y manejamos la visibilidad del popup.
-    //    Esta lógica no cambia.
     ((JTextField) cmbAnimalesId.getEditor().getEditorComponent()).setText(textoActual);
     if (comboModelAnimales.getSize() > 0 && !textoActual.isEmpty()) {
         if (cmbAnimalesId.isShowing()) {
@@ -452,7 +439,6 @@ private void filtrarComboAnimales(String busqueda) {
         tablaHistorial.clearSelection();
     }
 
-    // ...existing code...
 
 public void actualizarComboAnimales() {
     comboModelAnimales.removeAllElements();

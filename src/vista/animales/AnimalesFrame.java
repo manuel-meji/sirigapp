@@ -56,7 +56,6 @@ public class AnimalesFrame extends JFrame {
         setSize(1366, 720);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
-        //setResizable(false);
         setLayout(new BorderLayout());
 
         Image icon = Toolkit.getDefaultToolkit().getImage("src/resources/images/icon-sirigapp.png");
@@ -116,7 +115,6 @@ public class AnimalesFrame extends JFrame {
     
         // --- INICIO DE LA MODIFICACIÓN ---
         // Subtítulo debajo de "SiriGApp"
-        // Usamos HTML para permitir el salto de línea y centrado del texto
         JLabel menuSubtitle = new JLabel("<html><div style='text-align: center;'>Sistema de Identificación y<br>Registro Individual Ganadero</div></html>");
         menuSubtitle.setFont(controlador.estilos.FONT_INPUT.deriveFont(Font.BOLD, 14f)); // Puedes ajustar la fuente como desees
         menuSubtitle.setForeground(Color.WHITE);
@@ -261,7 +259,7 @@ public class AnimalesFrame extends JFrame {
         return button;
     }
 
-    // --- MÉTODO NUEVO PARA CAMBIAR EL CONTENIDO ---
+    // --- MÉTODO PARA CAMBIAR EL CONTENIDO ---
     public void cambiarPanelContenido(JPanel nuevoPanel) {
         contentPanel.removeAll(); // Limpiamos el panel de contenido
         contentPanel.add(nuevoPanel, BorderLayout.CENTER); // Añadimos el nuevo panel

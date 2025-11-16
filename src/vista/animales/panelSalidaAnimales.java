@@ -25,7 +25,6 @@ public class panelSalidaAnimales extends JPanel {
     private TableRowSorter<DefaultTableModel> sorter;
     private JButton btnGuardar; // Hecho miembro de la clase para cambiar su texto
 
-    // Variable para gestionar el estado de edición
     private Integer idSalidaEditando = null;
 
     // --- Fuentes estandarizadas ---
@@ -40,7 +39,7 @@ public class panelSalidaAnimales extends JPanel {
     }
 
     public JPanel createContentPanel() {
-        // --- Estructura Principal (sin cambios) ---
+        // --- Estructura Principal ---
         JPanel content = new JPanel(new BorderLayout());
         content.setBackground(new Color(245, 246, 248));
 
@@ -117,7 +116,7 @@ public class panelSalidaAnimales extends JPanel {
 
         card.add(formPanel, BorderLayout.NORTH);
 
-        // --- Panel de la tabla y búsqueda (sin cambios) ---
+        // --- Panel de tabla ---
         JPanel tableContainer = new JPanel(new BorderLayout(0, 8));
         tableContainer.setOpaque(false);
 
@@ -219,10 +218,6 @@ public class panelSalidaAnimales extends JPanel {
         }
     }
 
-    /**
-     * Este método ahora decide si crear un nuevo registro o actualizar uno existente.
-     */
-// REEMPLAZA ESTE MÉTODO EN TU CLASE panelSalidaAnimales.java
 
 private void guardarOActualizarSalida() {
     if (idSalidaEditando == null) {
@@ -236,13 +231,11 @@ private void guardarOActualizarSalida() {
                 return;
             }
 
-            // --- ¡NUEVA VERIFICACIÓN CRÍTICA! ---
-            // Antes de continuar, preguntamos al controlador si este animal realmente existe.
             if (!controlador.animalExiste(animal)) {
                 JOptionPane.showMessageDialog(this, "El animal con el ID '" + animal + "' no existe. Por favor, verifique el código.", "Error de Validación", JOptionPane.ERROR_MESSAGE);
                 return; // Detenemos la operación aquí
             }
-            // --- FIN DE LA VERIFICACIÓN ---
+        
 
             String motivo = cbMotivo.getSelectedItem().toString();
             java.sql.Date fecha = new java.sql.Date(dcFecha.getDate().getTime());
@@ -255,8 +248,7 @@ private void guardarOActualizarSalida() {
             JOptionPane.showMessageDialog(this, "Error al registrar la salida: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     } else {
-        // --- MODO ACTUALIZACIÓN ---
-        // (La lógica de actualización no necesita esta verificación porque el animal no se puede cambiar)
+        
         try {
             String motivo = cbMotivo.getSelectedItem().toString();
             java.sql.Date fecha = new java.sql.Date(dcFecha.getDate().getTime());
@@ -271,10 +263,6 @@ private void guardarOActualizarSalida() {
         }
     }
 }
-
-    /**
-     * Prepara el formulario para editar un registro seleccionado.
-     */
     private void prepararEdicion() {
         int filaSeleccionadaEnVista = tablaSalidas.getSelectedRow();
         if (filaSeleccionadaEnVista == -1) {
@@ -297,8 +285,6 @@ private void guardarOActualizarSalida() {
         ((JTextField) cbAnimal.getEditor().getEditorComponent()).setText(animal);
         cbMotivo.setSelectedItem(motivo);
         dcFecha.setDate(fecha);
-
-        // Actualizar UI para el modo edición
         btnGuardar.setText("Actualizar Salida");
         cbAnimal.setEnabled(false); // No se puede cambiar el animal de un registro
     }
@@ -336,9 +322,7 @@ private void guardarOActualizarSalida() {
         actualizarBusquedaAnimal("");
     }
     
-    /**
-     * Limpia el formulario y sale del modo de edición.
-     */
+   
     private void limpiarFormulario() {
         // Salir del modo edición
         idSalidaEditando = null;

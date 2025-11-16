@@ -26,7 +26,7 @@ public class panelEventosSanitarios extends JPanel {
 	private DefaultTableModel model;
 	private TableRowSorter<DefaultTableModel> sorter;
 	private JDateChooser dcFecha;
-    private JComboBox<Object> cbAnimalLote; // ComboBox unificado para Animales y Lotes
+    private JComboBox<Object> cbAnimalLote; 
 	private JComboBox<ProductoItem> cbProducto;
 	private JTextField txtMotivo;
 	private JTextField txtDiagnostico;
@@ -355,7 +355,7 @@ public class panelEventosSanitarios extends JPanel {
     
     private void limpiarFormulario() {
         idEventoEditando = null;
-        actualizarModoFormulario(); // Usa este método para resetear el ComboBox correcto
+        actualizarModoFormulario(); 
         setPlaceholder(cbProducto, PLACEHOLDER_PRODUCTO);
         txtDosis.setText("");
         txtMotivo.setText("");
@@ -436,7 +436,7 @@ public class panelEventosSanitarios extends JPanel {
 
     private <T> void setPlaceholder(JComboBox<T> comboBox, String text) {
         JTextField editor = (JTextField) comboBox.getEditor().getEditorComponent();
-        comboBox.setModel(new DefaultComboBoxModel<>()); // Limpia y resetea el modelo
+        comboBox.setModel(new DefaultComboBoxModel<>()); 
         editor.setForeground(Color.GRAY);
         editor.setText(text);
     }

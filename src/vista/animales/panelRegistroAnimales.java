@@ -238,7 +238,6 @@ public class panelRegistroAnimales extends JPanel {
         txtIdPadre.setText("");
         cbEstado.setSelectedIndex(0);
 
-        // ---- AÑADIDO ----
         // Desactivamos el modo edición al limpiar
         this.enModoEdicion = false;
         this.codigoOriginal = null;
@@ -262,7 +261,6 @@ public class panelRegistroAnimales extends JPanel {
         }
 
         try {
-            // ---- LÓGICA MODIFICADA ----
             if (enModoEdicion) {
                 // Si estamos editando, llamamos al método para actualizar
                 controlador.actualizarAnimal(
@@ -295,9 +293,7 @@ public class panelRegistroAnimales extends JPanel {
                 JOptionPane.showMessageDialog(this, "Animal registrado correctamente", "Éxito", JOptionPane.INFORMATION_MESSAGE);
             }
             limpiarFormulario();
-            // Opcional: Después de guardar, puedes volver a la tabla
-            // controlador.animalesFrame.cambiarPanelContenido(controlador.animalesFrame.pMostrar.createContentPanel(...));
-            
+       
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this, "Error al guardar los datos: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }

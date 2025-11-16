@@ -128,7 +128,6 @@ public class panelDesparasitaciones extends JPanel {
         dcFecha.setBounds(560, 50, 250, 30);
         form.add(dcFecha);
 
-        // --- CORRECCIÓN DE LAYOUT ---
         JLabel lblBusqueda = new JLabel("Buscar:");
         lblBusqueda.setFont(FONT_LABEL);
         lblBusqueda.setBounds(10, 110, 80, 30);
@@ -136,7 +135,7 @@ public class panelDesparasitaciones extends JPanel {
 
         txtBusqueda = new JTextField();
         txtBusqueda.setFont(FONT_INPUT);
-        txtBusqueda.setBounds(100, 110, 450, 30); // Posición y ancho ajustados
+        txtBusqueda.setBounds(100, 110, 450, 30); 
         form.add(txtBusqueda);
 
         btnGuardar = new JButton("Registrar");
@@ -165,9 +164,6 @@ public class panelDesparasitaciones extends JPanel {
 
         JPanel btns = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         btns.setOpaque(false);
-
-
-        // --- SE AÑADE EL BOTÓN LIMPIAR ---
 
         btnLimpiar = new JButton("Limpiar");
         btnLimpiar.setIcon(new ImageIcon("src/resources/images/icon-limpiar.png"));
@@ -401,17 +397,15 @@ public class panelDesparasitaciones extends JPanel {
             Date fecha = (Date) r[1];
             String fechaFormateada = (fecha != null) ? sdf.format(fecha) : "";
     
-            // CORRECCIÓN 1: El ID del producto está en el índice 4, no en el 3.
+
             String nombreProducto = obtenerNombreProductoPorId((Integer) r[4]);
     
-            // CORRECCIÓN 2: El ID del animal está en el índice 3 y la dosis en el 5.
-            // El modelo de la tabla es: {"ID", "Fecha", "Animal", "Producto", "Dosis"}
             model.addRow(new Object[]{
-                r[0],             // ID (índice 0) -> Correcto
-                fechaFormateada,  // Fecha (del índice 1) -> Correcto
-                r[3],             // Animal (índice 3, era r[2]) -> CORREGIDO
-                nombreProducto,   // Producto (del índice 4) -> CORREGIDO
-                r[5]              // Dosis (índice 5, era r[4]) -> CORREGIDO
+                r[0],             // ID 
+                fechaFormateada,  // Fecha 
+                r[3],             // Animal 
+                nombreProducto,   // Producto 
+                r[5]              // Dosis 
             });
         }
     

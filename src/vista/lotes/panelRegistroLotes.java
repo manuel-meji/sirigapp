@@ -21,7 +21,6 @@ public class panelRegistroLotes extends JPanel {
     private boolean modoEdicion = false;
     private int idLoteSeleccionado = -1;
 
-    // --- NUEVOS COMPONENTES PARA LA BÚSQUEDA ---
     private JTextField txtBuscar;
 
     // --- Fuentes estandarizadas para el diseño ---
@@ -194,7 +193,7 @@ public class panelRegistroLotes extends JPanel {
                 filtrarTabla();
             }
         });
-        // >>> FIN: LÓGICA DE BÚSQUEDA DINÁMICA <<<
+    
 
 
         btnGuardar.addActionListener(e -> {
@@ -242,7 +241,7 @@ public class panelRegistroLotes extends JPanel {
         return content;
     }
     
-    // --- NUEVO MÉTODO PARA CENTRALIZAR LA LÓGICA DE FILTRADO ---
+    // --- MÉTODO PARA CENTRALIZAR LA LÓGICA DE FILTRADO ---
     private void filtrarTabla() {
         String textoBusqueda = txtBuscar.getText().trim();
         if (textoBusqueda.isEmpty()) {
@@ -254,7 +253,7 @@ public class panelRegistroLotes extends JPanel {
         }
     }
 
-    // --- NUEVO MÉTODO PARA ACTUALIZAR LA TABLA ---
+    // ---  MÉTODO PARA ACTUALIZAR LA TABLA ---
     private void actualizarTablaConNuevosDatos(List<Object[]> lotes) {
         modeloTablaLotes.setRowCount(0); // Limpia la tabla
         for (Object[] fila : lotes) {

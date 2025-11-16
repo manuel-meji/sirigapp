@@ -118,16 +118,11 @@ public class SiriGAppLogin extends JFrame {
             String username = userTextField.getText();
             String password = new String(passTextField.getPassword());
            
-           // System.out.println("Usuario: " + username);
-            //System.out.println("Contraseña: " + password);
-
+         
             controlador.IniciarSesion(username, password);
 
         });
 
-        // Comportamiento para tecla Enter:
-        // - Si el usuario está en el campo de usuario y presiona Enter, mover el foco al campo de contraseña.
-        // - Si está en el campo de contraseña y presiona Enter, simular click en el botón de login.
     userTextField.addActionListener(e -> { Object __src = e.getSource(); __src.hashCode(); passTextField.requestFocusInWindow(); });
     passTextField.addActionListener(e -> { Object __src = e.getSource(); __src.hashCode(); loginButton.doClick(); });
         

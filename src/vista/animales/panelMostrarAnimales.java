@@ -15,12 +15,6 @@ public class panelMostrarAnimales {
 	private final Font FONT_TITULO_MENU = FontLoader.loadFont("/resources/fonts/Montserrat-Black.ttf", 32f);
 	private final Font FONT_BOTON_MENU = FontLoader.loadFont("/resources/fonts/Montserrat-SemiBold.ttf", 16f);
 
-	/**
-	 * Retorna un JPanel con la tabla de animales y botones de acción.
-	 * 
-	 * @param controlador El controlador para obtener y modificar datos.
-	 * @param onAgregar   Acción para redirigir al panel de registro.
-	 */
 	public JPanel createContentPanel(Controlador controlador, Runnable onAgregar) {
 		JPanel contentPanel = new JPanel(new BorderLayout());
 		contentPanel.setBackground(new Color(245, 246, 248));
@@ -155,7 +149,6 @@ public class panelMostrarAnimales {
 		// Acción para agregar animal
 		btnAgregar.addActionListener(e -> {
 			e.getSource();
-			// if (onAgregar != null) onAgregar.run();
 			controlador.animalesFrame.cambiarPanelContenido(controlador.animalesFrame.pRegistro.createContentPanel());
 		});
 

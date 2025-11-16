@@ -278,8 +278,6 @@ public class panelProduccionLeche extends JPanel {
         try {
             int filaModelo = tablaProduccion.convertRowIndexToModel(filaVista);
             idProduccionEditando = (Integer) modeloTabla.getValueAt(filaModelo, 0);
-
-            // --- CORRECCIÓN: La fecha en la tabla ahora es un String, se debe "parsear" de vuelta a Date ---
             String fechaStr = (String) modeloTabla.getValueAt(filaModelo, 1);
             Date fecha = sdf.parse(fechaStr);
 
@@ -325,7 +323,6 @@ public class panelProduccionLeche extends JPanel {
         for (Object[] fila : produccion) {
             int id = (int) fila[0];
 
-            // --- CORRECCIÓN: Formatear la fecha (que ahora viene como java.sql.Date) a un String ---
             Date fecha = (Date) fila[1];
             String fechaFormateada = (fecha != null) ? sdf.format(fecha) : "";
 
