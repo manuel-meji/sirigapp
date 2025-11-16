@@ -13,6 +13,7 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.Date;
 import java.util.List;
+import vista.lotes.VistaLotes;
 
 public class panelSalidaAnimales extends JPanel {
     private Controlador controlador;
@@ -262,6 +263,7 @@ private void guardarOActualizarSalida() {
             JOptionPane.showMessageDialog(this, "Error al actualizar la salida: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
+    VistaLotes.panelHistorial.actualizarComboAnimales();
 }
     private void prepararEdicion() {
         int filaSeleccionadaEnVista = tablaSalidas.getSelectedRow();
@@ -306,7 +308,8 @@ private void guardarOActualizarSalida() {
             controlador.eliminarSalida(id);
             cargarSalidas();
             cargarAnimalesIniciales();
-            limpiarFormulario(); // Limpiar por si se estaba editando el registro eliminado
+            limpiarFormulario();
+            VistaLotes.panelHistorial.actualizarComboAnimales(); // Limpiar por si se estaba editando el registro eliminado
         }
     }
 

@@ -369,6 +369,9 @@ public class panelHistorialLotes extends JPanel {
         String codigoAnimal = ((JTextField) cmbAnimalesId.getEditor().getEditorComponent()).getText();
         int selectedIndex = cmbLotesDestinoId.getSelectedIndex();
         String loteSeleccionado = selectedIndex > 0 ? (String) cmbLotesDestinoId.getSelectedItem() : null;
+        System.out.println("Código Animal: '" + codigoAnimal + "'");
+System.out.println("Lote seleccionado: '" + loteSeleccionado + "'");
+System.out.println("Índice seleccionado: " + selectedIndex);
         if (codigoAnimal.trim().isEmpty() || codigoAnimal.equals(PLACEHOLDER_ANIMAL) || loteSeleccionado == null) {
             JOptionPane.showMessageDialog(this, "Debe seleccionar un animal y un lote de destino válidos.", "Error de validación", JOptionPane.ERROR_MESSAGE);
             return;
@@ -405,7 +408,7 @@ private void filtrarComboAnimales(String busqueda) {
     }
     
     
-    List<String> codigos = controlador.buscarCodigosAnimales(busqueda);
+    List<String> codigos = controlador.buscarAnimales(busqueda);
  
     String textoActual = ((JTextField) cmbAnimalesId.getEditor().getEditorComponent()).getText();
     
@@ -454,15 +457,7 @@ public void actualizarComboAnimales() {
 }
 
 public void actualizarComboLotes() {
-    cmbLotesDestinoId.removeAllItems();
-    try {
-       
-        List<String> lotes = controlador.obtenerLotesParaComboBox();
-        for (String lote : lotes) {
-            cmbLotesDestinoId.addItem(lote);
-        }
-    } catch (Exception e) {
-        e.printStackTrace();
-    }
+    cargarLotesEnCombo();
+
 }
 }

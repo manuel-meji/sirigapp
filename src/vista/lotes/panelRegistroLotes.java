@@ -232,6 +232,8 @@ public class panelRegistroLotes extends JPanel {
                     int idLote = (int) modeloTablaLotes.getValueAt(filaSeleccionada, 0);
                     controlador.eliminarLote(idLote); 
                     cargarLotesEnTabla();
+                    VistaLotes.panelHistorial.actualizarComboLotes();
+                    VistaLotes.panelHistorial.cargarHistorialEnTabla();
                 }
             } else {
                 JOptionPane.showMessageDialog(this, "Por favor, seleccione un lote de la tabla para eliminar.", "Aviso", JOptionPane.WARNING_MESSAGE);

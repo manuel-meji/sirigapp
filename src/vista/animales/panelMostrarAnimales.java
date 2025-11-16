@@ -8,6 +8,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import vista.lotes.VistaLotes;
 
 public class panelMostrarAnimales {
 
@@ -183,6 +184,7 @@ public class panelMostrarAnimales {
 			if (confirm == JOptionPane.YES_OPTION) {
 				controlador.eliminarAnimal(codigo); // Implementa este método en el controlador
 				model.removeRow(row);
+				VistaLotes.panelHistorial.cargarHistorialEnTabla();
 			}
 		});
 
